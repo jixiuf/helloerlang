@@ -2,8 +2,27 @@
 -compile([export_all]).
 -record(state,{server,name="",to_go=0}).
 
-loop(State)->
-    loop1({State,normalize(State#state.to_go)}).
+start(EventName,To_go_Seconds)->
+    spawn_link(?MODULE,loop,[#state{server=self(),name=EventName,to_go=normalize(To_go_Seconds)}]),
+    receive
+        Msg ->
+            io:format("~p~n",[Msg])
+    end
+        .
+
+loop(State=#state{server=Server,to_go=[T1|Rest]})->
+    receive
+        {Server,Ref,cancel}->
+            Server! {Ref,ok}
+    after T1*1000 ->
+            if Rest =:=[] ->
+                    Server ! {done,State#state.name};
+               Rest =/= [] ->
+                    io:format("debug:a tmp timer done.~n",[]),
+                    loop(State#state{to_go=Rest})
+            end
+    end.
+    %% loop1({State,normalize(State#state.to_go)}).
 
 normalize(N)->
     %% Limit = 49*24*60*60,                         %49，天。一个timer 的超时时间最长只能是50天，为了使超时可接受，50天以上的，分段进行，
@@ -14,24 +33,13 @@ normalize(N)->
     end.
 %% lists:duplicate(3,a)=[a,a,a] 知识点
 
-loop1 ({State=#state{server=Server},[T1|Rest]}) ->
-    receive
-        {Server,Ref,cancel}->
-            Server! {Ref,ok}
-    after T1*1000 ->
-            if Rest =:=[] ->
-                    Server ! {done,State#state.name};
-               Rest =/= [] ->
-                    loop1({State,Rest})
-            end
-    end.
 
 test_error()->
     process_flag(trap_exit,true),
     spawn_link(event,loop,[#state{server=self(),name="hello",to_go=a}]),
     receive
-        {'EXIT',F,Reason}->
-            io:format("got exit msg:~p~n",[Reason]);
+        {'EXIT',From,Reason}->
+            io:format("got exit msg:~p:~p~n",[From,Reason]);
         %% error:Error->
         %%     io:format("超时时间格式不对，不是一个数字，请check,~p~n",[Error]);
         Msg ->
