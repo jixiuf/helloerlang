@@ -2,13 +2,32 @@
 -compile([export_all]).
 -record(state,{server,name="",to_go=0}).
 
-start(EventName,To_go_Seconds)->
-    spawn_link(?MODULE,loop,[#state{server=self(),name=EventName,to_go=normalize(To_go_Seconds)}]),
-    receive
-        Msg ->
-            io:format("~p~n",[Msg])
-    end
+init(Server,EventName,DateTime)->
+    loop(#state{server=Server,name=EventName,to_go=time2seconds(DateTime)})
         .
+start(EventName,To_go_Seconds)->
+    spawn_link(?MODULE,loop,[#state{server=self(),name=EventName,to_go=normalize(To_go_Seconds)}])
+    %% ,
+    %% receive
+    %%     Msg ->
+    %%         io:format("~p~n",[Msg])
+    %% end
+        .
+cancel(Pid)->
+    Ref=erlang:monitor(process,Pid),
+    Pid!{self(),Ref,cancel},
+    receive
+        {Ref,ok}->
+            %% erlang:demonitor(Ref,[flush]);
+            erlang:demonitor(Ref,[]),
+            io:format("ok,the event is canceld now!~n",[]),
+            ok;
+        {'DOWN',Ref,process,Pid,_} ->
+            io:format("ok,event_already_done!~n",[]),
+            ok
+    end.
+
+
 
 loop(State=#state{server=Server,to_go=[T1|Rest]})->
     receive
@@ -33,6 +52,15 @@ normalize(N)->
     end.
 %% lists:duplicate(3,a)=[a,a,a] 知识点
 
+%% event:time2seconds({{2012,11,28},{22,03,01}}).
+time2seconds(OutTime={{_,_,_},{_,_,_}})->
+    Now=calendar:local_time(),
+    Seconds = calendar:datetime_to_gregorian_seconds(OutTime)-
+        calendar:datetime_to_gregorian_seconds(Now),
+    Sec= if Seconds>0 -> Seconds;
+            Seconds =< 0 ->0 end,
+    normalize(Sec)
+        .
 
 test_error()->
     process_flag(trap_exit,true),
