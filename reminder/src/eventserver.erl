@@ -17,10 +17,10 @@ subscribe(Pid)->                                %此由client 进行调用 ,pid�
     ?MODULE ! {Pid,Ref,{subscribe,self()}},     %此由client 进行调用,故self ()表示client Pid
     receive
         {Ref,ok}->
-            debug:debug("client","事件定阅成功"),
+            debug:debug("client","subscribe success"),
             {ok,Ref};
         {'DOWN',Ref,process,_Pid,Reason} ->
-            debug:debug("client","事件定阅失败"),
+            debug:debug("client","subscribe failed"),
             {error,Reason}
     after 5000->
             {error,timeout}
