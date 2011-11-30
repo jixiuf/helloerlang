@@ -5,11 +5,11 @@
 init(Server,EventName,DateTime)->
     loop(#state{server=Server,name=EventName,to_go=time2seconds(DateTime)})
         .
-start_link(EventName,To_go_Seconds)->
-    spawn(?MODULE,loop,[#state{server=self(),name=EventName,to_go=normalize(To_go_Seconds)}])
+start_link(EventName,To_go_SecondsDateTime)->
+    spawn(?MODULE,loop,[#state{server=self(),name=EventName,to_go=time2seconds(To_go_SecondsDateTime)}])
         .
-start(EventName,To_go_Seconds)->
-    spawn_link(?MODULE,loop,[#state{server=self(),name=EventName,to_go=normalize(To_go_Seconds)}])
+start(EventName,To_go_SecondsDateTime)->
+    spawn_link(?MODULE,loop,[#state{server=self(),name=EventName,to_go=time2seconds(To_go_SecondsDateTime)}])
         .
 cancel(Pid)->
     Ref=erlang:monitor(process,Pid),            %对进程进行监视，如果监视的进程死亡会收到{'DOWN',Ref,process,Pid,Reason}
@@ -51,6 +51,7 @@ normalize(N)->
 %% lists:duplicate(3,a)=[a,a,a] 知识点
 
 %% event:time2seconds({{2012,11,28},{22,03,01}}).
+%% time2seconds and normalized it .
 time2seconds(OutTime={{_,_,_},{_,_,_}})->
     Now=calendar:local_time(),
     Seconds = calendar:datetime_to_gregorian_seconds(OutTime)-
