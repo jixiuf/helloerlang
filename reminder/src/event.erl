@@ -5,13 +5,11 @@
 init(Server,EventName,DateTime)->
     loop(#state{server=Server,name=EventName,to_go=time2seconds(DateTime)})
         .
+start_link(EventName,To_go_Seconds)->
+    spawn(?MODULE,loop,[#state{server=self(),name=EventName,to_go=normalize(To_go_Seconds)}])
+        .
 start(EventName,To_go_Seconds)->
     spawn_link(?MODULE,loop,[#state{server=self(),name=EventName,to_go=normalize(To_go_Seconds)}])
-    %% ,
-    %% receive
-    %%     Msg ->
-    %%         io:format("~p~n",[Msg])
-    %% end
         .
 cancel(Pid)->
     Ref=erlang:monitor(process,Pid),            %对进程进行监视，如果监视的进程死亡会收到{'DOWN',Ref,process,Pid,Reason}
