@@ -29,21 +29,28 @@ addevent(EventName,Desc,TimeoutDateTime)->      %此由client 进行调用,
     ?MODULE !{self(),MsgRef,{addevent,EventName,Desc,TimeoutDateTime}},%此由client 进行调用,故self ()表示client Pid
     receive
         {MsgRef,ok}->
+            debug:debug("client"," event: " ++ EventName ++ " is added" ),
             {ok,MsgRef};
         {MsgRef,{error,bad_timeout}} ->
+            debug:debug("client"," event: " ++ EventName ++ " fail to added for timeout" ),
             {error,bad_timeout}
     after 5000->
+            debug:debug("client"," event: " ++ EventName ++ " fail to added for timeout (2)" ),
             {error,timeout}
     end.
 cancelEvent(EventName)->
     Ref = make_ref(),
+    debug:debug("client"," event: " ++ EventName ++ "is canceling..." ),
     ?MODULE !{self(),Ref,{cancelEvent,EventName}},
     receive
         {error,event_doesnt_exist}->
+            debug:debug("client"," event: " ++ EventName ++ "fail to be canceled (event doesnot exists)" ),
             {error,event_doesnt_exist};
         {Ref,ok} ->
+            debug:debug("client"," event: " ++ EventName ++ "cancel .done." ),
             ok
     after 5000->
+            debug:debug("client"," event: " ++ EventName ++ "cancel .timeout." ),
             {error,timeout}
 
     end
@@ -91,12 +98,15 @@ loop(State=#state{})->
                     loop(State)
             end ;
         {Pid,MsgRef,{cancelEvent,EventName}}->  % cancel an event
+            debug:debug("server"," event: " ++ EventName ++ "canceling." ),
             case orddict:find(EventName,State#state.events) of
                 error->
+                    debug:debug("server"," event: " ++ EventName ++ "fail to be canceled (event doesnot exists)" ),
                     Pid! {MsgRef,{error,event_doesnt_exist}},
                     loop(State);
                 {ok,Event}->
                     event:cancel(Event#event.pid),
+                    debug:debug("server"," event: " ++ EventName ++ "cancel .done." ),
                     NewEvents=orddict:erase(EventName,State#state.events),
                     Pid!{MsgRef,ok},
                     loop(State#state{events=NewEvents})

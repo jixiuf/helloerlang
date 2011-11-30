@@ -14,6 +14,7 @@ start(EventName,To_go_SecondsDateTime)->
     spawn(?MODULE,loop,[#state{server=self(),name=EventName,to_go=time2seconds_normalize(To_go_SecondsDateTime)}])
         .
 cancel(Pid)->
+    debug:debug("event"," event is canceling ..." ),
     Ref=erlang:monitor(process,Pid),            %对进程进行监视，如果监视的进程死亡会收到{'DOWN',Ref,process,Pid,Reason}
     Pid!{self(),Ref,cancel},
     receive
