@@ -81,7 +81,7 @@ loop(State=#state{})->
         {Pid,MsgRef,{addevent,EventName,Desc,TimeoutDateTime}}-> %add a new event
             case valid_datetime(TimeoutDateTime) of
                 true->
-                    debug:debug("server"," a event named" ++ EventName++ "is added"),
+                    debug:debug("server"," a event named " ++ EventName++ "is added"),
                     EventPid=event:start_link(EventName,TimeoutDateTime),
                     NewEvents=orddict:store(EventName,#event{name=EventName,pid=EventPid,desc=Desc,timeout=TimeoutDateTime},State#state.events),
                     Pid!{MsgRef,ok},
@@ -103,10 +103,11 @@ loop(State=#state{})->
             end;
         {done,EventName}->                      % event done
             Event=orddict:fetch(EventName,State#state.events),
+            debug:debug("server:","event named: "++EventName++ " is done." ),
             send2clients({done,Event#event.name,Event#event.desc},State#state.clients),
-            loop(State#state{events=orddict:erase(EventName,State#state.events)}),
+            debug:debug("server:","event named: "++ EventName++ " is done. send sign to all clients." ),
+            loop(State#state{events=orddict:erase(EventName,State#state.events)});
             %% Done: send info to clients
-            io:format("event:~p is done!",[EventName]);
         shutdown ->
             exit(shutdown);
         {'DOWN',ClientRef,process,_Pid,_Reason} -> % when client die
@@ -119,7 +120,10 @@ loop(State=#state{})->
     end
         .
 send2clients(Msg,Clients)->
-    orddict:map(fun (_ClientRef,ClientPid) -> ClientPid ! Msg end ,Clients )
+    orddict:map(fun (_ClientRef,ClientPid) ->
+                        ClientPid ! Msg,
+                        debug:debug("server", ClientPid)
+                end ,Clients )
         .
 
 
