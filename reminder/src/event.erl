@@ -3,13 +3,15 @@
 -record(state,{server,name="",to_go=0}).
 
 init(Server,EventName,DateTime)->
-    loop(#state{server=Server,name=EventName,to_go=time2seconds(DateTime)})
+    loop(#state{server=Server,name=EventName,to_go=time2seconds_normalize(DateTime)})
         .
 start_link(EventName,To_go_SecondsDateTime)->
-    spawn(?MODULE,loop,[#state{server=self(),name=EventName,to_go=time2seconds(To_go_SecondsDateTime)}])
+        debug:debug("event"," a event named: " ++ EventName++ " is running..."),
+    spawn_link(?MODULE,loop,[#state{server=self(),name=EventName,to_go=time2seconds_normalize(To_go_SecondsDateTime)}])
         .
 start(EventName,To_go_SecondsDateTime)->
-    spawn_link(?MODULE,loop,[#state{server=self(),name=EventName,to_go=time2seconds(To_go_SecondsDateTime)}])
+        debug:debug("event"," a event named: " ++ EventName++ " is running..."),
+    spawn(?MODULE,loop,[#state{server=self(),name=EventName,to_go=time2seconds_normalize(To_go_SecondsDateTime)}])
         .
 cancel(Pid)->
     Ref=erlang:monitor(process,Pid),            %对进程进行监视，如果监视的进程死亡会收到{'DOWN',Ref,process,Pid,Reason}
@@ -18,10 +20,10 @@ cancel(Pid)->
         {Ref,ok}->
             %% erlang:demonitor(Ref,[flush]);
             erlang:demonitor(Ref,[]),
-            io:format("ok,the event is canceld now!~n",[]),
+            debug:debug("event","ok,the event is canceld now!~n"),
             ok;
         {'DOWN',Ref,process,Pid,_} ->
-            io:format("ok,event_already_done!~n",[]),
+            debug:debug("event","ok,event_already_done!~n"),
             ok
     end.
 
@@ -30,12 +32,14 @@ cancel(Pid)->
 loop(State=#state{server=Server,to_go=[T1|Rest]})->
     receive
         {Server,Ref,cancel}->
+        debug:debug("event","got a cancel sign ."),
             Server! {Ref,ok}
     after T1*1000 ->
             if Rest =:=[] ->
+                    debug:debug("event","event is done."),
                     Server ! {done,State#state.name};
                Rest =/= [] ->
-                    io:format("debug:a tmp timer done.~n",[]),
+                    debug:debug("event","time is passing by."),
                     loop(State#state{to_go=Rest})
             end
     end.
@@ -50,9 +54,9 @@ normalize(N)->
     end.
 %% lists:duplicate(3,a)=[a,a,a] 知识点
 
-%% event:time2seconds({{2012,11,28},{22,03,01}}).
-%% time2seconds and normalized it .
-time2seconds(OutTime={{_,_,_},{_,_,_}})->
+%% event:time2seconds_normalize({{2012,11,28},{22,03,01}}).
+%% time2seconds_normalize and normalized it .
+time2seconds_normalize(OutTime={{_,_,_},{_,_,_}})->
     Now=calendar:local_time(),
     Seconds = calendar:datetime_to_gregorian_seconds(OutTime)-
         calendar:datetime_to_gregorian_seconds(Now),

@@ -25,6 +25,7 @@ subscribe(Pid)->                                %此由client 进行调用
 
 addevent(EventName,Desc,TimeoutDateTime)->      %此由client 进行调用,
     MsgRef = make_ref(),
+    debug:debug("client","add a event named" ++ EventName),
     ?MODULE !{self(),MsgRef,{addevent,EventName,Desc,TimeoutDateTime}},%此由client 进行调用,故self ()表示client Pid
     receive
         {MsgRef,ok}->
@@ -80,6 +81,7 @@ loop(State=#state{})->
         {Pid,MsgRef,{addevent,EventName,Desc,TimeoutDateTime}}-> %add a new event
             case valid_datetime(TimeoutDateTime) of
                 true->
+                    debug:debug("server"," a event named" ++ EventName++ "is added"),
                     EventPid=event:start_link(EventName,TimeoutDateTime),
                     NewEvents=orddict:store(EventName,#event{name=EventName,pid=EventPid,desc=Desc,timeout=TimeoutDateTime},State#state.events),
                     Pid!{MsgRef,ok},
