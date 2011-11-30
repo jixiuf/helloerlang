@@ -11,13 +11,16 @@ listen(DelaySeconds)->                          %接收 DelaySeconds内收到的
               []
     end
         .
-subscribe(Pid)->                                %此由client 进行调用
+subscribe(Pid)->                                %此由client 进行调用 ,pid为client自身
     Ref = erlang:monitor(process,whereis(?MODULE)),
+    debug:debug("client","i subscribe"),
     ?MODULE ! {Pid,Ref,{subscribe,self()}},     %此由client 进行调用,故self ()表示client Pid
     receive
         {Ref,ok}->
+            debug:debug("client","事件定阅成功"),
             {ok,Ref};
         {'DOWN',Ref,process,_Pid,Reason} ->
+            debug:debug("client","事件定阅失败"),
             {error,Reason}
     after 5000->
             {error,timeout}
@@ -83,6 +86,7 @@ loop(State=#state{})->
         {Pid,MsgRef,{subscribe,ClientPid}}->    %定阅
             ClientRef=erlang:monitor(process,ClientPid),   %对client进程监控，以便它死时，移除之
             NewClients=orddict:store(ClientRef,ClientPid,State#state.clients) ,% orddict:store(key,val,dict) ,put
+            debug:debug("server","a new client is coming..."),
             Pid!{MsgRef,ok},
             loop(State#state{clients=NewClients}) ;
         {Pid,MsgRef,{addevent,EventName,Desc,TimeoutDateTime}}-> %add a new event
@@ -94,6 +98,7 @@ loop(State=#state{})->
                     Pid!{MsgRef,ok},
                     loop(State#state{events=NewEvents});
                 false ->
+                    debug:debug("server"," a event named " ++ EventName++ "failed to be added.(timeout)"),
                     Pid! {MsgRef,{error,bad_timeout}},
                     loop(State)
             end ;
