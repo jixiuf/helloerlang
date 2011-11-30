@@ -1,0 +1,6 @@
+make:all([load]).
+eventserver:start().
+eventserver:subscribe(self()).
+eventserver:addevent("sag","ff",{{2011,11,30},{22,29,35}}). ;;未来时间
+flush() 或者eventserver:listen(delay)
+
