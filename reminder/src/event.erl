@@ -29,11 +29,12 @@ cancel(Pid)->
     end.
 
 
-
-loop(State=#state{server=Server,to_go=[T1|Rest]})->
+loop(_State=#state{server=_Server,to_go=[]}) ->
+    debug:debug("event","timeout already !~n") ;
+loop(State=#state{server=Server,to_go=[T1|Rest]}) ->
     receive
         {Server,Ref,cancel}->
-        debug:debug("event","got a cancel sign ."),
+            debug:debug("event","got a cancel sign ."),
             Server! {Ref,ok}
     after T1*1000 ->
             if Rest =:=[] ->
