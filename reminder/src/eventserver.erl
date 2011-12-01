@@ -6,6 +6,7 @@
 listen(DelaySeconds)->                          %接收 DelaySeconds内收到的所有提醒
     receive
         M={done,_EventName,_Desc}->
+    debug:debug("client","a event is done"),
             [M|listen(0)]
     after DelaySeconds*1000->
               []
