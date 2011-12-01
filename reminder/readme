@@ -5,3 +5,12 @@ eventserver:addevent("hello","hello world",{{2011,11,30},{22,29,35}}). ;;未来�
 
 flush() 或者eventserver:listen(delay) 等待时刻的来临
 event:cancelEvent("hello").     ;;取消事件
+
+
+super
+
+make:all([load]).
+sup:start_link(eventserver,[]).
+exit(whereis(eventserver),die).  
+exit(whereis(eventserver),die).
+exit(whereis(eventserver),shutdown). 
