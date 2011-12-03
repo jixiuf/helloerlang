@@ -17,6 +17,10 @@ ping(Pid)->
     Reply=  gen_server:call(Pid,ping),
     io:format("the reply is : ~p ~n",[Reply])
         .
+ping2(Pid)->
+    gen_server:cast(Pid,ping2),
+    io:format("asy call. look the output order ~n",[]).
+
 stop(Pid)->
     Reply=  gen_server:call(Pid,stop),
     io:format("the reply is : ~p ~n",[Reply])
@@ -30,8 +34,8 @@ handle_call(stop,From,StateCount) ->
         .
 
 handle_cast(Msg,StateCount)->
-    io:format("~n",[]).
-
+    io:format("cast msg :~p~n",[Msg]),
+    {noreply, StateCount}.
 %% messages that were sent directly with the ! operator and special ones like init/1's timeout,
 %% monitors' notifications and 'EXIT' signals.
 
