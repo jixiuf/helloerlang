@@ -51,12 +51,13 @@ terminate(Reason,StateCount)->
 code_change(Previous_Version,StateCount,Extra)->
     io:format("~n",[])
         .
+test()->
+    timer:sleep(5000),
+    exit(normal)
+        .
+
 %% test 1
 %% {ok,Pid} =ping:start_link().
 %% ping:ping(Pid).
 %% ping:stop(Pid).
 %% Pid! random msg
-test()->
-    timer:sleep(5000),
-    exit(normal)
-        .
