@@ -7,6 +7,10 @@ start_link()->
         .
 init(StateCount)->
     io:format("~p~n",[StateCount]),
+
+    process_flag(trap_exit,true),
+    spawn_link(?MODULE,test,[]),                %此两句用来测试 handle_info 用来处理EXIT信号
+
     {ok,StateCount}
         .
 ping(Pid)->
@@ -28,8 +32,17 @@ handle_call(stop,From,StateCount) ->
 handle_cast(Msg,StateCount)->
     io:format("~n",[]).
 
-handle_info(P1,P2)->                            % random msg
-    io:format("~n",[])
+%% messages that were sent directly with the ! operator and special ones like init/1's timeout,
+%% monitors' notifications and 'EXIT' signals.
+
+handle_info({'EXIT',Pid,Reason},State) ->
+    io:format("exittttttt~n",[]),
+    {noreply,State}
+        ;
+handle_info(Msg,State)->                            % random msg ->
+    io:format("random msg I don't want to handle,msg:~p~n",[Msg]),
+
+    {noreply,State}
         .
 terminate(Reason,StateCount)->
     io:format("look it it terminated ,reason: ~p~n",[Reason])
@@ -42,3 +55,8 @@ code_change(Previous_Version,StateCount,Extra)->
 %% {ok,Pid} =ping:start_link().
 %% ping:ping(Pid).
 %% ping:stop(Pid).
+%% Pid! random msg
+test()->
+    timer:sleep(5000),
+    exit(normal)
+        .
