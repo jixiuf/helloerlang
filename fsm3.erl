@@ -5,6 +5,7 @@
 %% 对于StateName/2 的方法 ，由gen_fsm:send_event/2来触发,此为异步发送
 %% 对于StateName/3 的方法 ，由gen_fsm:sync_send_event/3来触发 此为同步发送
 %%似乎要用 {reply,my_reply,state1,"state data of state1."}作返回值
+%% 我用{next_state,state1,"state data of state1."}作返回值，报timeout
 %%
 start()->
     {ok,Pid}=    gen_fsm:start_link(?MODULE,init_data,[]),
@@ -24,7 +25,7 @@ state1(event1,StateData) ->
 state1(event1,From,StateData) ->
     timer:sleep(1000),
     io:format("~ts~n",["server receive msg after 3 second ,server print this line"]),
-    {reply,my_reply,state1,"state data of state1."}
+    {next_state,state1,"state data of state1."}
         .
 
 send1()->
@@ -32,5 +33,5 @@ send1()->
     io:format("after send event , client print this line .~n",[]).
 
 send2()->
-    Reply=gen_fsm:sync_send_event(whereis(server),event1),
-    io:format("after send event , client print this line ~p .~n",[Reply]).
+    gen_fsm:sync_send_event(whereis(server),event1),
+    io:format("after send event , client print this line  .~n",[]).
