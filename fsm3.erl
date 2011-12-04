@@ -25,7 +25,7 @@ state1(event1,StateData) ->
 state1(event1,From,StateData) ->
     timer:sleep(1000),
     io:format("~ts~n",["server receive msg after 3 second ,server print this line"]),
-    {next_state,state1,"state data of state1."}
+    {reply,my_reply,state1,"state data of state1."}
         .
 
 send1()->
@@ -33,5 +33,5 @@ send1()->
     io:format("after send event , client print this line .~n",[]).
 
 send2()->
-    gen_fsm:sync_send_event(whereis(server),event1),
-    io:format("after send event , client print this line  .~n",[]).
+    Reply=gen_fsm:sync_send_event(whereis(server),event1),
+    io:format("after send event , client print this line ~p .~n",[Reply]).
