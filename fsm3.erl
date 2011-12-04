@@ -36,9 +36,11 @@ state1(event1,StateData) ->
 
 state1(event1,From,StateData) ->
     timer:sleep(1000),
-    gen_fsm:reply(From,my_reply),
     io:format("~ts~n",["server receive msg after 3 second ,server print this line"]),
-    {next_state,state1,"state data of state1."}
+    %% gen_fsm:reply(From,my_reply),
+    %% {next_state,state1,"state data of state1."}
+    %%或者
+    {reply,my_reply,state1,"state data of state1."}
         .
 
 send1()->
