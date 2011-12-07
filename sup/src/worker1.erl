@@ -25,7 +25,7 @@ handle_cast(stop,State)->
     {stop,normal ,State};
 handle_cast(shutdown,State)->
     io:format("worker1 shutdowning unnormal...~n",[]),
-    {stop,shutdown ,State}
+    {stop,shutdown_reason ,State}
         .
 
 handle_info(Msg, State) ->
