@@ -12,9 +12,9 @@ init({M,F,A})->
     MaxTime=3600,
     MaxRestart=1,
     {ok,{{simple_one_for_one,MaxRestart,MaxTime},
-         [{pool_worker_super,                           %id
-           {ppool_serv,start_link,[PoolName,PoolSize,MFA,self()]},
-           permanent, 5000, worker, [ppool_serv]
+         [{pool_worker,                           %id
+           {ppool_worker,start_link,[M,F,A]},
+           temporary, 5000, worker, [M]
           }
          ]}}
         .
