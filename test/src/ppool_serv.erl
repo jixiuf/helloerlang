@@ -23,6 +23,7 @@
        ).
 %% 此记录，sup 是与此 ppool_serv相关联的兄弟节点ppool_worker_sup
 %%refs 记录了此pool中进行的ref ,queue 是池中的进程
+%% ,如果poolsize >0 ,直接run ,否则加到queue中
 -record(state,{poolsize=0,sup,refs,queue=queue:new()}).
 
 %% ppool_serv 由 ppool_super启动，故ParentPid 为 ppool_super
@@ -48,21 +49,87 @@ init(PoolSize,MFA,ParentPid)->
     self()!{start_worker_sup,ParentPid,MFA},
     {ok,#state{poolsize=PoolSize,refs=gb_sets:empty()}}
         .
-
+%% run ,如果还有空间，直接run. 若无，则返回一个noalloc 的reply
 handle_call({run ,Args}, _From, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) when PoolSize>0->
     io:format("runing ... ~n",[]),
     {ok,Pid}= supervisor:start_child(Super,Args),
     Ref = erlang:monitor(process,Pid),
     {reply,{ok,Pid},State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
 handle_call({run ,_Args}, _From, State=#state{poolsize=PoolSize}) when PoolSize=< 0 ->
-    {reply,noalloc,State}.
+    {reply,noalloc,State};
 
 
+%% sync  ,如果还有空间，直接run. 若无 ,进信息加入队列，等待空闲时run
+handle_call({sync ,Args}, _From, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) when PoolSize>0->
+    io:format("runing ... ~n",[]),
+    {ok,Pid}= supervisor:start_child(Super,Args),
+    Ref = erlang:monitor(process,Pid),
+    {reply,{ok,Pid},State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
+handle_call({sync ,Args}, From, State=#state{poolsize=PoolSize,queue=Queue}) when PoolSize=< 0 ->
+    {noreply,State#state{queue= queue:in({From,Args},Queue)}};
+
+handle_call(stop,_From,State) ->
+    io:format("stoping...~n",[]),
+    {stop,normal,ok,State};
+handle_call(_Msg,_From,State) ->
+    {noreply,State}
+        .
+
+handle_cast({async,Args},State=#state{poolsize=PoolSize,sup=Super,refs=Refs})when PoolSize>0->
+    io:format("async queue~n",[]),
+    {ok,Pid}= supervisor:start_child(Super,Args),
+    Ref = erlang:monitor(process,Pid),
+    {reply,{ok,Pid},State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
+handle_cast({async,Args},State=#state{poolsize=PoolSize,queue=Queue})when PoolSize =< 0 ->
+    io:format("up to queue size ,add to queue~n",[]),
+    {noreply,State#state{queue= queue:in(Args,Queue)}};
+handle_cast(Msg,State) ->
+    io:format("other cast info ~p~n",[Msg]),
+    {noreply,State}
+        .
+
+%% 启动与此ppool_serv相关联的的ppool_worker_sup,将进pid 存到#state.sup 中。
 handle_info({start_worker_sup,ParentPid,MFA},State=#state{})->
     {ok,Pid}= supervisor:start_child(ParentPid,?SPEC(MFA)),
     {noreply,State#state{sup=Pid}};
-handle_info(Msg,_State=#state{}) ->
-    io:format("Unexpected Msg:~p~n",[Msg]) .
+handle_info({'DOWN',Ref,process,Pid,Reason}, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) ->
+    case gb_sets:is_member(Ref,Refs) of
+        true->
+            io:format("a process down ,~n",[]),
+            handle_down_work(Ref,State);
+        false->
+            io:format("other processes I don't care .~n",[]),
+            {noreply,State}
+    end
+        ;
+handle_info(Msg,State) ->
+    io:format("Unexpected Msg:~p~n",[Msg]),
+    {noreply,State}
+        .
+
+terminate(normal, State) ->
+    io:format("ppool_serv stopped!~n",[]),
+    ok.
+%% 当一个池中的进程down ,检查队列中有没有进程 ，有则启动之
+handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs,queue=Queue})->
+    io:format("handing down work~n",[]),
+    case queue:out(State#state.queue) of
+        {{value,{From,Args}},NewQueue}->
+            io:format("a sync process will running~n",[]),
+            {ok,Pid}= supervisor:start_child(Super,Args),
+            NewRef = erlang:monitor(process,Pid),
+            NewRefs =gb_sets:insert(NewRef, gb_sets:delete(Ref,Refs)),
+            {reply,{ok,Pid},State#state{ refs= NewRefs,queue=NewQueue }}
+                ;
+        {{value,Args},Q} ->
+            io:format("a async process will running~n",[])
+                ;
+        {empty,_} ->
+
+
+    end
+
+        .
 
 
 %%interface
