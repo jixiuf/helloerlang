@@ -40,7 +40,7 @@ start(PoolName,PoolSize,MFA,ParentPid)                                          
         .
 
 %% ppool_serv 由 ppool_super启动，故ParentPid 为 ppool_super
-init(PoolSize,MFA,ParentPid)                                                                         ->
+init([PoolSize,MFA,ParentPid])                                                                         ->
     io:format("ppool_serv initing...~n",[]),
     %%给自已发一条消息，然后接收到消息后用 supervisor:start_child(Super,Args), 启动ppool_worker_sup
     %%不在此处直接写supervisor:start_child(Super,Args) ,是因为,此函数是init() ,即运行到此行代码时，
