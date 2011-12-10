@@ -125,6 +125,7 @@ handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs,queue=Qu
             NewRef = erlang:monitor(process,Pid),
             NewRefs =gb_sets:insert(NewRef, gb_sets:delete(Ref,Refs)),
             gen_server:reply(From, {ok,Pid}),
+            io:format("handing down work done ~n~n~n",[]),
             {noreply,State#state{ refs= NewRefs,queue=NewQueue }}
                 ;
         {{value,Args},NewQueue} ->
@@ -132,13 +133,14 @@ handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs,queue=Qu
             {ok,Pid}= supervisor:start_child(Super,Args),
             NewRef = erlang:monitor(process,Pid),
             NewRefs =gb_sets:insert(NewRef, gb_sets:delete(Ref,Refs)),
+            io:format("handing down work done ~n~n~n",[]),
             {noreply,State#state{ refs= NewRefs,queue=NewQueue }}
                 ;
         {empty,_} ->
             io:format("no process in queue~n",[]) ,
+            io:format("handing down work done ~n~n~n",[]),
             {noreply,State#state{ poolsize=PoolSize+1 ,refs=gb_sets:delete(Ref,Refs)}}
-    end,
-    io:format("handing down work done ~n~n~n",[])
+    end
         .
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
