@@ -1,0 +1,6 @@
+ppool:start_link().             ;;start
+;;add a pool named demo_pool with size 2 ,all worker add to the pool ,a worker_demo:start_link/2 
+ppool:start_pool(demo_pool, 2, {worker_demo, start_link, []}). 
+
+ppool:run(demo_pool,[3,message1]). ;;start 1 worker in pool demo_pool   worker_demo:start_link/2           
+ppool:run(demo_pool,[3,message1]). ;; start 2 worker in pool demo_pool  worker_demo:start_link/2           
