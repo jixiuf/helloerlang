@@ -35,7 +35,7 @@ start_link(PoolName,PoolSize,MFA,ParentPid)                                     
 
 %% ppool_serv 由 ppool_super启动，故ParentPid 为 ppool_super
 start(PoolName,PoolSize,MFA,ParentPid)                                                               ->
-    io:format("ppool_serv is starting ...~n",[]),
+    io:format("ppool_serv is starting aaa ...~n",[]),
     gen_server:start({local,PoolName},?MODULE,[PoolSize,MFA,ParentPid],[])
         .
 
@@ -91,7 +91,7 @@ handle_cast(Msg,State) ->
 
 %% 启动与此ppool_serv相关联的的ppool_worker_sup,将进pid 存到#state.sup 中。
 handle_info({start_worker_sup,ParentPid,MFA},State=#state{})->
-    io:format("start_worker_sup starting ppool_worker_sup...  ,~n",[])
+    io:format("start_worker_sup starting ppool_worker_sup...  ,~n",[]),
     {ok,Pid}= supervisor:start_child(ParentPid,?SPEC(MFA)),
     {noreply,State#state{sup=Pid}};
 handle_info({'DOWN',Ref,process,Pid,Reason}, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) ->
@@ -111,6 +111,9 @@ handle_info(Msg,State) ->
 
 terminate(normal, State) ->
     io:format("ppool_serv stopped!~n",[]),
+    ok;
+terminate(Reason, State) ->
+    io:format("ppool_serv stopped with reason :~p!~n",[Reason]),
     ok.
 %% 当一个池中的进程down ,检查队列中有没有进程 ，有则启动之
 handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs,queue=Queue})->
