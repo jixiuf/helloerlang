@@ -91,6 +91,7 @@ handle_cast(Msg,State) ->
 
 %% 启动与此ppool_serv相关联的的ppool_worker_sup,将进pid 存到#state.sup 中。
 handle_info({start_worker_sup,ParentPid,MFA},State=#state{})->
+    io:format("start_worker_sup starting ppool_worker_sup...  ,~n",[])
     {ok,Pid}= supervisor:start_child(ParentPid,?SPEC(MFA)),
     {noreply,State#state{sup=Pid}};
 handle_info({'DOWN',Ref,process,Pid,Reason}, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) ->
