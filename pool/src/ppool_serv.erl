@@ -137,8 +137,8 @@ handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs,queue=Qu
         {empty,_} ->
             io:format("no process in queue~n",[]) ,
             {noreply,State#state{ poolsize=PoolSize+1 ,refs=gb_sets:delete(Ref,Refs)}}
-    end
-
+    end,
+    io:format("handing down work done ~n~n~n",[])
         .
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
