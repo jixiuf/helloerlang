@@ -135,7 +135,8 @@ handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs,queue=Qu
             {noreply,State#state{ refs= NewRefs,queue=NewQueue }}
                 ;
         {empty,_} ->
-            {noreply,State#state{ refs=gb_sets:delete(Ref,Refs)}}
+            io:format("no process in queue~n",[]) ,
+            {noreply,State#state{ poolsize=PoolSize+1 ,refs=gb_sets:delete(Ref,Refs)}}
     end
 
         .
