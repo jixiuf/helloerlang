@@ -27,19 +27,20 @@
 -record(state,{poolsize=0,sup,refs,queue=queue:new()}).
 
 %% ppool_serv 由 ppool_super启动，故ParentPid 为 ppool_super
-start_link(PoolName,PoolSize,MFA,ParentPid)->
-    io:format("ppool_serv is starting ...~n",[]),
-    supervisor:start_link({local,PoolName},?MODULE,[PoolSize,MFA,ParentPid])
+start_link(PoolName,PoolSize,MFA,ParentPid)                                                          ->
+    io:format("ppool_serv is starting ...   ",[]),
+    io:format("a pool named: ~p is adding with size ~p... ~n",[PoolName,PoolSize]),
+    gen_server:start_link({local,PoolName},?MODULE,[PoolSize,MFA,ParentPid],[])
         .
 
 %% ppool_serv 由 ppool_super启动，故ParentPid 为 ppool_super
-start(PoolName,PoolSize,MFA,ParentPid)->
+start(PoolName,PoolSize,MFA,ParentPid)                                                               ->
     io:format("ppool_serv is starting ...~n",[]),
-    supervisor:start({local,PoolName},?MODULE,[PoolSize,MFA,ParentPid])
+    gen_server:start({local,PoolName},?MODULE,[PoolSize,MFA,ParentPid],[])
         .
 
 %% ppool_serv 由 ppool_super启动，故ParentPid 为 ppool_super
-init(PoolSize,MFA,ParentPid)->
+init(PoolSize,MFA,ParentPid)                                                                         ->
     io:format("ppool_serv initing...~n",[]),
     %%给自已发一条消息，然后接收到消息后用 supervisor:start_child(Super,Args), 启动ppool_worker_sup
     %%不在此处直接写supervisor:start_child(Super,Args) ,是因为,此函数是init() ,即运行到此行代码时，
@@ -50,9 +51,9 @@ init(PoolSize,MFA,ParentPid)->
     {ok,#state{poolsize=PoolSize,refs=gb_sets:empty()}}
         .
 %% run ,如果还有空间，直接run. 若无，则返回一个noalloc 的reply
-handle_call({run ,Args}, _From, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) when PoolSize>0->
+handle_call({run ,Args}, _From, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) when PoolSize>0 ->
     io:format("runing ... ~n",[]),
-    {ok,Pid}= supervisor:start_child(Super,Args),
+    {ok,Pid}= supervisor:start_child(Super,Args),%此处的Super 是ppool_worker_sup模块
     Ref = erlang:monitor(process,Pid),
     {reply,{ok,Pid},State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
 handle_call({run ,_Args}, _From, State=#state{poolsize=PoolSize}) when PoolSize=< 0 ->
@@ -62,7 +63,7 @@ handle_call({run ,_Args}, _From, State=#state{poolsize=PoolSize}) when PoolSize=
 %% sync  ,如果还有空间，直接run. 若无 ,进信息加入队列，等待空闲时run
 handle_call({sync ,Args}, _From, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) when PoolSize>0->
     io:format("runing ... ~n",[]),
-    {ok,Pid}= supervisor:start_child(Super,Args),
+    {ok,Pid}= supervisor:start_child(Super,Args), %此处的Super 是ppool_worker_sup模块
     Ref = erlang:monitor(process,Pid),
     {reply,{ok,Pid},State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
 handle_call({sync ,Args}, From, State=#state{poolsize=PoolSize,queue=Queue}) when PoolSize=< 0 ->
@@ -77,7 +78,7 @@ handle_call(_Msg,_From,State) ->
 
 handle_cast({async,Args},State=#state{poolsize=PoolSize,sup=Super,refs=Refs})when PoolSize>0->
     io:format("async queue~n",[]),
-    {ok,Pid}= supervisor:start_child(Super,Args),
+    {ok,Pid}= supervisor:start_child(Super,Args),%此处的Super 是ppool_worker_sup模块
     Ref = erlang:monitor(process,Pid),
     {reply,{ok,Pid},State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
 handle_cast({async,Args},State=#state{poolsize=PoolSize,queue=Queue})when PoolSize =< 0 ->
@@ -119,17 +120,23 @@ handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs,queue=Qu
             {ok,Pid}= supervisor:start_child(Super,Args),
             NewRef = erlang:monitor(process,Pid),
             NewRefs =gb_sets:insert(NewRef, gb_sets:delete(Ref,Refs)),
-            {reply,{ok,Pid},State#state{ refs= NewRefs,queue=NewQueue }}
+            gen_server:reply(From, {ok,Pid}),
+            {noreply,State#state{ refs= NewRefs,queue=NewQueue }}
                 ;
-        {{value,Args},Q} ->
-            io:format("a async process will running~n",[])
+        {{value,Args},NewQueue} ->
+            io:format("a async process will running~n",[]),
+            {ok,Pid}= supervisor:start_child(Super,Args),
+            NewRef = erlang:monitor(process,Pid),
+            NewRefs =gb_sets:insert(NewRef, gb_sets:delete(Ref,Refs)),
+            {noreply,State#state{ refs= NewRefs,queue=NewQueue }}
                 ;
         {empty,_} ->
-
-
+            {noreply,State#state{ refs=gb_sets:delete(Ref,Refs)}}
     end
 
         .
+code_change(_OldVsn, State, _Extra) ->
+    {ok, State}.
 
 
 %%interface
