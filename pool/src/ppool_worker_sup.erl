@@ -4,7 +4,7 @@
 
 start_link(MFA={_,_,_})->
     io:format("ppool_worker_sup is starting ...~n",[]),
-    supervisor:start_link({local,pool_worker_super},?MODULE,[MFA])
+    supervisor:start_link({local,pool_worker_super},?MODULE,MFA)
 .
 
 init({M,F,A})->
