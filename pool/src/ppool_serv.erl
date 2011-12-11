@@ -80,7 +80,7 @@ handle_cast({async,Args},State=#state{poolsize=PoolSize,sup=Super,refs=Refs})whe
     io:format("async queue~n",[]),
     {ok,Pid}= supervisor:start_child(Super,Args),%此处的Super 是ppool_worker_sup模块
     Ref = erlang:monitor(process,Pid),
-    {reply,{ok,Pid},State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
+    {noreply,State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
 handle_cast({async,Args},State=#state{poolsize=PoolSize,queue=Queue})when PoolSize =< 0 ->
     io:format("up to queue size ,add to queue~n",[]),
     {noreply,State#state{queue= queue:in(Args,Queue)}};
