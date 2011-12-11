@@ -4,7 +4,7 @@
 
 start_link()->
     io:format("ppool_supersuper is starting ...~n",[]),
-    supervisor:start_link({local,pool_supersuper},?MODULE,[])
+    supervisor:start_link({local,ppool},?MODULE,[])
 .
 
 init([])->
