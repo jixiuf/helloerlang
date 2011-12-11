@@ -14,7 +14,10 @@ init([Delay,Msg])->
         {ok,{Delay,Msg}}
         .
 handle_info({'DOWN',Ref,process,Pid,Reason} ,State)->
+    %%当action/2 对应进程down ,会收到此信息，然后当前gen_server/退出，退出时ppool_serv 会收到信息，
+    %%而后，从pool中清除此条process
     exit(normal)
+
         .
 
 terminate(M,S)->
