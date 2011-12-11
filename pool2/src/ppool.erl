@@ -10,6 +10,8 @@
 %% start_link()->
 %% ppool_supersuper:start_link()
 %%     .
+
+  %% start/2 返回{ok, Pid} or {ok, Pid, SomeState}
 %% replace it with
 start(normal,_Args)->
     ppool_supersuper:start_link()
@@ -20,6 +22,8 @@ start(normal,_Args)->
 %% replace with
 %% look {mod . ...} ppool.app.src for detail
 stop(_State)->
+    %% 此处不用自行处理stop ,因start/2 返回值有Pid ,stop 时，OTP 会处理.
+    %%     ppool_supersuper:stop().
     ok
         .
 
