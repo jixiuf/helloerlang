@@ -1,5 +1,6 @@
 -module(ppool_serv).
--behaviour(gen_server).
+-export([code_change/3,handle_call/3,handle_cast/2,handle_info/2,init/1,terminate/2]).
+
 -compile([export_all]).
 
 %% ppool_worker_sup 与此module ppool_serv 为ppool_super的子节点。
@@ -94,7 +95,7 @@ handle_info({start_worker_sup,ParentPid,MFA},State=#state{})->
     io:format("start_worker_sup starting ppool_worker_sup...  ,~n",[]),
     {ok,Pid}= supervisor:start_child(ParentPid,?SPEC(MFA)),
     {noreply,State#state{sup=Pid}};
-handle_info({'DOWN',Ref,process,Pid,Reason}, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) ->
+handle_info({'DOWN',Ref,process,_Pid,_Reason}, State=#state{refs=Refs}) ->
     case gb_sets:is_member(Ref,Refs) of
         true->
             io:format("a process down ,~n",[]),
@@ -109,14 +110,14 @@ handle_info(Msg,State) ->
     {noreply,State}
         .
 
-terminate(normal, State) ->
+terminate(normal, _State) ->
     io:format("ppool_serv stopped!~n",[]),
     ok;
-terminate(Reason, State) ->
+terminate(Reason, _State) ->
     io:format("ppool_serv stopped with reason :~p!~n",[Reason]),
     ok.
 %% 当一个池中的进程down ,检查队列中有没有进程 ，有则启动之
-handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs,queue=Queue})->
+handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs})->
     io:format("handing down work~n",[]),
     case queue:out(State#state.queue) of
         {{value,{From,Args}},NewQueue}->
