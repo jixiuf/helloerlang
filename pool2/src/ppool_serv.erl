@@ -1,6 +1,8 @@
 -module(ppool_serv).
 -export([code_change/3,handle_call/3,handle_cast/2,handle_info/2,init/1,terminate/2]).
 -export([run/2,sync_queue/2,async_queue/2]).
+-export([start_link/4,stop/1,start/4]).
+
 
 %% -compile([export_all]).
 
