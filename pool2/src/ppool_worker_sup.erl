@@ -1,6 +1,7 @@
 -module(ppool_worker_sup).
 -behaviour(supervisor).
--compile([export_all]).
+-export([init/1]).
+-export([start_link/1]).
 
 start_link(MFA={_,_,_})->
     io:format("ppool_worker_sup is starting ...~n",[]),
