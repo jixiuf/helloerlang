@@ -1,1 +1,1 @@
-cp src/ppool.app.src ebin/
+cp src/ppool.app.src ebin/ppool.app
