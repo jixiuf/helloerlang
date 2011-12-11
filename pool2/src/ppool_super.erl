@@ -1,6 +1,7 @@
 -module(ppool_super).
 -behaviour(supervisor).
--compile([export_all]).
+-export([init/1]).
+-export([start_link/3]).
 
 start_link(PoolName,PoolSize,MFA)->
     io:format("ppool_super is starting ...~n",[]),
