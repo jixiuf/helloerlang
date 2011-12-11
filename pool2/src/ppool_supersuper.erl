@@ -2,7 +2,7 @@
 -behaviour(supervisor).
 -export([init/1]).
 -export([start_pool/3,stop_pool/1]).
--export([start_link/0,stop/0]).
+-export([start_link/0]).
 
 start_link()->
     io:format("ppool_supersuper is starting ...~n",[]),
@@ -15,14 +15,16 @@ init([])->
     MaxRestart=6,
     {ok,{{one_for_one,MaxRestart,MaxTime},[]}}  %此supervisor中目前无任何进程
         .
-stop()->                                        % stoping ppool_supersuper itself.
-    io:format("pool_supersuper is stoping...~n",[]),
-    case whereis(pool_supersuper) of
-        P when is_pid(P) ->
-            exit(P,kill);
-        _ -> ok
-    end
-        .
+%% don't need any more . otp will take care of it .
+%% take a look at ppool.erl
+%% stop()->                                        % stoping ppool_supersuper itself.
+%%     io:format("pool_supersuper is stoping...~n",[]),
+%%     case whereis(pool_supersuper) of
+%%         P when is_pid(P) ->
+%%             exit(P,kill);
+%%         _ -> ok
+%%     end
+%%         .
 
 
 start_pool(PoolName,PoolSize,MFA4worker)->
