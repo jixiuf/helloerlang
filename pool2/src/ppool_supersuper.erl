@@ -1,6 +1,8 @@
 -module(ppool_supersuper).
 -behaviour(supervisor).
--compile([export_all]).
+-export([init/1]).
+-export([start_pool/3,stop_pool/1]).
+-export([start_link/0,stop/0]).
 
 start_link()->
     io:format("ppool_supersuper is starting ...~n",[]),
