@@ -1,0 +1,4 @@
+erl -make
+erl -pa ebin/    
+make:all([load]).
+;; application:start(ppool).
