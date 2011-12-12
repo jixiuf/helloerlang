@@ -32,11 +32,11 @@ start_pool(PoolName,PoolSize,MFA4worker)->
     ChildSpec={PoolName,                          %一个id标识
                {ppool_super,start_link,[PoolName,PoolSize,MFA4worker]},           %此行，批示一个fun  : {Mod ,fun, param}
                permanent, infinity, supervisor, [ppool_super]},
-    supervisor:start_child(pool_supersuper,ChildSpec)
+    supervisor:start_child(ppool,ChildSpec)
         .
 
 stop_pool(PoolName)->
     io:format("stoping pool ~p~n",[PoolName]),
-    supervisor:terminate_child(ppool_super,PoolName),
-    supervisor:delete_child(pool_supersuper,PoolName)
+    supervisor:terminate_child(ppool,PoolName),
+    supervisor:delete_child(ppool,PoolName)
         .
