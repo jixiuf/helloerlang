@@ -31,3 +31,12 @@ ppool:async_queue(demo_pool,[4,message2]).
  ppool:async_queue(demo_pool,[4,message3]).
                                           
 ppool:stop_pool(demo_pool)
+
+application:loaded_applications().
+application:which_applications().
+
+application:stop(ppool).
+        
+application:loaded_applications().
+application:which_applications().
+        
