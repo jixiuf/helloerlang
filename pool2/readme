@@ -30,3 +30,4 @@ ppool:async_queue(demo_pool,[4,message2]).
  %% start 2 worker in pool demo_pool  worker_demo:start_link/2
  ppool:async_queue(demo_pool,[4,message3]).
                                           
+ppool:stop_pool(demo_pool)
