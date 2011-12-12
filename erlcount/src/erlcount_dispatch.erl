@@ -27,8 +27,6 @@ init([])->
 
 handle_info({start,Dir},State,Data)->
     gen_fsm:send_event(self(),erlcount_lib:find_dir(Dir)),
-    {next_state,State,Data}
-        .
 
 complete (Pid,Regex,Ref,Count)->
     gen_fsm:send_all_state_event(Pid,{complete,Regex,Ref,Count})
