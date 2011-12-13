@@ -1,6 +1,8 @@
 -module(erlcount_lib).
 -include_lib("kernel/include/file.hrl").
-
+%% 返回值有二:
+%%{continue,File,fun() -> dequeue_and_run(Queue)end }
+%% done
 find_dir(Directory)->
     io:format("find directory ~p~n",[Directory]),
     find_dir(Directory,queue:new())

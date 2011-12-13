@@ -24,13 +24,65 @@ init([])->
             {stop,invalid_regex}
     end
         .
-
+%% init之后处于 dispatching 状态 ，
 handle_info({start,Dir},State,Data)->
-    gen_fsm:send_event(self(),erlcount_lib:find_dir(Dir)),
+    gen_fsm:send_event(self(),erlcount_lib:find_dir(Dir)), %发送一个{continue,File,Con} ,或done信息.
+    {nextstate,State,Data};
+handle_info(Msg,State,Data) ->
+    io:format("Unexcepted Msg:~p~n",[Msg]),
+    {nextstate,State,Data} .
 
+dispatching({continue,File,ContinuationFun },Data=#data{regexs=Regexps,refs=Refs})->
+    io:format("dispatching...~n",[]),
+    F = fun (Refs,Re)->
+                Ref = make_ref(),
+                ppool:async(?PoolName,[self(),File,Ref,Re]),
+                [Ref|Refs]
+        end ,
+    NewRefs= lists:foldl(F,Refs,Regexps),
+    %%CPS 式编程，不同于依靠函数的返回值，它会把函数作为参数传过来，以便随后 调用 而非返回一个值 后，让对方对这个值进行处理
+    ContinuationFun(),                          %在目录中继续递归寻找一下个erl.文件。
+    {nextstate,dispatching,Data#data{refs=NewRefs}};
+dispatching(done,Data=#data{}) ->
+    io:format("got 'done' message ,but maybe some process still handling files now ,so now changed to listening state...~n",[]),
+    %% {nextstate,listening,Data}
+    listening(done,Data)
+.
+%% 当refs 为空时，才说明 所有文件都已经处理完毕，
+listening(done,Data=#data{refs=[],regexs=Regexs})->
+    io:format("listening...~n",[]),
+    [io:format("~p:~p,~n",[Re,Count])|| [Re,Count] <- Regexs],
+    {stop,normal ,done};
+listening(done,Data=#data{})->
+    io:format("listening...~n",[]),
+    {nextstate,listening,Data}
+        .
+
+handle_event({complete,Regex,Ref,Count},State,Data=#data{regexs=Regexs,refs=Refs})->
+    io:format("handle_global event for fsm...~n",[]),
+    {Regex,OldCount}=lists:keyfind(Regex,1,Regexs),
+    NewRegexs=lists:keyreplace(Regex,1,Regexs,{Regex,OldCount+Count}),
+    NewRefs = lists:delete(Ref,Refs),
+    NewData= Data#data{regexs=NewRegexs,refs=NewRefs},
+    case State of
+        listening->
+            listening(done,NewData);
+        dispatching ->
+            {nextstate,dispatching, NewData}
+    end
+        .
+handle_sync_event(Msg, _From, StateName, StateData)->
+    io:format("Unexpected  sync Msg:~p~n",[Msg]),
+    {nextstate,StateName,StateData}
+        .
+
+terminate(_Reason, _StateName, _StateData)->
+    ok .
+%% interface API
 complete (Pid,Regex,Ref,Count)->
     gen_fsm:send_all_state_event(Pid,{complete,Regex,Ref,Count})
-    .
+        .
+%% private fun
 valid_regexp(Re) ->
     try re:run("", Re) of
         _ -> true
