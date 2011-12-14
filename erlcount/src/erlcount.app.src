@@ -10,7 +10,14 @@
   %%所以  ppool 模块内要有start/2 stop/1
   %% start/2 返回{ok, Pid} or {ok, Pid, SomeState}
   %%stop/1  takes the state returned by start/2 as an argument
-  {mod,{erlcount,[]}}
+  {mod,{erlcount,[]}},
+  {env,
+   [
+    {directory , "."},
+    {regex,["if","case"]},
+    {max_files,10}
+   ]
+  }
  ]
 }
 .
