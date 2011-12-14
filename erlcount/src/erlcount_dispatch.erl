@@ -34,25 +34,25 @@ init([])->
 %% init之后处于 dispatching 状态 ，
 handle_info({start,Dir},State,Data)->
     gen_fsm:send_event(self(),erlcount_lib:find_dir(Dir)), %发送一个{continue,File,Con} ,或done信息.
-    {nextstate,State,Data};
+    {next_state,State,Data};
 handle_info(Msg,State,Data) ->
     io:format("Unexcepted Msg:~p~n",[Msg]),
-    {nextstate,State,Data} .
+    {next_state,State,Data} .
 
 dispatching({continue,File,ContinuationFun },Data=#data{regexs=Regexps,refs=Refs})->
     io:format("dispatching...~n",[]),
     F = fun ({Re,_Count},NewRefs)->
                 Ref = make_ref(),
-                ppool:async(?PoolName,[self(),File,Ref,Re]),
+                ppool:async_queue(?PoolName,[self(),File,Ref,Re]),
                 [Ref|NewRefs]
         end ,
     NewRefs= lists:foldl(F,Refs,Regexps),
     %%CPS 式编程，不同于依靠函数的返回值，它会把函数作为参数传过来，以便随后 调用 而非返回一个值 后，让对方对这个值进行处理
     ContinuationFun(),                          %在目录中继续递归寻找一下个erl.文件。
-    {nextstate,dispatching,Data#data{refs=NewRefs}};
+    {next_state,dispatching,Data#data{refs=NewRefs}};
 dispatching(done,Data=#data{}) ->
     io:format("got 'done' message ,but maybe some process still handling files now ,so now changed to listening state...~n",[]),
-    %% {nextstate,listening,Data}
+    %% {next_state,listening,Data}
     listening(done,Data)
 .
 %% 当refs 为空时，才说明 所有文件都已经处理完毕，
@@ -62,7 +62,7 @@ listening(done,_Data=#data{refs=[],regexs=Regexs})->
     {stop,normal ,done};
 listening(done,Data=#data{})->
     io:format("listening...~n",[]),
-    {nextstate,listening,Data}
+    {next_state,listening,Data}
         .
 
 handle_event({complete,Regex,Ref,Count},State,Data=#data{regexs=Regexs,refs=Refs})->
@@ -75,12 +75,12 @@ handle_event({complete,Regex,Ref,Count},State,Data=#data{regexs=Regexs,refs=Refs
         listening->
             listening(done,NewData);
         dispatching ->
-            {nextstate,dispatching, NewData}
+            {next_state,dispatching, NewData}
     end
         .
 handle_sync_event(Msg, _From, StateName, StateData)->
     io:format("Unexpected  sync Msg:~p~n",[Msg]),
-    {nextstate,StateName,StateData}
+    {next_state,StateName,StateData}
         .
 
 terminate(_Reason, _StateName, _StateData)->
