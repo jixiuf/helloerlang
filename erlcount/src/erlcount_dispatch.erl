@@ -49,7 +49,7 @@ dispatching({continue,File,ContinuationFun },Data=#data{regexs=Regexps,refs=Refs
         end ,
     NewRefs= lists:foldl(F,Refs,Regexps),
     %%CPS 式编程，不同于依靠函数的返回值，它会把函数作为参数传过来，以便随后 调用 而非返回一个值 后，让对方对这个值进行处理
-    ContinuationFun(),                          %在目录中继续递归寻找一下个erl.文件。
+    gen_fsm:send_event(self(), ContinuationFun()),                          %在目录中继续递归寻找一下个erl.文件。
     {next_state,dispatching,Data#data{refs=NewRefs}};
 dispatching(done,Data=#data{}) ->
     io:format("got 'done' message ,but maybe some process still handling files now ,so now changed to listening state...~n",[]),
@@ -67,7 +67,7 @@ listening(done,Data=#data{})->
         .
 
 handle_event({complete,Regex,Ref,Count},State,Data=#data{regexs=Regexs,refs=Refs})->
-    io:format("handle_global event for fsm...~n",[]),
+    io:format("handle_global event for dispatching fsm ,the state now is ~p...~n",[State]),
     {Regex,OldCount}=lists:keyfind(Regex,1,Regexs),
     NewRegexs=lists:keyreplace(Regex,1,Regexs,{Regex,OldCount+Count}),
     NewRefs = lists:delete(Ref,Refs),
