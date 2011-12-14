@@ -21,8 +21,12 @@ handle_cast(Msg,State)->
     {noreply, State} .
 
 handle_info(start,State=#state{file=File,regexp=Re,dispatchingpid=DispatchingPid,ref=Ref}) ->
-
-    ;
+    {ok,Bin}=file:read_file(File),
+    Regexp_count_in_file=regexp_count(Re,Bin),
+    file:close(File),
+    erlcount_dispatch:complete (DispatchingPid,Re,Ref,Regexp_count_in_file),
+    {stop,normal,State}
+        ;
 handle_info(Info,State)->
     {noreply, State}.
 
