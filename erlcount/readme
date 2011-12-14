@@ -1,4 +1,9 @@
+首先分别编译erlcount ,及ppool 模块。        
 erl -make
-erl -pa ebin/    
 make:all([load]).
-;; application:start(ppool).
+
+;; 跳到erlcount 及ppool 的上层目录 ，运行以下三条命令。
+erl -env ERL_LIBS .
+ application:start(ppool).
+ application:start(erlcount).
+ 
