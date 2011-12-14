@@ -21,7 +21,7 @@ init([])->
     {ok,MaxFiles}= application:get_env(max_files),
     %% 启动一个pool ,ppool,是另一个例程 ，不是系统自带的
     io:format("starting a erlcount instance in ppool.... ~n",[]),
-    ppool:start_pool(?PoolName,MaxFiles,erlcount_counter,start_link,[]),
+    ppool:start_pool(?PoolName,MaxFiles,{erlcount_counter,start_link,[]}),
     io:format("started a erlcount instance in ppool.... ~n",[]),
     case lists:all( fun valid_regexp/1, Regexps) of
         true->                                  %如果所有的正则表达示都合法
