@@ -1,5 +1,9 @@
 -module(erlcount_dispatch).
 -behaviour(gen_fsm).
+-export([start_link/0,init/1]).
+-export([handle_info/3,dispatching/2,listening/2,handle_event/3 ,handle_sync_event/4,terminate/3]).
+-export([complete/4]).
+
 
 -define(PoolName,erlcount).                     %erlcount 模块使用的pool的名字
 %% regexs 格式为[{regex,count},...]
@@ -34,10 +38,10 @@ handle_info(Msg,State,Data) ->
 
 dispatching({continue,File,ContinuationFun },Data=#data{regexs=Regexps,refs=Refs})->
     io:format("dispatching...~n",[]),
-    F = fun (Refs,Re)->
+    F = fun ({Re,_Count},NewRefs)->
                 Ref = make_ref(),
                 ppool:async(?PoolName,[self(),File,Ref,Re]),
-                [Ref|Refs]
+                [Ref|NewRefs]
         end ,
     NewRefs= lists:foldl(F,Refs,Regexps),
     %%CPS 式编程，不同于依靠函数的返回值，它会把函数作为参数传过来，以便随后 调用 而非返回一个值 后，让对方对这个值进行处理
@@ -49,7 +53,7 @@ dispatching(done,Data=#data{}) ->
     listening(done,Data)
 .
 %% 当refs 为空时，才说明 所有文件都已经处理完毕，
-listening(done,Data=#data{refs=[],regexs=Regexs})->
+listening(done,_Data=#data{refs=[],regexs=Regexs})->
     io:format("listening...~n",[]),
     [io:format("~p:~p,~n",[Re,Count])|| [Re,Count] <- Regexs],
     {stop,normal ,done};
