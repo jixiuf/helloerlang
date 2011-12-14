@@ -1,6 +1,6 @@
 -module(erlcount_lib).
 -include_lib("kernel/include/file.hrl").
--export([find_dir/1]).
+ -export([find_dir/1]).
 
 %% 返回值有二:
 %%{continue,File,fun() -> dequeue_and_run(Queue)end }
@@ -11,7 +11,7 @@ find_dir(Directory)->
         .
 %% private method  , use find_dir/1 instead.
 find_dir(Directory,Queue)->
-    io:format("find_dir/2 is called~n",[]),
+    io:format("find_dir/2 is called for ~p~n",[Directory]),
     {ok,F=#file_info{}}=file:read_file_info(Directory),
     case F#file_info.type of
         directory->
@@ -35,12 +35,15 @@ handle_dir(Directory,Queue)->
 
 %% 将所有Files 入队
 enqueue_many(Directory,FileNames,Queue)->
-    io:format("enqueue many...~n",[]),
+    io:format("enqueue many files in ~p...~n",[Directory]),
     F = fun (FileName,Q)->
                 FullPath=filename:join(Directory,FileName),
+                %% io:format("add ~p in ~n",[FullPath]) ,
                 queue:in(FullPath,Q)
         end ,
-    lists:foldl(F,Queue,FileNames)
+    L=    lists:foldl(F,Queue,FileNames),
+    io:format("~p~n",[ queue:len(L)]),
+    L
         .
 
 handle_regular_file(File,Queue)->
@@ -60,6 +63,7 @@ dequeue_and_run(Queue)->
         {empty,_}->
             done;
         {{value,File},NewQueue} ->
+            io:format("pop item ~p~n",[File]),
             find_dir(File,NewQueue)             %递归调用
     end
 
