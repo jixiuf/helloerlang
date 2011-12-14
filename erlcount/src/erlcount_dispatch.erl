@@ -43,6 +43,7 @@ dispatching({continue,File,ContinuationFun },Data=#data{regexs=Regexps,refs=Refs
     io:format("dispatching...~n",[]),
     F = fun ({Re,_Count},NewRefs)->
                 Ref = make_ref(),
+                io:format("function in dispatching() is called ,the reg is :~p~n",[Re]),
                 ppool:async_queue(?PoolName,[self(),File,Ref,Re]),
                 [Ref|NewRefs]
         end ,
