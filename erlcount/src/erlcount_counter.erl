@@ -1,4 +1,7 @@
 -module(erlcount_counter).
+-export([start_link/4,init/4]).
+-export([handle_call/3,handle_cast/2,handle_info/2,terminate/2,code_change/3]).
+
 -record(state,{dispatchingpid,file,ref,regexp}).
 
 
@@ -17,7 +20,7 @@ handle_call(_Request,_From,State)->
     {noreply, State}
         .
 
-handle_cast(Msg,State)->
+handle_cast(_Msg,State)->
     {noreply, State} .
 
 handle_info(start,State=#state{file=File,regexp=Re,dispatchingpid=DispatchingPid,ref=Ref}) ->
@@ -27,15 +30,15 @@ handle_info(start,State=#state{file=File,regexp=Re,dispatchingpid=DispatchingPid
     erlcount_dispatch:complete (DispatchingPid,Re,Ref,Regexp_count_in_file),
     {stop,normal,State}
         ;
-handle_info(Info,State)->
+handle_info(_Info,State)->
     {noreply, State}.
 
-terminate(Reason,State=#state{regexp=Re,file=File})->
-    io:format("erlcount_counter handleing regexp:~p in file:~p done!~ ~n",[Re,File]),
+terminate(_Reason,_State=#state{regexp=Re,file=File})->
+    io:format("erlcount_counter handleing regexp:~p in file:~p done! ~n",[Re,File]),
     ok
         .
 
-code_change(Previous_Version,State,Extra)->
+code_change(_Previous_Version,State,_Extra)->
     {ok,State}
         .
 
