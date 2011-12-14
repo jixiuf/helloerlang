@@ -1,7 +1,7 @@
 -module(erlcount_dispatch).
 -behaviour(gen_fsm).
 -export([start_link/0,init/1]).
--export([handle_info/3,dispatching/2,listening/2,handle_event/3 ,handle_sync_event/4,terminate/3]).
+-export([handle_info/3,dispatching/2,listening/2,handle_event/3 ,handle_sync_event/4,terminate/3,code_change/4]).
 -export([complete/4]).
 
 
@@ -82,8 +82,11 @@ handle_sync_event(Msg, _From, StateName, StateData)->
 
 terminate(_Reason, _StateName, _StateData)->
     ok .
+code_change(_,_,_,_)->
+    io:format("code_changed.~n",[]),
+    ok.
 %% interface API
-complete (Pid,Regex,Ref,Count)->
+complete(Pid,Regex,Ref,Count)->
     gen_fsm:send_all_state_event(Pid,{complete,Regex,Ref,Count})
         .
 %% private fun
