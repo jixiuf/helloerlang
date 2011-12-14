@@ -1,5 +1,7 @@
 -module(erlcount_lib).
 -include_lib("kernel/include/file.hrl").
+-export([find_dir/1]).
+
 %% 返回值有二:
 %%{continue,File,fun() -> dequeue_and_run(Queue)end }
 %% done
