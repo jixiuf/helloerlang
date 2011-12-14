@@ -58,11 +58,11 @@ dispatching(done,Data=#data{}) ->
 .
 %% 当refs 为空时，才说明 所有文件都已经处理完毕，
 listening(done,_Data=#data{refs=[],regexs=Regexs})->
-    io:format("listening...~n",[]),
+    io:format("listening_done...~n",[]),
     [io:format("~p:~p,~n",[Re,Count])|| [Re,Count] <- Regexs],
     {stop,normal ,done};
-listening(done,Data=#data{})->
-    io:format("listening...~n",[]),
+listening(done,Data=#data{refs=Refs})->
+    io:format("listening...,still ~p process running~n",[Refs]),
     {next_state,listening,Data}
         .
 
