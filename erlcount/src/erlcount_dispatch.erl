@@ -59,7 +59,13 @@ dispatching(done,Data=#data{}) ->
 %% 当refs 为空时，才说明 所有文件都已经处理完毕，
 listening(done,_Data=#data{refs=[],regexs=Regexs})->
     io:format("listening_done...~n",[]),
-    [io:format("~p:~p,~n",[Re,Count])|| [Re,Count] <- Regexs],
+    F= fun({Re,Count})->
+               io:format("the final count of regexp ~p is ~p~n",[Re,Count])
+               end,
+    io:format("------------------------------------------~n",[]),
+    lists:map(F,Regexs),
+    io:format("------------------------------------------~n",[]),
+    %% [io:format("~p:~p,~n",[Re,Count])|| [Re,Count] <- Regexs],
     {stop,normal ,done};
 listening(done,Data=#data{refs=Refs})->
     io:format("listening...,still ~p process running~n",[Refs]),
@@ -70,6 +76,7 @@ handle_event({complete,Regex,Ref,Count},State,Data=#data{regexs=Regexs,refs=Refs
     io:format("handle_global event for dispatching fsm ,the state now is ~p...~n",[State]),
     {Regex,OldCount}=lists:keyfind(Regex,1,Regexs),
     NewRegexs=lists:keyreplace(Regex,1,Regexs,{Regex,OldCount+Count}),
+    io:format("~p:~p~n",[Regex,OldCount+Count]) ,
     NewRefs = lists:delete(Ref,Refs),
     NewData= Data#data{regexs=NewRegexs,refs=NewRefs},
     case State of
