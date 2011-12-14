@@ -1,6 +1,7 @@
-首先分别编译erlcount ,及ppool 模块。        
+首先分别编译erlcount ,及ppool 模块。
+cd module_name ,
+./compile.sh
 erl -make
-make:all([load]).
 
 ;; 跳到erlcount 及ppool 的上层目录 ，运行以下三条命令。
 erl -env ERL_LIBS .
