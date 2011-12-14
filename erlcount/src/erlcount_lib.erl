@@ -41,9 +41,7 @@ enqueue_many(Directory,FileNames,Queue)->
                 %% io:format("add ~p in ~n",[FullPath]) ,
                 queue:in(FullPath,Q)
         end ,
-    L=    lists:foldl(F,Queue,FileNames),
-    io:format("~p~n",[ queue:len(L)]),
-    L
+    lists:foldl(F,Queue,FileNames)
         .
 
 handle_regular_file(File,Queue)->
@@ -53,7 +51,7 @@ handle_regular_file(File,Queue)->
             {continue,File,fun() -> dequeue_and_run(Queue)end };
         _OtherExt ->
             dequeue_and_run(Queue)
-        end
+    end
 
         .
 %% pop an item and run it
