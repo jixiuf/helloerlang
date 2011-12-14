@@ -76,7 +76,6 @@ handle_event({complete,Regex,Ref,Count},State,Data=#data{regexs=Regexs,refs=Refs
     io:format("handle_global event for dispatching fsm ,the state now is ~p...~n",[State]),
     {Regex,OldCount}=lists:keyfind(Regex,1,Regexs),
     NewRegexs=lists:keyreplace(Regex,1,Regexs,{Regex,OldCount+Count}),
-    io:format("~p:~p~n",[Regex,OldCount+Count]) ,
     NewRefs = lists:delete(Ref,Refs),
     NewData= Data#data{regexs=NewRegexs,refs=NewRefs},
     case State of
