@@ -21,5 +21,7 @@ ppool了
     erl -AppName key1 value1 key2 value2
     如 :
     erl -erlcount directory '.' regex  '["if","case"]' max_files
+     application:start(ppool).
+      application:start(erlcount).
     
     
