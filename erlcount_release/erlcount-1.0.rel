@@ -1,0 +1,14 @@
+{release,
+ {"erlcount" ,"1.0.0"},
+ {erts, "5.8.5"},
+ [ {kernel ,"2.14.5"},
+   {stdlib,"1.17.5"},
+   {ppool,"1.1.0",permanent},
+   {erlcount,"1.0.0",transient}
+ ]
+}.                    %最后一个点不能少。
+%% 相应 的版本号可以通过 erl 命令后，会显示当前 Eshell V5.8.5  (abort with ^G)
+%% application:which_applications(). 结果是：
+%% [{stdlib,"ERTS  CXC 138 10","1.17.5"},
+%%  {kernel,"ERTS  CXC 138 10","2.14.5"}]
+%% systools:make_script("erlcount-1.0",[local]). 通过此文件生成启动脚本boot
