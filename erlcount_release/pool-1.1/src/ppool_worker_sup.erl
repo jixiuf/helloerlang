@@ -4,12 +4,12 @@
 -export([start_link/1]).
 
 start_link(MFA={_,_,_})->
-    io:format("ppool_worker_sup is starting ...~n",[]),
+    ppool_log:debug("ppool_worker_sup is starting ...~n",[]),
     supervisor:start_link({local,pool_worker_super},?MODULE,MFA)
 .
 
 init({M,F,A})->
-    io:format("ppool_worker_sup initing...~n",[]),
+    ppool_log:debug("ppool_worker_sup initing...~n",[]),
     MaxTime=3600,
     MaxRestart=1,
     {ok,{{simple_one_for_one,MaxRestart,MaxTime},

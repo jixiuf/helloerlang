@@ -32,20 +32,20 @@
 
 %% ppool_serv 由 ppool_super启动，故ParentPid 为 ppool_super
 start_link(PoolName,PoolSize,MFA,ParentPid)                                                          ->
-    io:format("ppool_serv is starting ...   ",[]),
-    io:format("a pool named: ~p is adding with size ~p... ~n",[PoolName,PoolSize]),
+    ppool_log:debug("ppool_serv is starting ...   ",[]),
+    ppool_log:debug("a pool named: ~p is adding with size ~p... ~n",[PoolName,PoolSize]),
     gen_server:start_link({local,PoolName},?MODULE,[PoolSize,MFA,ParentPid],[])
         .
 
 %% ppool_serv 由 ppool_super启动，故ParentPid 为 ppool_super
 start(PoolName,PoolSize,MFA,ParentPid)                                                               ->
-    io:format("ppool_serv is starting aaa ...~n",[]),
+    ppool_log:debug("ppool_serv is starting aaa ...~n",[]),
     gen_server:start({local,PoolName},?MODULE,[PoolSize,MFA,ParentPid],[])
         .
 
 %% ppool_serv 由 ppool_super启动，故ParentPid 为 ppool_super
 init([PoolSize,MFA,ParentPid])                                                                         ->
-    io:format("ppool_serv initing...~n",[]),
+    ppool_log:debug("ppool_serv initing...~n",[]),
     %%给自已发一条消息，然后接收到消息后用 supervisor:start_child(Super,Args), 启动ppool_worker_sup
     %%不在此处直接写supervisor:start_child(Super,Args) ,是因为,此函数是init() ,即运行到此行代码时，
     %% init() 函数还未结束 ，即还未初始化完成 ，此节点的父节点，即Super会一直等待此节点初始化结束 。
@@ -56,7 +56,7 @@ init([PoolSize,MFA,ParentPid])                                                  
         .
 %% run ,如果还有空间，直接run. 若无，则返回一个noalloc 的reply
 handle_call({run ,Args}, _From, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) when PoolSize>0 ->
-    io:format("runing ... ~n",[]),
+    ppool_log:debug("runing ... ~n",[]),
     {ok,Pid}= supervisor:start_child(Super,Args),%此处的Super 是ppool_worker_sup模块
     Ref = erlang:monitor(process,Pid),
     {reply,{ok,Pid},State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
@@ -66,7 +66,7 @@ handle_call({run ,_Args}, _From, State=#state{poolsize=PoolSize}) when PoolSize=
 
 %% sync  ,如果还有空间，直接run. 若无 ,进信息加入队列，等待空闲时run
 handle_call({sync ,Args}, _From, State=#state{poolsize=PoolSize,sup=Super,refs=Refs}) when PoolSize>0->
-    io:format("runing ... ~n",[]),
+    ppool_log:debug("runing ... ~n",[]),
     {ok,Pid}= supervisor:start_child(Super,Args), %此处的Super 是ppool_worker_sup模块
     Ref = erlang:monitor(process,Pid),
     {reply,{ok,Pid},State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
@@ -74,75 +74,75 @@ handle_call({sync ,Args}, From, State=#state{poolsize=PoolSize,queue=Queue}) whe
     {noreply,State#state{queue= queue:in({From,Args},Queue)}};
 
 handle_call(stop,_From,State) ->
-    io:format("stoping...~n",[]),
+    ppool_log:debug("stoping...~n",[]),
     {stop,normal,ok,State};
 handle_call(_Msg,_From,State) ->
     {noreply,State}
         .
 
 handle_cast({async,Args},State=#state{poolsize=PoolSize,sup=Super,refs=Refs})when PoolSize>0->
-    io:format("async queue~n",[]),
+    ppool_log:debug("async queue~n",[]),
     {ok,Pid}= supervisor:start_child(Super,Args),%此处的Super 是ppool_worker_sup模块
     Ref = erlang:monitor(process,Pid),
     {noreply,State#state{poolsize=PoolSize-1 ,refs= gb_sets:add(Ref,Refs) }};
 handle_cast({async,Args},State=#state{poolsize=PoolSize,queue=Queue})when PoolSize =< 0 ->
-    io:format("up to queue size ,add to queue~n",[]),
+    ppool_log:debug("up to queue size ,add to queue~n",[]),
     {noreply,State#state{queue= queue:in(Args,Queue)}};
 handle_cast(Msg,State) ->
-    io:format("other cast info ~p~n",[Msg]),
+    ppool_log:debug("other cast info ~p~n",[Msg]),
     {noreply,State}
         .
 
 %% 启动与此ppool_serv相关联的的ppool_worker_sup,将进pid 存到#state.sup 中。
 handle_info({start_worker_sup,ParentPid,MFA},State=#state{})->
-    io:format("start_worker_sup starting ppool_worker_sup...  ,~n",[]),
+    ppool_log:debug("start_worker_sup starting ppool_worker_sup...  ,~n",[]),
     {ok,Pid}= supervisor:start_child(ParentPid,?SPEC(MFA)),
     {noreply,State#state{sup=Pid}};
 handle_info({'DOWN',Ref,process,_Pid,_Reason}, State=#state{refs=Refs}) ->
     case gb_sets:is_member(Ref,Refs) of
         true->
-            io:format("a process down ,~n",[]),
+            ppool_log:debug("a process down ,~n",[]),
             handle_down_work(Ref,State);
         false->
-            io:format("other processes I don't care .~n",[]),
+            ppool_log:debug("other processes I don't care .~n",[]),
             {noreply,State}
     end
         ;
 handle_info(Msg,State) ->
-    io:format("Unexpected Msg:~p~n",[Msg]),
+    ppool_log:debug("Unexpected Msg:~p~n",[Msg]),
     {noreply,State}
         .
 
 terminate(normal, _State) ->
-    io:format("ppool_serv stopped!~n",[]),
+    ppool_log:debug("ppool_serv stopped!~n",[]),
     ok;
 terminate(Reason, _State) ->
-    io:format("ppool_serv stopped with reason :~p!~n",[Reason]),
+    ppool_log:debug("ppool_serv stopped with reason :~p!~n",[Reason]),
     ok.
 %% 当一个池中的进程down ,检查队列中有没有进程 ，有则启动之
 handle_down_work(Ref,State=#state{poolsize=PoolSize,sup=Super,refs=Refs})->
-    io:format("handing down work~n",[]),
+    ppool_log:debug("handing down work~n",[]),
     case queue:out(State#state.queue) of
         {{value,{From,Args}},NewQueue}->
-            io:format("a sync process will running~n",[]),
+            ppool_log:debug("a sync process will running~n",[]),
             {ok,Pid}= supervisor:start_child(Super,Args),
             NewRef = erlang:monitor(process,Pid),
             NewRefs =gb_sets:insert(NewRef, gb_sets:delete(Ref,Refs)),
             gen_server:reply(From, {ok,Pid}),
-            io:format("handing down work done ~n~n~n",[]),
+            ppool_log:debug("handing down work done ~n~n~n",[]),
             {noreply,State#state{ refs= NewRefs,queue=NewQueue }}
                 ;
         {{value,Args},NewQueue} ->
-            io:format("a async process will running~n",[]),
+            ppool_log:debug("a async process will running~n",[]),
             {ok,Pid}= supervisor:start_child(Super,Args),
             NewRef = erlang:monitor(process,Pid),
             NewRefs =gb_sets:insert(NewRef, gb_sets:delete(Ref,Refs)),
-            io:format("handing down work done ~n~n~n",[]),
+            ppool_log:debug("handing down work done ~n~n~n",[]),
             {noreply,State#state{ refs= NewRefs,queue=NewQueue }}
                 ;
         {empty,_} ->
-            io:format("no process in queue~n",[]) ,
-            io:format("handing down work done ~n~n~n",[]),
+            ppool_log:debug("no process in queue~n",[]) ,
+            ppool_log:debug("handing down work done ~n~n~n",[]),
             {noreply,State#state{ poolsize=PoolSize+1 ,refs=gb_sets:delete(Ref,Refs)}}
     end
         .

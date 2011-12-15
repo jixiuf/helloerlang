@@ -11,7 +11,12 @@
   %%所以  ppool 模块内要有start/2 stop/1
   %% start/2 返回{ok, Pid} or {ok, Pid, SomeState}
   %%stop/1  takes the state returned by start/2 as an argument
-  {mod,{ppool,[]}}
+  {mod,{ppool,[]}},
+  {env,
+   [
+    {loglevel,info}                           %支持debug ,info 两个值，详见ppool_log.erl
+   ]
+  }
  ]
 }
 .
