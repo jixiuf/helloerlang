@@ -16,7 +16,8 @@
    [
     {directory , "."},
     {regex,["if","case"]},
-    {max_files,10}
+    {max_files,10},
+    {loglevel,info}                             %可取info 及debug 两值
    ]
   }
  ]
