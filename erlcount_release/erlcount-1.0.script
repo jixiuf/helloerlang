@@ -1,4 +1,4 @@
-%% script generated at {2011,12,15} {10,51,15}
+%% script generated at {2011,12,15} {13,10,27}
 {script,
     {"erlcount","1.0.0"},
     [{preLoaded,
@@ -129,7 +129,7 @@
                    {registered,[ppool]},
                    {applications,[stdlib,kernel]},
                    {included_applications,[]},
-                   {env,[]},
+                   {env,[{loglevel,info}]},
                    {start_phases,undefined},
                    {maxT,infinity},
                    {maxP,infinity},
@@ -146,7 +146,10 @@
                    {applications,[stdlib,kernel,ppool]},
                    {included_applications,[]},
                    {env,
-                       [{directory,"."},{regex,["if","case"]},{max_files,10}]},
+                       [{directory,"."},
+                        {regex,["if","case"]},
+                        {max_files,10},
+                        {loglevel,info}]},
                    {start_phases,undefined},
                    {maxT,infinity},
                    {maxP,infinity},
