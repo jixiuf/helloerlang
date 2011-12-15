@@ -7,8 +7,8 @@ start_link(Delay,Msg)->
         .
 
 init([Delay,Msg])->
-    io:format("a worker is initing...~n",[]),
-    io:format("after ~p seconds ,this worker will die ,the message will be: ~p.~n",[Delay,Msg]),
+    ppool_log:debug("a worker is initing...~n",[]),
+    ppool_log:debug("after ~p seconds ,this worker will die ,the message will be: ~p.~n",[Delay,Msg]),
     Pid = spawn(?MODULE,action,[Delay,Msg]),
     erlang:monitor(process,Pid),
     {ok,{Delay,Msg}}
@@ -26,6 +26,6 @@ terminate(_M,_S)->
 
 action(Delay,Msg)->
     timer:sleep(Delay*1000),
-    io:format("ok,now time reach of ~p seconds with message ~p~n",[Delay,Msg])
+    ppool_log:debug("ok,now time reach of ~p seconds with message ~p~n",[Delay,Msg])
 
         .
