@@ -20,3 +20,4 @@ systools:make_tar("erlcount-1.0" ,[{erts, "d:/usr/erl5.8.5/"}]).
 通过 ./erts-5.8.8/bin/erl -boot releases/1.0.0/start可以执行.
 可以通过以下方式向 erlcount 传递 directory 参数。
 ./erts-5.8.4/bin/erl -boot releases/1.0.0/start -erlcount directory '"/home/ferd/code/otp_src_R14B03/"' -noshell
+注意单双引号
