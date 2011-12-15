@@ -7,4 +7,17 @@ erl -make
 erl -env ERL_LIBS .
  application:start(ppool).
  application:start(erlcount).
- 
+其实可以把ppool include 到erlcount 中，但是，不推荐，因为ppool 只独属于erlcount 了，其他app没法用到
+ppool了 
+
+ 知识点 CPS式编程方式 
+    %%CPS 式编程，不同于依靠函数的返回值，它会把函数作为参数传过来，以便随后 调用 而非返回一个值 后，让对方对这个值进行处理
+    
+    src/ 目录 下的erlcount.app.src 文件需要copy and rename 到ebin/elcount.app
+    文件中有一个env 键值对， 基本相当于配置文件，程序相关的属性可以在这里进行配置。
+    可以通过这种方式来覆盖appname.app 中env 变量的值。
+    erl -AppName key1 value1 key2 value2
+    如 :
+    erl -erlcount directory '.' regex  '["if","case"]' max_files
+    
+    
