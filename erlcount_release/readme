@@ -1,0 +1,7 @@
+cd erlcount_release/        
+erl -env ERL_LIBS  .         
+%% systools:make_script("erlcount-1.0",[local]). 通过 erlcount-1.0.rel  生成启动脚本boot
+   生成的脚本名称如
+   erlcount-1.0.script
+   erlcount-1.0.boot
+   
