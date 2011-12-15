@@ -6,12 +6,12 @@
 
 
 start_link(DispatchingPid,File,Ref,Re)->
-    io:format("erlcount_counter starting... for ~p in ~p~n",[Re,File]),
+    erlcount_log:debug("erlcount_counter starting... for ~p in ~p~n",[Re,File]),
     gen_server:start_link(?MODULE,[DispatchingPid,File,Ref,Re],[])
     .
 
 init([DispatchingPid,File,Ref,Re])->
-    io:format("erlcount_counter initing... for ~p in ~p~n",[Re,File]),
+    erlcount_log:debug("erlcount_counter initing... for ~p in ~p~n",[Re,File]),
     self()!start,
     {ok,#state{dispatchingpid=DispatchingPid,file=File,ref=Ref,regexp=Re}}
         .
@@ -34,7 +34,7 @@ handle_info(_Info,State)->
     {noreply, State}.
 
 terminate(_Reason,_State=#state{regexp=Re,file=File})->
-    io:format("erlcount_counter handleing regexp:~p in file:~p done! ~n",[Re,File]),
+    erlcount_log:debug("erlcount_counter handleing regexp:~p in file:~p done! ~n",[Re,File]),
     ok
         .
 
