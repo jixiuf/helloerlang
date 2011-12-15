@@ -5,7 +5,7 @@
 -export([start_link/0]).
 
 start_link()->
-    ppool_log:info("ppool is starting...",[]),
+    ppool_log:info("ppool is starting...~n",[]),
     ppool_log:debug("ppool_supersuper is starting ...~n",[]),
     supervisor:start_link({local,ppool},?MODULE,[])
 .
