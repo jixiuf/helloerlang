@@ -91,7 +91,8 @@ handle_sync_event(Msg, _From, StateName, StateData)->
         .
 
 terminate(_Reason, _StateName, _StateData)->
-    ok .
+    init:stop()
+     .
 code_change(_,_,_,_)->
     io:format("code_changed.~n",[]),
     ok.
