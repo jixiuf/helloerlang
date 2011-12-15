@@ -20,7 +20,7 @@ init([])->
     {ok,Regexps}= application:get_env(regex),
     {ok,MaxFiles}= application:get_env(max_files),
     %% 启动一个pool ,ppool,是另一个例程 ，不是系统自带的
-    erlcount_log:info("in ~p with max process in ppool:~p",[Dir,MaxFiles]),
+    erlcount_log:info("in ~p with max process in ppool:~p~n",[Dir,MaxFiles]),
     erlcount_log:debug("starting a erlcount instance in ppool.... ~n",[]),
     ppool:start_pool(?PoolName,MaxFiles,{erlcount_counter,start_link,[]}),
     erlcount_log:debug("started a erlcount instance in ppool.... ~n",[]),
