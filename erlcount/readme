@@ -1,3 +1,5 @@
+统计 某目录下 erl 文件中某些正则表则式的个数,正则表达式在erlcount.app文件 中指定
+
 首先分别编译erlcount ,及ppool 模块。
 cd module_name ,
 ./compile.sh
