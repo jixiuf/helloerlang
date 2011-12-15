@@ -2,6 +2,7 @@
 {application ,ppool,
  [{vsn, "1.1.0"},                                                             %版本号
   {description, "a simple pool "},
+  {applications,[stdlib,kernel]},
   {modules,[ppool,ppool_serv,ppool_super,ppool_supersuper,ppool_worker_sup]}, %本 application内有哪些 module
   {registered,[ppool]},                                                        %本 application内有哪些 register
   %%{mod, {CallbackMod, Args}} 回调module, application从何处启动，信息在此给出
