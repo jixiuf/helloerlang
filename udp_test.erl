@@ -8,3 +8,14 @@
 %% {ok,Client}=gen_udp:open(8791).
 %% 通过Client 与远程127.0.0.1:8789  通信，发送一条信息 "hello"
 %% gen_udp:send(Client,{127,0,0,1},8789,"helo").
+
+
+%% tcp
+%%% server
+%% {ok, ListenSocket} = gen_tcp:listen(8091, [{active, true}, binary]).
+%% {ok, AcceptSocket} = gen_tcp:accept(ListenSocket).
+%% {ok, AcceptSocket} = gen_tcp:accept(ListenSocket, 2000).
+
+%% client
+%% {ok, Socket} = gen_tcp:connect({127,0,0,1}, 8091, [binary, {active,true}]).
+%% gen_tcp:send(Socket, "Hey there first shell!").
