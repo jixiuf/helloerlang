@@ -1,4 +1,4 @@
--module(udptest).
+-module(udp_test).
 %% 在本机8780 open udp连接,并准备接收数据
 %% {ok,Server}=gen_udp:open(8789,[binary,{active,false}]).
 %% gen_udp:recv(Server,0).
