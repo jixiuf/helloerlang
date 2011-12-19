@@ -1,7 +1,33 @@
-* 用systool发布 
-cd erlcount_release/        
-erl -env ERL_LIBS  .
+* 用systool发布
+  #+begin_src sh
+  cd erlcount_release/        
+  erl -env ERL_LIBS  .
+  #+end_src
 
+erlcount-1.0.rel
+#+begin_src erlang
+{release,
+ {"erlcount" ,"1.0.0"},
+ {erts, "5.8.5"},
+ [ {kernel ,"2.14.5"},
+   {stdlib,"1.17.5"},
+   {ppool,"1.1.0",permanent},
+   {erlcount,"1.0.0",transient}
+ ]
+}.                    %最后一个点不能少。
+%% 相应 的版本号可以通过 erl 命令后，会显示当前 Eshell V5.8.5  (abort with ^G)
+%% application:which_applications(). 结果是：
+%% [{stdlib,"ERTS  CXC 138 10","1.17.5"},
+%%  {kernel,"ERTS  CXC 138 10","2.14.5"}]
+
+%% systools:make_script("erlcount-1.0",[local]). 通过此文件生成启动脚本boot
+
+%% the local option means that we want the release to be possible to run from
+%% anywhere, and not just the current install.
+
+%% systools:make_tar("erlcount-1.0" ,[{erts, "d:/usr/erl5.8.5/"}]).
+%% 生成tar
+#+end_src
 %% systools:make_script("erlcount-1.0",[local]). 通过 erlcount-1.0.rel  生成启动脚本boot
 %% the local option means that we want the release to be possible to run from
 %% anywhere, and not just the current install.
@@ -25,7 +51,7 @@ systools:make_tar("erlcount-1.0" ,[{erts, "d:/usr/erl5.8.5/"}]).
 
 * 用reltool发布
 ** 如何发布  
-  #+begin_src bash
+  #+begin_src sh
   cd release
   mkdir rel
   #+end_src
@@ -37,7 +63,7 @@ systools:make_tar("erlcount-1.0" ,[{erts, "d:/usr/erl5.8.5/"}]).
  应的内容
   #+end_src
 
-#+begin_src bash
+#+begin_src sh
 cd rel
 ./bin -noshell
 ./bin -noshell -erlcount directory ' "/home/jixiuf/documents/erlang/erlcount_release/"'
