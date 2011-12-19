@@ -24,8 +24,20 @@ systools:make_tar("erlcount-1.0" ,[{erts, "d:/usr/erl5.8.5/"}]).
 注意单双引号
 
 * 用reltool发布
+  #+begin_src shell
+  cd release
+  mkdir rel
+  #+end_src
   用到release/erlcount-1.0.config作为配置文件
+  #+begin_src erlang
  {ok, Conf} = file:consult("erlcount-1.0.config").
  {ok, Spec} = reltool:get_target_spec(Conf).
- reltool:eval_target_spec(Spec, code:root_dir(), "rel").
+ reltool:eval_target_spec(Spec, code:root_dir(), "rel"). % 在rel 目录内生成相
+ 应的内容
+  #+end_src
 
+#+begin_src shell
+cd rel
+./bin -noshell
+./bin -noshell -erlcount directory ' "/home/jixiuf/documents/erlang/erlcount_release/"'
+#+end_src
