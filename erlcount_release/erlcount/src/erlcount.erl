@@ -3,7 +3,7 @@
 
 get_timestamp() ->
     {Mega,Sec,Micro} = erlang:now(),
-    (Mega*1000000+Sec)*1000000+Micro.
+    ((Mega*1000000+Sec)*1000000+Micro)/1000.
 
 start(normal,_Args)->
     io:format("start time:~p~n",[get_timestamp()]),
