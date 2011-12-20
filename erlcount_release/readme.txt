@@ -65,8 +65,8 @@ systools:make_tar("erlcount-1.0" ,[{erts, "d:/usr/erl5.8.5/"}]).
 
 #+begin_src sh
 cd rel
-./bin -noshell
-./bin -noshell -erlcount directory ' "/home/jixiuf/documents/erlang/erlcount_release/"'
+./bin/erl -noshell
+./bin/erl -noshell -erlcount directory ' "/home/jixiuf/documents/erlang/erlcount_release/"'
 #+end_src
 
 ** reltool 使用的配置文件的格式
