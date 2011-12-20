@@ -7,7 +7,7 @@ start_link(S)->
 .
 init(S)->
     io:format("~p~n",[S]),
-    self()! (hello++S),
+    self()! ("hello"++S),
     {ok,S}
         .
 
@@ -21,10 +21,12 @@ handle_cast(_Request,State)->
     {noreply, State} .
 
 handle_info(Msg,State) ->
-    io:format("got msg:~p~n",[Msg]),
-    {noreply, State}.
+    io:format("got msg:~s~n",[Msg]),
+    {stop,normal,State}.
+    %% {noreply, State}.
 
 terminate(_Reason,_State)->
+    io:format("a worker die!~n",[]),
     ok .
 
 code_change(_Previous_Version,State,_Extra)->

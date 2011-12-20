@@ -4,5 +4,6 @@
 start_link()->
     io:format("starting app...~n",[]),
     {ok,Supid}=   sup:start_link() ,
-    supervisor:start_child(Supid,[he])
+    supervisor:start_child(Supid,[" world"]),
+    supervisor:start_child(Supid,[" world2"])
         .
