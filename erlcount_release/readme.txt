@@ -68,7 +68,10 @@ cd rel
 ./bin/erl -noshell
 ./bin/erl -noshell -erlcount directory ' "/home/jixiuf/documents/erlang/erlcount_release/"'
 ./bin/erl -noshell -erlcount directory ' "/usr/lib/erlang"' max_files '25'
+./bin/erl -noshell -erlcount directory ' "/usr/lib/erlang"' max_files '30'
 ./bin/erl -noshell -erlcount directory ' "/usr/lib/erlang"' max_files '30' 
+./bin/erl -noshell -erlcount directory ' "/usr/lib/erlang"' max_files '1' % 只用一个worker 
+ 
 #+end_src
 
 ** reltool 使用的配置文件的格式
