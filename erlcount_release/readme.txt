@@ -67,6 +67,8 @@ systools:make_tar("erlcount-1.0" ,[{erts, "d:/usr/erl5.8.5/"}]).
 cd rel
 ./bin/erl -noshell
 ./bin/erl -noshell -erlcount directory ' "/home/jixiuf/documents/erlang/erlcount_release/"'
+./bin/erl -noshell -erlcount directory ' "/usr/lib/erlang"' max_files '25'
+./bin/erl -noshell -erlcount directory ' "/usr/lib/erlang"' max_files '30' 
 #+end_src
 
 ** reltool 使用的配置文件的格式
