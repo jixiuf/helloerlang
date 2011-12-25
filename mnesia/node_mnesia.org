@@ -1,0 +1,322 @@
+# -*- coding:utf-8 -*-
+#+LANGUAGE:  zh
+#+TITLE:     分布式数据库mnesia小例
+#+AUTHOR:    纪秀峰
+#+EMAIL:     jixiuf@gmail.com
+#+DATE:     2011-12-25 日
+#+DESCRIPTION:分布式数据库mnesia小例
+#+KEYWORDS: mnesia node distribute erlang database
+#+OPTIONS:   H:2 num:nil toc:t \n:t @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil 
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+FILETAGS: @erlang @DB
+
+启动两个erl
+#+begin_src erlang
+erl -name emacs
+erl -name s
+或者 数据文件分别保存在相应的目录中
+erl -name emacs -mnesia dir '"/ldisc/scratch/emacs.company"'
+erl -name s -mnesia dir '"/ldisc/scratch/s.company"'
+#+end_src
+在其中一个erl 中
+#+begin_src erlang
+% create_schema/1 只能在 所有node 的mnesia都处于stop 状态时,才可以运行
+% 即如果其中一个节点上运行过mnesia:start() ,则此命令会失败
+mnesia:create_schema(['emacs@jf.org','s@jf.org']).
+#+end_src
+然后两节点分别运行
+#+begin_src erlang
+mensia:start().
+mnesia:info().
+#+end_src
+其结果如下，可见在各节点上都可以感知到对方的存在
+#+begin_src erlang
+(emacs@jf.org)5> mnesia:info().
+---> Processes holding locks <--- 
+---> Processes waiting for locks <--- 
+---> Participant transactions <--- 
+---> Coordinator transactions <---
+---> Uncertain transactions <--- 
+---> Active tables <--- 
+schema         : with 1        records occupying 421      words of mem
+===> System info in version "4.5", debug level = none <===
+opt_disc. Directory "/home/jixiuf/documents/erlang/mnesia/Mnesia.emacs@jf.org" is used.
+use fallback at restart = false
+running db nodes   = ['s@jf.org','emacs@jf.org']
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = []
+disc_copies        = [schema]
+disc_only_copies   = []
+[{'emacs@jf.org',disc_copies},{'s@jf.org',disc_copies}] = [schema]
+3 transactions committed, 0 aborted, 0 restarted, 2 logged to disc
+0 held locks, 0 in queue; 0 local transactions, 0 remote
+0 transactions waits for other nodes: []
+ok
+
+
+---> Processes holding locks <--- 
+---> Processes waiting for locks <--- 
+---> Participant transactions <--- 
+---> Coordinator transactions <---
+---> Uncertain transactions <--- 
+---> Active tables <--- 
+schema         : with 1        records occupying 421      words of mem
+===> System info in version "4.5", debug level = none <===
+opt_disc. Directory "/home/jixiuf/documents/erlang/mnesia/Mnesia.s@jf.org" is used.
+use fallback at restart = false
+running db nodes   = ['emacs@jf.org','s@jf.org']
+stopped db nodes   = [] 
+master node tables = []
+remote             = []
+ram_copies         = []
+disc_copies        = [schema]
+disc_only_copies   = []
+[{'emacs@jf.org',disc_copies},{'s@jf.org',disc_copies}] = [schema]
+2 transactions committed, 0 aborted, 0 restarted, 2 logged to disc
+0 held locks, 0 in queue; 0 local transactions, 0 remote
+0 transactions waits for other nodes: []
+ok
+#+end_src
+
+db.erl 代码如下，里面有建表语句,insert ,select 语句，测试用
+#+begin_src erlang
+-module(db).
+-export([create_table/0,insert/6,query_user/1,user_add_age/1,select_user_by_name/1,select_user_by_name2/1,select_all_user/0]).
+-export([qlc_query_user/1]).
+
+-record(user,{id,name,age}).
+-record(group,{id,name,desc}).
+-record(user_group_relation,{userid,groupid}).
+
+-include_lib("stdlib/include/qlc.hrl").
+%%调用之前，需 mnesia:create_schema([node()]).
+%% mnesia:start().
+%%% db:create_table()
+create_table()->
+    %% record_info(fields, RecordName)表达式由Erlang预处理程序处理为一个包含一个record的相同fields的list
+    mnesia:create_table(user,[{type,bag},{attributes,record_info(fields ,user)}]), %bag 允许重复数据
+    mnesia:create_table(group,[{type,set},{attributes,record_info(fields ,group)}]), %set 不允许重复数据
+    mnesia:create_table(user_group_relation,[{attributes,record_info(fields ,user_group_relation)}])
+        .
+%%% insert()
+ %% db:insert(1,"jixf",11,1,"group","group ").
+insert(UserId,UserName,UserAge,GroupId,GroupName,GroupDesc)->
+    io:format("insert data to tables...~n",[]),
+    Fun = fun() ->
+                  insert_user(UserId,UserName,UserAge),
+                  insert_group(GroupId,GroupName,GroupDesc),
+                  insert_user_group_relation(UserId,GroupId)
+          end,
+    mnesia:transaction(Fun)
+        .
+
+insert_user(Id,Name,Age)->
+                  User=#user{id=Id,name=Name,age=Age},
+                  mnesia:write(User)
+        .
+insert_group(Id,Name,Desc)->
+                  Group=#group{id=Id,name=Name,desc=Desc},
+                  mnesia:write(Group)
+        .
+insert_user_group_relation(UserId,GroupId)->
+    User_Group_Relation=#user_group_relation{userid=UserId,groupid=GroupId},
+    mnesia:write(User_Group_Relation)
+        .
+%%% query by mnesia:select()
+%% db:query_user().
+%% mnesia:read({Tab,Key})
+%% mnesia:read(Tab,Key)
+%% mnesia:read(Tab,Key,read)
+%% wread({Tab,Key})= read(Tab,Key,write)
+query_user(UserId)->
+    Fun = fun()->
+                  Results=mnesia:read(user,UserId),  %参数{Tab,Key},似乎这个Key 是-record的第一个属性
+                  lists:map(fun(Result)->
+                                    io:format("userid=~p,username=~p,age=~p ~n",[1,Result#user.name,Result#user.age])
+                            end,
+                            Results)
+          end,
+    mnesia:transaction(Fun)
+        .
+%% 给指定的用户 age+1
+%% wread({Tab,Key})= read(Tab,Key,write)
+user_add_age(UserId)->
+    Fun = fun()->
+                  Results=mnesia:wread ({user,UserId}),  %参数{Tab,Key},似乎这个Key 是-record的第一个属性
+                  lists:map(fun(Result)->
+                                    io:format("old: userid=~p,username=~p,age=~p ~n",[1,Result#user.name,Result#user.age]),
+                                    NewUser = Result#user{age=(Result#user.age+1 )},
+                                    mnesia:write(NewUser) %此种操作方式并非update ,而是重新添加了一条新数据，未找到update语句
+                            end,
+                            Results)
+          end,
+    mnesia:transaction(Fun),
+    query_user(UserId)
+        .
+%% 变态的select 语句
+select_user_by_name(Username)->                 %select name ,age from user where name=?
+    Fun = fun()->
+                  MatchPattern=  #user{_='_',name='$1',age='$2' }, %相当于将name ,age绑定到$1, $2 上，下文中Guard,Result 可以引用之，
+                  Guard=[{'==','$1', Username}],                   %$1 == Username 作为 判断条件
+                  Result=[['$1','$2']],                            %结果，只取[$1 ,$2]作为返回值
+                  Results=mnesia:select(user,[{MatchPattern,Guard,Result}]),
+                  lists:map(fun([Name,Age])->
+                                    io:format(" name=~p,age=~p ~n",[Name,Age])
+                            end,
+                            Results)
+          end,
+    mnesia:transaction(Fun)
+        .
+select_user_by_name2(Username)->                 %select name from user where name=?
+    Fun = fun()->
+                  MatchPattern=  #user{_='_',name='$1',age='$2' }, %相当于将name绑定到$1, 上，下文中Guard,Result 可以引用之，
+                  Guard=[{'==','$1', Username}],                   %$1 == Username 作为 判断条件
+                  Result=['$2'],                            %结果，只取$2作为返回值
+                  Results=mnesia:select(user,[{MatchPattern,Guard,Result}]),
+                  lists:map(fun(Age)->
+                                    io:format(" name=~p ,age=~p ~n",[Username,Age])
+                            end,
+                            Results)
+          end,
+    mnesia:transaction(Fun)
+        .
+select_all_user()->
+    Fun = fun()->
+                  MatchPattern=  #user{_='_',name='$1',age='$2' }, %相当于将name绑定到$1, 上，下文中Guard,Result 可以引用之，
+                  Guard=[],
+                  Result=[['$1','$2']],                            %结果，只取$1,$2作为返回值  即name, age
+                  Results=mnesia:select(user,[{MatchPattern,Guard,Result}]),
+                  lists:map(fun([Name,Age])->
+                                    io:format(" name=~p ,age=~p ~n",[Name,Age])
+                            end,
+                            Results)
+          end,
+    mnesia:transaction(Fun)
+        .
+%%% query by qlc 使用QLC可能比使用Mnesia方法开销更大，但是它提供了一个很好的语法
+qlc_query_user(Username)->
+    Fun= fun()->
+                 io:format("query by qlc~n",[]),
+                  Q=qlc:q([User|| User <- mnesia:table(user),User#user.name==Username]),
+                 qlc:e(Q)
+         end,
+    {atomic,Result} =mnesia:transaction(Fun),
+    lists:map(fun(U)->
+                      io:format("userid=~p,username=~p,age=~p ~n",[U#user.id,U#user.name,U#user.age])
+              end,
+              Result)
+        .
+
+
+%%% Usage
+%%调用之前，需 mnesia:create_schema([node()]).
+%% mnesia:start().
+%% db:create_table().
+%% db:insert(1,"jixf",11,1,"group","group ").
+%% db:insert(1,"jixf2",22,1,"group","group ").
+%% db:query_user(1).
+%% db:user_add_age(1).
+%% db:select_user_by_name("jixf").
+%% db:select_user_by_name2("jixf").
+%% db:select_all_user().
+#+end_src
+
+#+begin_src erlang
+%在emacs@jf.org节点上运行建表语句
+db:create_table().
+#+end_src
+
+#+begin_src erlang
+%然后两节点分别运行
+mnesia:info().
+#+end_src
+
+#+begin_src erlang
+%可以看到
+%emacs@jf.org上有这一项,表示建了三张表，处于内存中
+ram_copies         = [group,user,user_group_relation]
+%s@jf.org上有这一项,表示在远程节点上有三张表
+remote             = [group,user,user_group_relation]
+#+end_src
+
+在 emacs@jf.org上运行insert 语句 
+#+begin_src erlang
+(emacs@jf.org)8>  db:insert(1,"jixf",11,1,"group","group ").
+insert data to tables...
+{atomic,ok}
+(emacs@jf.org)9>  db:insert(1,"jixf2",22,1,"group","group ").
+insert data to tables...
+{atomic,ok}
+#+end_src
+在 s@jf.org上运行select语句 ，可以查出结果
+#+begin_src erlang
+(s@jf.org)6>  db:query_user(1).
+userid=1,username="jixf",age=11 
+userid=1,username="jixf2",age=22 
+{atomic,[ok,ok]}
+(s@jf.org)7> 
+#+end_src
+* Lock
+  Mnesia使用5种不同的锁。
++ 读锁。在记录的副本能被读取之前设置读锁。.
++ 写锁。当事务写一条记录时，首先在这条记录的所有副本上设置写锁。
++ 读表锁。如果事务要扫描整张表来搜索一条记录，那么，对表里的记录一条一条的加锁效
+  率很低也很耗内存（如果表很大，读锁本身会消耗很多空间）。因此，Mnesia可以对表设
+  置读锁。
++ 写表锁。如果事务要写大量的记录到表里，则可以对整张表设置写锁。
++ 粘（Sticky）锁。即使设置锁的事务终止后，这些写锁也会一直保留在节点上。
+  
+  当事务执行时，Mnesia采取的策略是借助诸如mnesia:read/1这样的函数来获得需要的
+  动态锁。 Mnesia会自动加锁和解锁，程序员不必对这些操作编码。
+  
+** Sticky Lock
+如上所述，Mnesia使用的锁策略是
+#+begin_quote
+在读一条记录时锁住该条记录，写一条记录时锁住该条记录的所有副本
+#+end_quote
+但有一些应用使用Mnesia主要是看中了其容错的特点，这些应用可能配置为一个节点承
+担所有繁重的任务，而另一个备用节点在主节点失败时来接替它。这样的应用使用粘锁
+来代替普通的锁会更有利。粘锁是这样一种锁，在第一次设置这个锁的事务终止后锁依
+然留在节点的适当位置上
+  
++ 普通加锁调用 write/1
+   #+begin_src erlang
+   F = fun() ->
+   mnesia:write(#foo{a = kalle})
+   end,
+   mnesia:transaction(F).
+   #+end_src
+   foo表被复制到N1和N2这两个节点上。
+   普通的锁要求：
+  - 一个网络远程调用（2条消息）来获取写锁；
+  - 三条网络消息来执行两阶段提交协议。
++ sticky lock调用 s_write/1
+   #+begin_src erlang
+   F = fun() ->
+   mnesia:s_write(#foo{a = kalle})
+   end,
+   mnesia:transaction(F).
+   #+end_src
+这段代码使用s_write/1函数来代替write/1函数。 s_write/1函数用粘锁来代替普通的锁。
+如果表没有被复制，粘锁没有任何特殊效果。 如果表被复制，并且我们在N1节点加一个粘
+锁，于是这个锁将会粘到N1节点上。下次我们试着在N1节点的同一条记录加锁时，Mnesia
+将会发现纪录已经加锁，不必再通过网络操作来加锁.本地加锁比通过网络加锁更高效，因
+此粘锁对需要对表备份且大部分工作仅在一个节点上处理的应用更有利。
+
+   如果N1节点上的一条记录被粘着（stuck），当我们试着在N2节点上对同一条记录加粘
+锁时，该记录必须是未被粘着（unstuck）的。这种操作的开销很大并且会降低性能。如果
+我们在N2节点上发布s_write/1请求，解除粘着（unsticking）会自动完成。
+** Table Lock
+   Mnesia支持对整个表的读和写锁作为只针对单条记录的普通锁的补充。如前所述，Mnesia会自动
+   设置和释放锁，无须程序员对这些操作编码。但是，如果在一个事务中存在对某个表中的大量记
+   录进行读写操作的情况下，我们在开始这个事务时对该表加表锁来阻塞来自于这个表的其它并发
+   进程将更有效率。下面的两个函数被用来对读写操作显式的加表锁：
+
+  + mnesia:read_lock_table(Tab) 在表Tab上加读锁
+  + mnesia:write_lock_table(Tab) 在表Tab上加写锁
+    等效于:
+  -  mnesia:lock({table, Tab}, read)
+  -  mnesia:lock({table, Tab}, write)
