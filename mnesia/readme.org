@@ -1,0 +1,18 @@
+* mnesia 使用的基本步骤
+  #+begin_src erlang 
+  erl -mnesia dir '"/tmp/f"'
+  mnesia:create_schema([node()]).
+  mnesia:start().
+  mnesia:create_table(test,[]).
+  mnesia:info().
+  #+end_src
+    + erl -mnesia dir '"/tmp/f"' 
+      在本在/tmp/f存储数据文件, 参数可以不必手动指定
+    + mnesia:create_schema([node()]).
+      在本地节点上创建一个schema
+    + mnesia:start().
+      启动mnesia
+    + mnesia:create_table(test,[]).
+      建一张空表
+    +  mnesia:info().
+       查看mnesia 信息
