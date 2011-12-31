@@ -13,7 +13,7 @@ i32(B) when is_binary(B) ->
 i32([X1, X2, X3, X4]) ->
     (X1 bsl 24) bor (X2 bsl 16) bor (X3 bsl 8) bor X4;
 i32(Int) when is_integer(Int) ->
-    [(Int bsr 24) band 255,
+    [(Int bsr 24) band 255,                     %255 11111111
      (Int bsr 16) band 255,
      (Int bsr  8) band 255,
      Int band 255].
