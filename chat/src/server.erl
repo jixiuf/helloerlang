@@ -22,11 +22,11 @@ handle(ClientSocket) ->
     receive
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
             case util:read_int32(Bin) of
-                {Int,CommandBody} when is_integer(Int) and is_binary(CommandBody)->
-                    io:format("handling command~n",[]) ,
+                {Int_Of_Byte,CommandBody} when is_integer(Int_Of_Byte) and is_binary(CommandBody)->
+                    Int_Of_Bit = Int_Of_Byte * 8,
                     case CommandBody of
-                        <<Command:Int,Tail/binary>>->
-                            handle_command(Command,Tail,ClientSocket);
+                        <<Command:Int_Of_Bit,Tail/binary>>->
+                            handle_command(<<Command:Int_Of_Bit>>,Tail,ClientSocket);
                         _Other ->
                             handle(ClientSocket)
                     end
@@ -39,7 +39,8 @@ handle(ClientSocket) ->
             handle(ClientSocket)
     end.
 
-handle_command("echo",CommandBody,ClientSocket)->
-    io:format("helo~n",[]),
-    gen_tcp:send(ClientSocket, <<4:32,"echo",CommandBody>>) %4 means length of "echo"
-        .
+handle_command(<<"echo">>,BinMsg,ClientSocket)->
+    gen_tcp:send(ClientSocket,iolist_to_binary([<<4:32,"echo">>,BinMsg])) % means length of "echo" 4byte
+        ;
+handle_command(Command,CommandBody,ClientSocket) ->
+    io:format("other command:~p :~p~n",[Command,CommandBody]) .
