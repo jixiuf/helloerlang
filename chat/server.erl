@@ -1,5 +1,6 @@
 -module(server).
--compile(export_all).
+-export([start_server/1]).
+
 
 start_server(Port) ->
     Pid = spawn_link(fun() ->
@@ -20,7 +21,7 @@ handle(ClientSocket) ->
     inet:setopts(ClientSocket, [{active, once}]),
     receive
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
-            case read_int32(Bin) of
+            case util:read_int32(Bin) of
                 {Int,CommandBody} when is_integer(Int) and is_binary(CommandBody)->
                     io:format("handling command~n",[]) ,
                     case CommandBody of
@@ -40,28 +41,5 @@ handle(ClientSocket) ->
 
 handle_command("echo",CommandBody,ClientSocket)->
     io:format("helo~n",[]),
-    gen_tcp:send(ClientSocket, CommandBody)
+    gen_tcp:send(ClientSocket, <<4:32,"echo",CommandBody>>) %4 means length of "echo"
         .
-
-%util function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% read int32 from head of Bin data
-%% return {intValue,TailBin}
-read_int32(Bin)when is_binary(Bin)->
-    case Bin of
-        <<Int:32,T/binary>>->
-            {Int,T} ;
-        _O->
-            io:format("messager format error!~n",[]),
-            {error,message_format_error}
-    end
-        ;
-read_int32(_NoneBin) ->
-    {error,message_not_bin}.
-
-%%int按网络字节流 转成binary
-%%网络传输一般采用大端序big，也被称之为网络字节序，或网络序
-%%而erlang 默认就是big
-int32_2_binary(Int) when is_integer(Int)->
-    <<Int:32>> ;
-int32_2_binary(Bin) when is_binary(Bin) ->                          %若本就Bin ,直接返回
-    Bin.
