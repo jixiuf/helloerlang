@@ -7,7 +7,7 @@ connect(Host,Port) ->
         .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
-    ok = gen_tcp:send(Socket,iolist_to_binary([<<4:32,"echo">>,Msg]) )
+    ok = gen_tcp:send(Socket,iolist_to_binary([util:get_binary_command("echo"),Msg]) )
         .
 close(Socket)->
     ok = gen_tcp:close(Socket).
