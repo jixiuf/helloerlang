@@ -1,0 +1,6 @@
+* 消息协议格式:
+1. int +command+int+otherContentDepend_On_each_Command
+2. 采用二进制
+3. 前4个byte 为一int ，表明command 的长度
+4. command ,长度不定，由前4个字节指明command 的长度
+5. otherContentDepend_On_each_Command,据不同command ,内容不定 
