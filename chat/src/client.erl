@@ -3,10 +3,10 @@
 
 
 connect(Host,Port) ->
-    case     gen_tcp:connect(Host, Port, [binary]) of
+    case gen_tcp:connect(Host, Port, [binary,{packet,4}]) of
         {ok,ServerSocket}->
             Pid= spawn(?MODULE,do_recv,[ServerSocket]),
-            gen_tcp:controlling_process(ServerSocket, Pid),
+            %% gen_tcp:controlling_process(ServerSocket, Pid),
             %% gen_tcp:recv(ServerSocket,0)
             {ok,ServerSocket}
             %% timer:sleep(infinity)
@@ -22,7 +22,7 @@ do_recv(ServerSocket)->
             case util:read_int32(Bin) of
                 {Int_Of_Bit,CommandBody} when is_integer(Int_Of_Bit) and is_binary(CommandBody)->
                     case CommandBody of
-                        <<Command:Int_Of_Bit,Tail/binary>>->
+                        <<Command:Int_Of_Bit,Tail/binary>> ->
                             handle_command(<<Command:Int_Of_Bit>>,Tail,ServerSocket),
                             do_recv(ServerSocket);
                         _Other ->
@@ -42,7 +42,8 @@ handle_command(<<"echo">>,Bin,_ServerSocket)->
     .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
-    ok = gen_tcp:send(Socket,iolist_to_binary([util:encode_command("echo"),Msg]) )
+    ok = gen_tcp:send(Socket,<<1:32,"hello">> )
+    %% ok = gen_tcp:send(Socket,iolist_to_binary([util:encode_command("echo"),Msg]) )
         .
 close(Socket)->
     ok = gen_tcp:close(Socket).
