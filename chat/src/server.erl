@@ -23,12 +23,12 @@ start_server(Port) ->
 
 acceptor(ListenSocket) ->
     {ok, Socket} = gen_tcp:accept(ListenSocket), %
-    io:format("a new client is coming...~n",[]),
     spawn(fun() -> acceptor(ListenSocket) end),  %每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
     handle(Socket).
 
 %% Echoing back whatever was obtained
 handle(ClientSocket) ->
+    io:format("a new client is coming...~n",[]),
     inet:setopts(ClientSocket, [{active, once}]),
     receive
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
