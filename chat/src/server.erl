@@ -22,8 +22,8 @@ start_server(Port) ->
     {ok, Pid}.
 
 acceptor(ListenSocket) ->
-    io:format("a new client is coming...~n",[]),
     {ok, Socket} = gen_tcp:accept(ListenSocket), %
+    io:format("a new client is coming...~n",[]),
     spawn(fun() -> acceptor(ListenSocket) end),  %每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
     handle(Socket).
 
@@ -34,7 +34,7 @@ handle(ClientSocket) ->
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
             io:format("handle command...~n",[]),
             handle_command(Bin,ClientSocket) ;
-        {tcpclosed,_SocketSocket}->
+        {tcp_closed,_SocketSocket}->
             io:format(" clinet closed!~n",[]) ;
         Other ->
             io:format("other msg ~p~n",[Other]),
