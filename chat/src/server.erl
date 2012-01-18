@@ -28,7 +28,7 @@ acceptor(ListenSocket) ->
 
 %% Echoing back whatever was obtained
 handle(ClientSocket) ->
-    io:format("a new client is coming...~n",[]),
+    chat_log:debug("a new client is coming...~n",[]),
     inet:setopts(ClientSocket, [{active, once}]),
     receive
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
@@ -42,6 +42,6 @@ handle(ClientSocket) ->
     end.
 
 handle_command(<<1:32,MsgBody/binary>>,ClientSocket)->
-    io:format("server got msg from client:~p~n",[MsgBody]),
+    chat_log:debug("server got echo msg from client:~p~n",[MsgBody]),
     gen_tcp:send(ClientSocket,<<1:32,MsgBody/binary>>) % means length of "echo" 4byte
         .
