@@ -32,7 +32,7 @@ handle(ClientSocket) ->
     inet:setopts(ClientSocket, [{active, once}]),
     receive
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
-            io:format("handle command...~n",[]),
+            io:format("server handle command...~n",[]),
             handle_command(Bin,ClientSocket) ;
         {tcp_closed,_SocketSocket}->
             io:format(" clinet closed!~n",[]) ;
@@ -41,7 +41,7 @@ handle(ClientSocket) ->
             handle(ClientSocket)
     end.
 
-handle_command(<<1:32,MsgBody/binary>>,_ClientSocket)->
-    io:format("~p~n",[MsgBody])
-    %% gen_tcp:send(ClientSocket,util:binary_concat(util:encode_command("msg"),BinMsg)) % means length of "echo" 4byte
+handle_command(<<1:32,MsgBody/binary>>,ClientSocket)->
+    io:format("server got msg from client:~p~n",[MsgBody]),
+    gen_tcp:send(ClientSocket,<<1:32,MsgBody/binary>>) % means length of "echo" 4byte
         .
