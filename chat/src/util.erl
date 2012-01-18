@@ -1,5 +1,5 @@
 -module(util).
--export([decode_command/1,binary_concat/2,encode_command/1,int32_2_binary/1,read_int32/1]).
+-export([binary_concat/2,int32_2_binary/1,read_int32/1]).
 
 %util function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% read int32 from head of Bin data
@@ -28,22 +28,28 @@ int32_2_binary(Bin) when is_binary(Bin) ->                          %若本就Bi
 %% util:encode_command(<<"echo">>).
 %%协议规定 int32+command+commandbody (int32为command的长度（bit长度）)
 %%此函数为 command 作参， int32+commnad作返回值
-encode_command(StringCommand) when is_list( StringCommand)  ->
-    Len_of_Byte = length(StringCommand),
-    Len_of_Bit = Len_of_Byte * 8 ,
-    iolist_to_binary([<<Len_of_Bit:32>>,StringCommand])
-        ;
-encode_command(BinCommand) when is_binary(BinCommand) ->
-    Len_of_Bit = bit_size(BinCommand),
-    iolist_to_binary([<<Len_of_Bit:32>>,BinCommand])
-        .
+%% encode_command(StringCommand) when is_list( StringCommand)  ->
+%%     Len_of_Byte = length(StringCommand),
+%%     Len_of_Bit = Len_of_Byte * 8 ,
+%%     iolist_to_binary([<<Len_of_Bit:32>>,StringCommand])
+%%         ;
+%% encode_command(BinCommand) when is_binary(BinCommand) ->
+%%     Len_of_Bit = bit_size(BinCommand),
+%%     iolist_to_binary([<<Len_of_Bit:32>>,BinCommand])
+%%         .
 
-%% return {BitLenOfBin,Bin}
-%% @param BinCommand :the format  is  <int32+command>>
-decode_command(BinCommand) when is_binary(BinCommand) ->
-    <<BitLen:32,Bin/binary>>=BinCommand,
-    {BitLen,Bin}
-        .
+%% %% return {BitLenOfBin,Bin}
+%% %% @param BinCommand :the format  is  <int32+command>>
+%% decode_command(BinCommand) when is_binary(BinCommand) ->
+%%     <<BitLen:32,Bin/binary>>=BinCommand,
+%%     {BitLen,Bin}
+%% .
 
-binary_concat(Bin1,Bin2)->
-    iolist_to_binary([Bin1,Bin2])    .
+binary_concat(Bin1,Bin2) when is_binary(Bin1) and is_binary(Bin2)->
+    iolist_to_binary([Bin1,Bin2])    ;
+binary_concat(Bin1,String) when is_binary(Bin1) and is_list(String) ->
+    iolist_to_binary([Bin1,list_to_binary(String)]);
+binary_concat(String,Bin1) when is_binary(Bin1) and is_list(String) ->
+    iolist_to_binary([Bin1,list_to_binary(String)]);
+binary_concat(String1,String2) when is_list(String1) and is_list(String2) ->
+    iolist_to_binary([list_to_binary(String1),list_to_binary(String2)]).
