@@ -35,8 +35,9 @@ handle(ClientSocket) ->
             chat_log:debug("server handle command...~n",[]),
             handle_command(Bin,ClientSocket) ,
             handle(ClientSocket) ;
-        {tcp_closed,_SocketSocket}->
-            chat_log:debug(" tcp_closed!~n",[]) ;
+        {tcp_closed,SocketSocket}->
+            handle_tcp_closed(SocketSocket)
+            ;
         {tcp_error, _Socket, Reason}->
             chat_log:debug("tcp_error with reason ~p~n:",[Reason]);
         Other ->
@@ -47,4 +48,8 @@ handle(ClientSocket) ->
 handle_command(<<1:32,MsgBody/binary>>,ClientSocket)-> % 1:32 ,echo
     chat_log:debug("server got echo msg from client:~p~n",[MsgBody]),
     gen_tcp:send(ClientSocket,<<1:32,MsgBody/binary>>) % means length of "echo" 4byte
+        .
+
+handle_tcp_closed(ClientSocket)->
+    chat_log:debug(" tcp_closed:~p!~n",[ClientSocket])
         .
