@@ -1,6 +1,6 @@
 -module(chat_log).
 -export([info/2,debug/2]).
--define(loglevel,info).
+-define(loglevel,debug).                        %available value: debug,info
 
 
 info(Format,Params)->
