@@ -24,10 +24,11 @@ do_recv(ServerSocket)->
             gen_tcp:send(Socket,Bin),          %send Bin to ServerSocket
             do_recv(ServerSocket);
         {tcp, ServerSocket, Bin}->
+            chat_log:debug("client handle command ~n",[]),
             handle_command(Bin,ServerSocket),
             do_recv(ServerSocket);
         {tcp_closed, ServerSocket} ->
-            chat_log:debug("server down!!!!!~n",[]),
+            chat_log:debug("tcp_closed!!!!!~n",[]),
             do_recv(ServerSocket) ;
         {tcp_error, ServerSocket, Reason} ->
             chat_log:debug("error ~p~n",[Reason]) ,
@@ -51,6 +52,9 @@ do_recv(ServerSocket)->
         .
 handle_command(<<1:32,EchoMsg/binary>>,_ServerSocket)-> %1:32 表示echo
     chat_log:info("client get msg from server and server said :~p~n",[binary_to_list(EchoMsg)])
+        ;
+handle_command(Bin,_ServerSocket) ->
+    io:format("other unhandled command ~p~n",[Bin])
     .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
