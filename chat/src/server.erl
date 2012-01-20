@@ -38,6 +38,8 @@ handle(ClientSocket) ->
         {tcp_closed,_SocketSocket}->
             io:format(" tcp_closed!~n",[]) ,
             handle(ClientSocket) ;
+        {tcp_error, _Socket, Reason}->
+            chat_log:debug("tcp_error with reason ~p~n:",[Reason]);
         Other ->
             io:format("other msg ~p~n",[Other]),
             handle(ClientSocket)
