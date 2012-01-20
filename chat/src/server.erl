@@ -1,8 +1,11 @@
 -module(server).
 -export([start_server/1]).
+-include("records.hrl").
 
 
 start_server(Port) ->
+    prepare_db(),
+
     Pid = spawn_link(fun() ->
                              %%参照 http://erlangdisplay.iteye.com/blog/1012785
                              %% 假如，我定义 的消息格式为
@@ -53,3 +56,10 @@ handle_command(<<1:32,MsgBody/binary>>,ClientSocket)-> % 1:32 ,echo
 handle_tcp_closed(ClientSocket)->
     chat_log:debug(" tcp_closed:~p!~n",[ClientSocket])
         .
+prepare_db()->
+    mnesia:create_schema([node()]),
+    mnesia:start(),
+    mnesia:create_table(user,[{type,set},{attributes,record_info(fields ,user)}]), %set 不允许重复数据
+    mnesia:create_table(room,[{type,set},{attributes,record_info(fields ,room)}]), %set 不允许重复数据
+    mnesia:create_table(activated_user,[{type,set},{attributes,record_info(fields ,activated_user)}]) %set 不允许重复数据
+    .
