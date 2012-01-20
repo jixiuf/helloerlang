@@ -35,7 +35,8 @@ handle(ClientSocket) ->
             chat_log:debug("server handle command...~n",[]),
             handle_command(Bin,ClientSocket) ;
         {tcp_closed,_SocketSocket}->
-            io:format(" clinet closed!~n",[]) ;
+            io:format(" tcp_closed!~n",[]) ,
+            handle(ClientSocket) ;
         Other ->
             io:format("other msg ~p~n",[Other]),
             handle(ClientSocket)
