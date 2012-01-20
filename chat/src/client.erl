@@ -50,11 +50,11 @@ do_recv(ServerSocket)->
     %% end
         .
 handle_command(<<1:32,EchoMsg/binary>>,_ServerSocket)->
-    io:format("server said:~p~n",[binary_to_list(EchoMsg)])
+    io:format("client get msg from server and server said :~p~n",[binary_to_list(EchoMsg)])
     .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
-    whereis(?MODULE) ! {send ,util:binary_concat(<<1:32>>,<<"hello">>),Socket},
+    whereis(?MODULE) ! {send ,util:binary_concat(<<1:32>>,Msg),Socket},
     ok .
 
 close(Socket)->
