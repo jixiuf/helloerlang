@@ -1,6 +1,8 @@
 * 消息协议格式:
-1. int +command+int+otherContentDepend_On_each_Command
-2. 采用二进制
-3. 前4个byte 为一int ，表明command 的长度
-4. command ,长度不定，由前4个字节指明command 的长度 (bit长度)
-5. otherContentDepend_On_each_Command,据不同command ,内容不定 
+采用二进制数据作为消息格式
+server 与client 同时使用 {packet ,4}作为参数，故省去了消息的截取与组装，关于
+packet 参数，详见：server.erl 注释
+而具体的消息格式为
+[4字节消息类型,具体的消息体]
+比如echo 消息格式为<<1:32,Msg/binary>>
+用一个4字节的int 表示此消息的具体含义
