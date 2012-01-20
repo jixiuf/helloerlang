@@ -36,8 +36,7 @@ handle(ClientSocket) ->
             handle_command(Bin,ClientSocket) ,
             handle(ClientSocket) ;
         {tcp_closed,_SocketSocket}->
-            io:format(" tcp_closed!~n",[]) ,
-            handle(ClientSocket) ;
+            chat_log:debug(" tcp_closed!~n",[]) ;
         {tcp_error, _Socket, Reason}->
             chat_log:debug("tcp_error with reason ~p~n:",[Reason]);
         Other ->
