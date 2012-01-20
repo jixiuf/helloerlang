@@ -33,7 +33,8 @@ handle(ClientSocket) ->
     receive
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
             chat_log:debug("server handle command...~n",[]),
-            handle_command(Bin,ClientSocket) ;
+            handle_command(Bin,ClientSocket) ,
+            handle(ClientSocket) ;
         {tcp_closed,_SocketSocket}->
             io:format(" tcp_closed!~n",[]) ,
             handle(ClientSocket) ;
