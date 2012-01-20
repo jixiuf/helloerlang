@@ -49,8 +49,8 @@ do_recv(ServerSocket)->
     %%         do_recv(ServerSocket)
     %% end
         .
-handle_command(<<1:32,EchoMsg/binary>>,_ServerSocket)->
-    io:format("client get msg from server and server said :~p~n",[binary_to_list(EchoMsg)])
+handle_command(<<1:32,EchoMsg/binary>>,_ServerSocket)-> %1:32 表示echo
+    chat_log:info("client get msg from server and server said :~p~n",[binary_to_list(EchoMsg)])
     .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
