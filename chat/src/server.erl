@@ -27,11 +27,11 @@ start_server(Port) ->
 acceptor(ListenSocket) ->
     {ok, Socket} = gen_tcp:accept(ListenSocket), %
     spawn(fun() -> acceptor(ListenSocket) end),  %每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
+    chat_log:debug("a new client is coming...~n",[]),
     handle(Socket).
 
 %% Echoing back whatever was obtained
 handle(ClientSocket) ->
-    chat_log:debug("a new client is coming...~n",[]),
     inet:setopts(ClientSocket, [{active, once}]),
     receive
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
@@ -51,8 +51,35 @@ handle(ClientSocket) ->
 handle_command(<<1:32,MsgBody/binary>>,ClientSocket)-> % 1:32 ,echo
     chat_log:debug("server got echo msg from client:~p~n",[MsgBody]),
     gen_tcp:send(ClientSocket,<<1:32,MsgBody/binary>>) % means length of "echo" 4byte
+        ;
+%% login ,部分，传递用户名
+handle_command(<<2:32,UserName/binary>>,ClientSocket)-> % 2:32 ,user
+    chat_log:debug("Server got :cmd:user~p~n ",[UserName]),
+    put(user,UserName),
+    gen_tcp:send(ClientSocket,<<2:32,"ok">>)    %
+        ;
+handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
+    chat_log:debug("Server got :cmd:password~p~n ",[Password]),
+    put(password,Password),
+    gen_tcp:send(ClientSocket,<<3:32,"ok">>);    %
+handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
+    chat_log:debug("Server got cmd:register ~n ",[]),
+    UserName = get(user),
+    Password = get(password),
+    Check = fun(U,P)->
+                    if U =:= undefined
+                       -> throw( <<"username_undefined">>);
+                       P =:= undefined
+                       -> throw( <<"password_undefined">>);
+                       true -> <<"ok">>
+                    end
+            end,
+    case catch Check(UserName,Password)
+    of
+        BinMsg ->
+            gen_tcp:send(ClientSocket,util:binary_concat(<<4:32>>,BinMsg))    %
+    end
         .
-
 handle_tcp_closed(ClientSocket)->
     chat_log:debug(" tcp_closed:~p!~n",[ClientSocket])
         .

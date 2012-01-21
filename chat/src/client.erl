@@ -1,5 +1,5 @@
 -module(client).
--export([do_recv/1,close/1,echo/2,connect/2]).
+-export([password/2,register/1,user/2,do_recv/1,close/1,echo/2,connect/2]).
 
 
 connect(Host,Port) ->
@@ -53,12 +53,50 @@ do_recv(ServerSocket)->
 handle_command(<<1:32,EchoMsg/binary>>,_ServerSocket)-> %1:32 表示echo
     chat_log:info("client get msg from server and server said :~p~n",[binary_to_list(EchoMsg)])
         ;
+handle_command(<<2:32,UserMsg/binary>>,_ServerSocket)-> %2:32 表示user
+    case UserMsg of
+        <<"ok">>->
+            chat_log:debug("cmd:user executed successed~n",[]) ;
+        <<"already_login">> ->
+            chat_log:debug("user with the same name have alreadly login.~n",[])
+    end
+
+        ;
+handle_command(<<3:32,Password/binary>>,_ServerSocket)-> %3:32 表示password
+    case Password of
+        <<"ok">>->
+            chat_log:debug("cmd:password executed successed~n",[]) ;
+        _Unknown_res ->
+            chat_log:debug("unknown response.",[])
+    end
+        ;
+handle_command(<<4:32,Register_Res/binary>>,_ServerSocket)-> %4:32 表示register
+    case Register_Res of
+        <<"ok">>->
+            chat_log:debug("cmd:register executed successed~n",[]) ;
+         <<"username_undefined">> ->
+            chat_log:debug("username undefined.~n",[]);
+          <<"password_undefined">> ->
+            chat_log:debug("password undefined.~n",[])
+    end
+        ;
 handle_command(Bin,_ServerSocket) ->
     io:format("other unhandled command ~p~n",[Bin])
-    .
+        .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
     whereis(?MODULE) ! {send ,util:binary_concat(<<1:32>>,Msg),Socket},
+    ok .
+
+user(Socket,UserName) when is_list(UserName)->            %Msg is string
+    whereis(?MODULE) ! {send ,util:binary_concat(<<2:32>>,UserName),Socket},
+    ok .
+password(Socket,Password) when is_list(Password)->            %Msg is string
+    whereis(?MODULE) ! {send ,util:binary_concat(<<3:32>>,Password),Socket},
+    ok .
+
+register(Socket) ->            %Msg is string
+    whereis(?MODULE) ! {send ,<<4:32>>,Socket},
     ok .
 
 close(Socket)->
