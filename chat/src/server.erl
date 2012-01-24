@@ -63,7 +63,7 @@ handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
     put(password,binary_to_list(Password)),
     gen_tcp:send(ClientSocket,<<3:32,"ok">>);    %
 handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
-    chat_log:debug("Server got cmd:register ~n ",[]),
+    chat_log:debug("Server got cmd:register ~n",[]),
     User = #user{name=get(user),password=get(password),nickname=get(nickname)},
     CheckUser = fun()->
                     if User#user.name =:= undefined
