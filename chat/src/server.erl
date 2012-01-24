@@ -64,32 +64,44 @@ handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
     gen_tcp:send(ClientSocket,<<3:32,"ok">>);    %
 handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
     chat_log:debug("Server got cmd:register ~n ",[]),
-    UserName = get(user),
-    Password = get(password),
-    NickName = get(nickname),
-    Check = fun(U,P,N)->
-                    if U =:= undefined
+    User = #user{name=get(user),password=get(password),nickname=get(nickname)},
+    Check = fun(U)->
+                    if U#user.name =:= undefined
                        -> throw( <<"username_undefined">>);
-                       P =:= undefined
+                        U#user.password=:= undefined
                        -> throw( <<"password_undefined">>);
-                       N =:= undefined
-                       -> put(nickname,U),
+                       U#user.nickname =:= undefined
+                       -> put(nickname,U#user.name),
+                          %% U#user{name=get(user)},
                           throw( <<"no_nickname">>); %use username as nickname if undefined,just a warning.
                        true -> <<"ok">>
                     end
             end,
-    case catch Check(UserName,Password,NickName) of
+    case catch Check(User) of
         <<"ok">> ->
             Fun = fun()->
-                          User=#user{name=UserName,password=Password,nickname=NickName},
-                          io:format("aaaaaaaa~p~n",[User#user.name]),
+                          %% User=#user{name=UserName,password=Password,nickname=NickName},
+                          chat_log:debug("userName:~p,password:~p,nickname:~p~n",[User#user.name,User#user.password,User#user.nickname]),
                           mnesia:write(User)
                   end,
             mnesia:transaction(Fun),
             gen_tcp:send(ClientSocket,<<4:32,"ok">>)    ;
+        <<"no_nickname">> ->
+            NewUser=User#user{name=get(nickname)}, %use name as the nickname
+            Fun = fun()->
+                          chat_log:debug("userName:~p,password:~p,nickname:~p~n",[User#user.name,User#user.password,User#user.nickname]),
+                          mnesia:write(NewUser)
+                  end,
+            mnesia:transaction(Fun),            %save a registered user in mnesia db.
+            gen_tcp:send(ClientSocket,<<4:32,"no_nickname">>)    ; %still send "no_nickname" to client ,so that client can do something.
         BinMsg ->
             gen_tcp:send(ClientSocket,util:binary_concat(<<4:32>>,BinMsg))    %
     end
+;
+handle_command(<<5:32,NickName/binary>>,ClientSocket)-> % 5:32 ,nickname
+    chat_log:debug("server got nickname[~p] msg from client.~n",[NickName]),
+    gen_tcp:send(ClientSocket,<<5:32,"ok">>) % means length of "echo" 4byte
+
         .
 handle_tcp_closed(ClientSocket)->
     chat_log:debug(" tcp_closed:~p!~n",[ClientSocket])
