@@ -77,7 +77,9 @@ handle_command(<<4:32,Register_Res/binary>>,_ServerSocket)-> %4:32 表示registe
          <<"username_undefined">> ->
             chat_log:debug("username undefined.~n",[]);
           <<"password_undefined">> ->
-            chat_log:debug("password undefined.~n",[])
+            chat_log:debug("password undefined.~n",[]);
+          <<"no_nickname">> ->
+            chat_log:debug("warning:nickname undefined.~n",[])
     end
         ;
 handle_command(Bin,_ServerSocket) ->
