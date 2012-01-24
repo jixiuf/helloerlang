@@ -80,7 +80,7 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
     case catch Check(User) of
         <<"ok">> ->
             Fun = fun()->
-                          %% User=#user{name=UserName,password=Password,nickname=NickName},
+                          %% User=#user{name=UserName,password=Password,nickname=Nickname},
                           chat_log:debug("userName:~p,password:~p,nickname:~p~n",[User#user.name,User#user.password,User#user.nickname]),
                           mnesia:write(User)
                   end,
@@ -98,8 +98,9 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
             gen_tcp:send(ClientSocket,util:binary_concat(<<4:32>>,BinMsg))    %
     end
 ;
-handle_command(<<5:32,NickName/binary>>,ClientSocket)-> % 5:32 ,nickname
-    chat_log:debug("server got nickname[~p] msg from client.~n",[NickName]),
+handle_command(<<5:32,Nickname/binary>>,ClientSocket)-> % 5:32 ,nickname
+    chat_log:debug("server got nickname[~p] msg from client.~n",[Nickname]),
+    put(nickname,Nickname),
     gen_tcp:send(ClientSocket,<<5:32,"ok">>) % means length of "echo" 4byte
 
         .
