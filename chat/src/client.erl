@@ -1,5 +1,5 @@
 -module(client).
--export([password/2,register/1,user/2,do_recv/1,close/1,echo/2,connect/2]).
+-export([nickname/2,password/2,register/1,user/2,do_recv/1,close/1,echo/2,connect/2]).
 
 
 connect(Host,Port) ->
@@ -60,8 +60,17 @@ handle_command(<<2:32,UserMsg/binary>>,_ServerSocket)-> %2:32 表示user
         <<"already_login">> ->
             chat_log:debug("user with the same name have alreadly login.~n",[])
     end
+        ;
+handle_command(<<5:32,NickName/binary>>,_ServerSocket)-> %5:32 表示nickname
+    case NickName of
+        <<"ok">>->
+            chat_log:debug("cmd:nickname executed successed~n",[]) ;
+        _ ->
+            chat_log:debug("random message.",[])
+    end
 
         ;
+
 handle_command(<<3:32,Password/binary>>,_ServerSocket)-> %3:32 表示password
     case Password of
         <<"ok">>->
@@ -90,14 +99,17 @@ echo(Socket,Msg) when is_list(Msg)->            %Msg is string
     whereis(?MODULE) ! {send ,util:binary_concat(<<1:32>>,Msg),Socket},
     ok .
 
-user(Socket,UserName) when is_list(UserName)->            %Msg is string
+user(Socket,UserName) when is_list(UserName)->            %UserName is string
     whereis(?MODULE) ! {send ,util:binary_concat(<<2:32>>,UserName),Socket},
     ok .
-password(Socket,Password) when is_list(Password)->            %Msg is string
+nickname(Socket,NickName) when is_list(NickName)->            %NickName is string
+    whereis(?MODULE) ! {send ,util:binary_concat(<<5:32>>,NickName),Socket},
+    ok .
+password(Socket,Password) when is_list(Password)->            %password is string
     whereis(?MODULE) ! {send ,util:binary_concat(<<3:32>>,Password),Socket},
     ok .
 
-register(Socket) ->            %Msg is string
+register(Socket) ->                             %
     whereis(?MODULE) ! {send ,<<4:32>>,Socket},
     ok .
 
