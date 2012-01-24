@@ -55,12 +55,12 @@ handle_command(<<1:32,MsgBody/binary>>,ClientSocket)-> % 1:32 ,echo
 %% login ,部分，传递用户名
 handle_command(<<2:32,UserName/binary>>,ClientSocket)-> % 2:32 ,user
     chat_log:debug("Server got :cmd:user~p~n ",[UserName]),
-    put(user,UserName),
+    put(user,binary_to_list(UserName)),
     gen_tcp:send(ClientSocket,<<2:32,"ok">>)    %
         ;
 handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
     chat_log:debug("Server got :cmd:password~p~n ",[Password]),
-    put(password,Password),
+    put(password,binary_to_list(Password)),
     gen_tcp:send(ClientSocket,<<3:32,"ok">>);    %
 handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
     chat_log:debug("Server got cmd:register ~n ",[]),
@@ -100,7 +100,7 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
 ;
 handle_command(<<5:32,Nickname/binary>>,ClientSocket)-> % 5:32 ,nickname
     chat_log:debug("server got nickname[~p] msg from client.~n",[Nickname]),
-    put(nickname,Nickname),
+    put(nickname,binary_to_list(Nickname)),
     gen_tcp:send(ClientSocket,<<5:32,"ok">>) % means length of "echo" 4byte
 
         .
@@ -108,7 +108,7 @@ handle_tcp_closed(ClientSocket)->
     chat_log:debug(" tcp_closed:~p!~n",[ClientSocket])
         .
 prepare_db()->
-    mnesia:create_schema([node()]),
+    %% mnesia:create_schema([node()]),             %若无此句则，仅在内存中有效，但是此句只能运行一次，所以。。。。
     mnesia:start(),
     mnesia:create_table(user,[{type,set},{attributes,record_info(fields ,user)}]), %set 不允许重复数据
     mnesia:create_table(room,[{type,set},{attributes,record_info(fields ,room)}]), %set 不允许重复数据
