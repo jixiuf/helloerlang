@@ -66,16 +66,27 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
     chat_log:debug("Server got cmd:register ~n ",[]),
     UserName = get(user),
     Password = get(password),
-    Check = fun(U,P)->
+    NickName = get(nickname),
+    Check = fun(U,P,N)->
                     if U =:= undefined
                        -> throw( <<"username_undefined">>);
                        P =:= undefined
                        -> throw( <<"password_undefined">>);
+                       N =:= undefined
+                       -> put(nickname,U),
+                          throw( <<"no_nickname">>); %use username as nickname if undefined,just a warning.
                        true -> <<"ok">>
                     end
             end,
-    case catch Check(UserName,Password)
-    of
+    case catch Check(UserName,Password,NickName) of
+        <<"ok">> ->
+            Fun = fun()->
+                          User=#user{name=UserName,password=Password,nickname=NickName},
+                          io:format("aaaaaaaa~p~n",[User#user.name]),
+                          mnesia:write(User)
+                  end,
+            mnesia:transaction(Fun),
+            gen_tcp:send(ClientSocket,<<4:32,"ok">>)    ;
         BinMsg ->
             gen_tcp:send(ClientSocket,util:binary_concat(<<4:32>>,BinMsg))    %
     end
