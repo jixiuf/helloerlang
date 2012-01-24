@@ -65,19 +65,19 @@ handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
 handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
     chat_log:debug("Server got cmd:register ~n ",[]),
     User = #user{name=get(user),password=get(password),nickname=get(nickname)},
-    Check = fun(U)->
-                    if U#user.name =:= undefined
+    CheckUser = fun()->
+                    if User#user.name =:= undefined
                        -> throw( <<"username_undefined">>);
-                        U#user.password=:= undefined
+                        User#user.password=:= undefined
                        -> throw( <<"password_undefined">>);
-                       U#user.nickname =:= undefined
-                       -> put(nickname,U#user.name),
-                          %% U#user{name=get(user)},
+                       User#user.nickname =:= undefined
+                       -> put(nickname,get(user)), %use name as the nickname
+                          %% User#user{name=get(user)},
                           throw( <<"no_nickname">>); %use username as nickname if undefined,just a warning.
                        true -> <<"ok">>
                     end
             end,
-    case catch Check(User) of
+    case catch CheckUser() of
         <<"ok">> ->
             Fun = fun()->
                           %% User=#user{name=UserName,password=Password,nickname=Nickname},
@@ -87,9 +87,9 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
             mnesia:transaction(Fun),
             gen_tcp:send(ClientSocket,<<4:32,"ok">>)    ;
         <<"no_nickname">> ->
-            NewUser=User#user{name=get(nickname)}, %use name as the nickname
+            NewUser=User#user{nickname=get(nickname)}, %use name as the nickname
             Fun = fun()->
-                          chat_log:debug("userName:~p,password:~p,nickname:~p~n",[User#user.name,User#user.password,User#user.nickname]),
+                          chat_log:debug("userName:~p,password:~p,nickname:~p~n",[NewUser#user.name,NewUser#user.password,NewUser#user.nickname]),
                           mnesia:write(NewUser)
                   end,
             mnesia:transaction(Fun),            %save a registered user in mnesia db.
