@@ -181,12 +181,14 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
     end;
 handle_command(<<7:32,_Logout/binary>>,ClientSocket)-> % 7:32 ,logout
     chat_log:debug("server:logout ~p....~n",[get(name)]),
-    %% TODO:db clean up
+    %% TODO:db clean up,tcp clean up
     Fun = fun()->
                   mnesia:delete({activated_user,get(name)})
           end,
     mnesia:transaction(Fun),
-    gen_tcp:send(ClientSocket,<<7:32,"ok">>) %
+    gen_tcp:send(ClientSocket,<<7:32,"ok">>), %
+    gen_tcp:close(ClientSocket), %
+    exit(normal)
         .
 handle_tcp_closed(ClientSocket)->
     chat_log:debug(" tcp_closed:~p!~n",[ClientSocket])
