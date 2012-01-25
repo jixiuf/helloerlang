@@ -1,5 +1,5 @@
 -module(client).
--export([nickname/2,password/2,register/1,user/2,do_recv/1,close/1,echo/2,connect/2]).
+-export([logout/1,login/1,nickname/2,password/2,register/1,user/2,do_recv/1,close/1,echo/2,connect/2]).
 
 
 connect(Host,Port) ->
@@ -28,8 +28,11 @@ do_recv(ServerSocket)->
             handle_command(Bin,ServerSocket),
             do_recv(ServerSocket);
         {tcp_closed, ServerSocket} ->
-            chat_log:debug("tcp_closed!!!!!~n",[]),
-            do_recv(ServerSocket) ;
+            chat_log:debug("client tcp_closed!!!!!~n",[]),
+            gen_tcp:close(ServerSocket),
+            exit(normal)
+            %% do_recv(ServerSocket)
+             ;
         {tcp_error, ServerSocket, Reason} ->
             chat_log:debug("error ~p~n",[Reason]) ,
             {error,Reason}
@@ -93,6 +96,29 @@ handle_command(<<4:32,Register_Res/binary>>,_ServerSocket)-> %4:32 表示registe
             chat_log:debug("user[~p] already registered.~n",[UserName])
     end
         ;
+handle_command(<<6:32,Login_Res/binary>>,_ServerSocket)-> %6:32 表示login
+    case Login_Res of
+        <<"ok">>->
+            chat_log:debug("cmd:login executed successed~n",[]) ;
+        <<"username_undefined">> ->
+            chat_log:debug("username undefined.~n",[]);
+        <<"password_undefined">> ->
+            chat_log:debug("password undefined.~n",[]);
+        <<"password_not_match">> ->
+            chat_log:debug("password undefined.~n",[]);
+        <<"anonymous">> ->                      %匿名用户登录
+            chat_log:debug("login as anonymous.~n",[]);
+        <<"same_normal_user_already_logined",UserName/binary>> ->
+            chat_log:debug("user[~p] same_normal_user_already_logined.~n",[UserName]);
+        <<"same_anonymous_user_already_logined",UserName/binary>> ->
+            chat_log:debug("user[~p] same_anonymous_user_already_logined.~n",[UserName])
+    end
+        ;
+handle_command(<<7:32,Logout_Res/binary>>,_ServerSocket)-> %7:32 表示logout
+    case Logout_Res of
+        <<"ok">>->
+            chat_log:debug("logout successful.~n",[])
+    end ;
 handle_command(Bin,_ServerSocket) ->
     io:format("other unhandled command ~p~n",[Bin])
         .
@@ -113,6 +139,12 @@ password(Socket,Password) when is_list(Password)->            %password is strin
 
 register(Socket) ->                             %
     whereis(?MODULE) ! {send ,<<4:32>>,Socket},
+    ok .
+login(Socket) ->                             %
+    whereis(?MODULE) ! {send ,<<6:32>>,Socket},
+    ok .
+logout(Socket) ->                             %
+    whereis(?MODULE) ! {send ,<<7:32>>,Socket},
     ok .
 
 close(Socket)->
