@@ -105,7 +105,7 @@ handle_command(<<6:32,Login_Res/binary>>,_ServerSocket)-> %6:32 表示login
         <<"password_undefined">> ->
             chat_log:debug("password undefined.~n",[]);
         <<"password_not_match">> ->
-            chat_log:debug("password undefined.~n",[]);
+            chat_log:debug("password not match.~n",[]);
         <<"anonymous">> ->                      %匿名用户登录
             chat_log:debug("login as anonymous.~n",[]);
         <<"same_normal_user_already_logined",UserName/binary>> ->
