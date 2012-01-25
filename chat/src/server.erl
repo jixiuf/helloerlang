@@ -62,7 +62,7 @@ handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
     chat_log:debug("Server got :cmd:password~p~n ",[Password]),
     put(password,binary_to_list(Password)),
     gen_tcp:send(ClientSocket,<<3:32,"ok">>);    %
-handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
+handle_command(<<4:32,_/binary>>,ClientSocket)-> % 4:32 ,register
     chat_log:debug("Server got cmd:register ~n",[]),
     User = #user{name=get(name),password=get(password),nickname=get(nickname)},
     CheckUser = fun()->
