@@ -88,7 +88,9 @@ handle_command(<<4:32,Register_Res/binary>>,_ServerSocket)-> %4:32 表示registe
           <<"password_undefined">> ->
             chat_log:debug("password undefined.~n",[]);
           <<"no_nickname">> ->
-            chat_log:debug("warning:nickname undefined.~n",[])
+            chat_log:debug("warning:nickname undefined.~n",[]);
+        <<"user_already_registered",UserName/binary>> ->
+            chat_log:debug("user[~p] already registered.~n",[UserName])
     end
         ;
 handle_command(Bin,_ServerSocket) ->

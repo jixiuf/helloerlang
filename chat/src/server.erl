@@ -55,7 +55,7 @@ handle_command(<<1:32,MsgBody/binary>>,ClientSocket)-> % 1:32 ,echo
 %% login ,部分，传递用户名
 handle_command(<<2:32,UserName/binary>>,ClientSocket)-> % 2:32 ,user
     chat_log:debug("Server got :cmd:user~p~n ",[UserName]),
-    put(user,binary_to_list(UserName)),
+    put(name,binary_to_list(UserName)),
     gen_tcp:send(ClientSocket,<<2:32,"ok">>)    %
         ;
 handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
@@ -64,15 +64,14 @@ handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
     gen_tcp:send(ClientSocket,<<3:32,"ok">>);    %
 handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
     chat_log:debug("Server got cmd:register ~n",[]),
-    User = #user{name=get(user),password=get(password),nickname=get(nickname)},
+    User = #user{name=get(name),password=get(password),nickname=get(nickname)},
     CheckUser = fun()->
                     if User#user.name =:= undefined
                        -> throw( <<"username_undefined">>);
                         User#user.password=:= undefined
                        -> throw( <<"password_undefined">>);
                        User#user.nickname =:= undefined
-                       -> put(nickname,get(user)), %use name as the nickname
-                          %% User#user{name=get(user)},
+                       -> %% User#user{name=get(name)},
                           throw( <<"no_nickname">>); %use username as nickname if undefined,just a warning.
                        true -> <<"ok">>
                     end
@@ -84,15 +83,25 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 3:32 ,register
                           chat_log:debug("userName:~p,password:~p,nickname:~p~n",[User#user.name,User#user.password,User#user.nickname]),
                           mnesia:write(User)
                   end,
-            mnesia:transaction(Fun),
-            gen_tcp:send(ClientSocket,<<4:32,"ok">>)    ;
+            case user_exists(User#user.name) of
+                false->
+                    mnesia:transaction(Fun) ,%save a registered user in mnesia db.
+                    gen_tcp:send(ClientSocket,<<4:32,"ok">>);
+                true ->
+                    gen_tcp:send(ClientSocket,util:binary_concat(<<4:32,"user_already_registered">>,User#user.name))
+            end;
         <<"no_nickname">> ->
-            NewUser=User#user{nickname=get(nickname)}, %use name as the nickname
+            NewUser=User#user{nickname=get(name)}, %use name as the nickname
             Fun = fun()->
                           chat_log:debug("userName:~p,password:~p,nickname:~p~n",[NewUser#user.name,NewUser#user.password,NewUser#user.nickname]),
                           mnesia:write(NewUser)
                   end,
-            mnesia:transaction(Fun),            %save a registered user in mnesia db.
+            case user_exists(User#user.name) of
+                false->
+                    mnesia:transaction(Fun) ; %save a registered user in mnesia db.
+                true ->
+                    gen_tcp:send(ClientSocket,util:binary_concat(<<4:32,"user_already_registered">>,NewUser#user.name))
+            end,
             gen_tcp:send(ClientSocket,<<4:32,"no_nickname">>)    ; %still send "no_nickname" to client ,so that client can do something.
         BinMsg ->
             gen_tcp:send(ClientSocket,util:binary_concat(<<4:32>>,BinMsg))    %
@@ -114,3 +123,15 @@ prepare_db()->
     mnesia:create_table(room,[{type,set},{attributes,record_info(fields ,room)}]), %set 不允许重复数据
     mnesia:create_table(activated_user,[{type,set},{attributes,record_info(fields ,activated_user)}]) %set 不允许重复数据
     .
+%% return true or false,whether user exists in db
+user_exists(UserName)->
+    Fun = fun()->
+                  mnesia:read(user,UserName)  %参数{Tab,Key},似乎这个Key 是-record的第一个属性
+          end,
+    {atomic,Result}= mnesia:transaction(Fun),
+    case length(Result) of
+        0->
+            false;
+        _ ->
+            true
+    end.
