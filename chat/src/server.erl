@@ -233,7 +233,7 @@ handle_command(<<8:32,RoomNameBin/binary>>,ClientSocket)-> % 8:32 ,join room
         _Logined ->
             case  string:chr(RoomName,$#)  of %判断name 是不是以#开头
                 1->
-                    do_join(RoomName,ClientSocket);
+                    do_join(get(name),RoomName,ClientSocket);
                 _ ->
                     gen_tcp:send(ClientSocket,<<8:32,"username_must_start_with_#">>)    %
             end
@@ -250,7 +250,7 @@ do_logout(UserName)->
     mnesia:transaction(Fun)
     .
 
-do_join(_RoomName,_ClientSocket)->
+do_join(_UserName,_RoomName,_ClientSocket)->
     io:format("server do join .~n",[])
     .
 
