@@ -28,6 +28,7 @@ acceptor(ListenSocket) ->
     {ok, Socket} = gen_tcp:accept(ListenSocket), %
     spawn(fun() -> acceptor(ListenSocket) end),  %每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
     chat_log:debug("a new client is coming...~n",[]),
+    put(user_login_p ,false),                    %当前进程标记为未登录状态(此时此进程刚刚启动，客户端未来得及运行任务命令)
     handle(Socket).
 
 %% Echoing back whatever was obtained
@@ -64,6 +65,19 @@ handle_command(<<2:32,UserName/binary>>,ClientSocket)-> % 2:32 ,user
             gen_tcp:send(ClientSocket,<<2:32,"username_cannot_start_with_#">>) ;   %
         _ ->
             put(name,binary_to_list(UserName)),
+            %% DONE:注销已登录用户(如果有)
+            case get(user_login_p) of
+                true ->
+                    do_logout(get(name));
+                anonymous ->
+                    do_logout(get(name));
+                undefined ->
+                    ok;
+                false->
+                    ok
+                end,
+            put(user_login_p,false),                 %如果客户端传过来新的用户名，将此前用户标记为未登录
+            %%如果已经有一个用户登录了，又运行了一次 cmd:user ,则相当于注销已登录用户
             gen_tcp:send(ClientSocket,<<2:32,"ok">>)    %
     end ;
 handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
@@ -83,7 +97,9 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 4:32 ,register
                         case User#users.password of
                             undefined->
                                 throw( <<"password_undefined">>);
-                            _ ->
+                            "" ->
+                                throw( <<"password_undefined">>);
+                            _->
                                 ok
                         end,
                         case User#users.nickname  of
@@ -142,13 +158,9 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
                         case User#users.password of
                             undefined->
                                 throw( <<"password_undefined">>);
-                            _ ->
-                                ok
-                        end,
-                        case User#users.nickname  of
-                            undefined->
-                                throw( <<"no_nickname">>); %use username as nickname if undefined,just a warning.
-                            _ ->
+                            "" ->
+                                throw( <<"anonymous">>);
+                            _->
                                 <<"ok">>
                         end
                 end,
@@ -163,7 +175,8 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
                     case user_login(User#users.name,User#users.password) of
                         true->                        %用户名密码正确
                             mnesia:transaction(Fun) ,%login
-                            gen_tcp:send(ClientSocket,<<6:32,"ok">>);
+                            gen_tcp:send(ClientSocket,<<6:32,"ok">>),
+                            put(user_login_p,true);
                         false->
                             gen_tcp:send(ClientSocket,<<6:32,"password_not_match">>)
                     end ;
@@ -179,7 +192,8 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
                                 true->                        %用户名密码正确
                                     %% mnesia:transaction(Fun) ,%login
                                     mnesia:transaction(Fun) ,%activated_user 是set 类型,write 时，会冲掉同key的记录
-                                    gen_tcp:send(ClientSocket,<<6:32,"ok">>);
+                                    gen_tcp:send(ClientSocket,<<6:32,"ok">>),
+                                    put(user_login_p,true);
                                 false->
                                     gen_tcp:send(ClientSocket,<<6:32,"password_not_match">>)
                             end
@@ -193,7 +207,8 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
             case user_login_p(User#users.name) of
                 false->                         %没有同名用户登录
                     mnesia:transaction(Fun) ,%login
-                    gen_tcp:send(ClientSocket,<<6:32,"anonymous">>);
+                    gen_tcp:send(ClientSocket,<<6:32,"anonymous">>),
+                    put(user_login_p,anonymous);
                 true ->                         %有同名用户正常登录,则此次匿名登录失败
                     gen_tcp:send(ClientSocket,util:binary_concat(<<6:32,"same_normal_user_already_logined">>,User#users.name));
                 anonymous ->                    %有一个同名匿名登录用户,则此次匿名登录失败
@@ -204,15 +219,41 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
     end;
 handle_command(<<7:32,_Logout/binary>>,ClientSocket)-> % 7:32 ,logout
     chat_log:debug("server:logout ~p....~n",[get(name)]),
-    %% TODO:db clean up,tcp clean up
-    Fun = fun()->
-                  mnesia:delete({activated_user,get(name)})
-          end,
-    mnesia:transaction(Fun),
     gen_tcp:send(ClientSocket,<<7:32,"ok">>), %
+    do_logout(get(name)),
     gen_tcp:close(ClientSocket), %
-    exit(normal)
-        .
+    exit(normal);
+handle_command(<<8:32,RoomNameBin/binary>>,ClientSocket)-> % 8:32 ,join room
+    RoomName = binary_to_list(RoomNameBin),
+    chat_log:debug("server:join room ~p ....~n",[RoomName]),
+    case  get(user_login_p) of
+        false ->
+            gen_tcp:send(ClientSocket,<<8:32,"login_first">>)    %you should login first ,then join
+                ;
+        _Logined ->
+            case  string:chr(RoomName,$#)  of %判断name 是不是以#开头
+                1->
+                    do_join(RoomName,ClientSocket);
+                _ ->
+                    gen_tcp:send(ClientSocket,<<8:32,"username_must_start_with_#">>)    %
+            end
+    end
+ .
+
+
+do_logout(UserName)->
+    io:format("server do logout clean up job.~n",[]),
+        %% TODO:db clean up,tcp clean up
+    Fun = fun()->
+                  mnesia:delete({activated_user,UserName})
+          end,
+    mnesia:transaction(Fun)
+    .
+
+do_join(_RoomName,_ClientSocket)->
+    io:format("server do join .~n",[])
+    .
+
 handle_tcp_closed(ClientSocket)->
     chat_log:debug(" tcp_closed:~p!~n",[ClientSocket])
         .
