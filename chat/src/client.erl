@@ -60,6 +60,8 @@ handle_command(<<2:32,UserMsg/binary>>,_ServerSocket)-> %2:32 表示user
     case UserMsg of
         <<"ok">>->
             chat_log:debug("cmd:user executed successed~n",[]) ;
+        <<"username_cannot_start_with_#">> ->
+            chat_log:debug("username_cannot_start_with_#~n",[]);
         <<"already_login">> ->
             chat_log:debug("user with the same name have alreadly login.~n",[])
     end
