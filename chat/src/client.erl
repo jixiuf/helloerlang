@@ -1,6 +1,6 @@
 -module(client).
--export([msg/3,connect/2]).
--export([join/2,logout/1,login/1,nickname/2,password/2,register/1,user/2,do_recv/1,close/1,echo/2]).
+-export([msg/3,join/2,logout/1,login/1,nickname/2,password/2,register/1,user/2,do_recv/1,close/1,echo/2]).
+-export([connect/2]).
 
 
 connect(Host,Port) ->
