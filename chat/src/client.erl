@@ -1,5 +1,5 @@
 -module(client).
--export([connect/2]).
+-export([msg/3,connect/2]).
 -export([join/2,logout/1,login/1,nickname/2,password/2,register/1,user/2,do_recv/1,close/1,echo/2]).
 
 
@@ -137,17 +137,17 @@ handle_command(Bin,_ServerSocket) ->
         .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
-    whereis(?MODULE) ! {send ,util:binary_concat(<<1:32>>,Msg),Socket},
+    whereis(?MODULE) ! {send ,util:binary_concat([<<1:32>>,Msg]),Socket},
     ok .
 
 user(Socket,UserName) when is_list(UserName)->            %UserName is string
-    whereis(?MODULE) ! {send ,util:binary_concat(<<2:32>>,UserName),Socket},
+    whereis(?MODULE) ! {send ,util:binary_concat([<<2:32>>,UserName]),Socket},
     ok .
 nickname(Socket,NickName) when is_list(NickName)->            %NickName is string
-    whereis(?MODULE) ! {send ,util:binary_concat(<<5:32>>,NickName),Socket},
+    whereis(?MODULE) ! {send ,util:binary_concat([<<5:32>>,NickName]),Socket},
     ok .
 password(Socket,Password) when is_list(Password)->            %password is string
-    whereis(?MODULE) ! {send ,util:binary_concat(<<3:32>>,Password),Socket},
+    whereis(?MODULE) ! {send ,util:binary_concat([<<3:32>>,Password]),Socket},
     ok .
 
 register(Socket) ->                             %
@@ -160,8 +160,13 @@ logout(Socket) ->                             %
     whereis(?MODULE) ! {send ,<<7:32>>,Socket},
     ok .
 join(Socket,RoomName) when is_list(RoomName)->            %RoomName is string
-    whereis(?MODULE) ! {send ,util:binary_concat(<<8:32>>,RoomName),Socket},
+    whereis(?MODULE) ! {send ,util:binary_concat([<<8:32>>,RoomName]),Socket},
     ok .
+msg(Socket,RoomOrUserName,Msg) when is_list(RoomOrUserName) ->            %RoomName is string
+    Len= length(RoomOrUserName),
+    whereis(?MODULE) ! {send ,util:binary_concat([<<9:32,Len:32>>,RoomOrUserName,Msg]),Socket},
+    ok .
+
 
 close(Socket)->
     ok = gen_tcp:close(Socket).
