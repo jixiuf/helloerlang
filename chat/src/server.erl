@@ -121,7 +121,7 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 4:32 ,register
                     mnesia:transaction(Fun) ,%save a registered user in mnesia db.
                     gen_tcp:send(ClientSocket,<<4:32,"ok">>);
                 true ->
-                    gen_tcp:send(ClientSocket,util:binary_concat(<<4:32,"user_already_registered">>,User#users.name))
+                    gen_tcp:send(ClientSocket,util:binary_concat([<<4:32,"user_already_registered">>,User#users.name]))
             end;
         <<"no_nickname">> ->
             NewUser=User#users{nickname=get(name)}, %use name as the nickname
@@ -133,11 +133,11 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 4:32 ,register
                 false->
                     mnesia:transaction(Fun) ; %save a registered user in mnesia db.
                 true ->
-                    gen_tcp:send(ClientSocket,util:binary_concat(<<4:32,"user_already_registered">>,NewUser#users.name))
+                    gen_tcp:send(ClientSocket,util:binary_concat([<<4:32,"user_already_registered">>,NewUser#users.name]))
             end,
             gen_tcp:send(ClientSocket,<<4:32,"no_nickname">>)    ; %still send "no_nickname" to client ,so that client can do something.
         BinMsg ->
-            gen_tcp:send(ClientSocket,util:binary_concat(<<4:32>>,BinMsg))    %
+            gen_tcp:send(ClientSocket,util:binary_concat([<<4:32>>,BinMsg]))    %
     end
         ;
 handle_command(<<5:32,Nickname/binary>>,ClientSocket)-> % 5:32 ,nickname
@@ -181,7 +181,7 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
                             gen_tcp:send(ClientSocket,<<6:32,"password_not_match">>)
                     end ;
                 true ->
-                    gen_tcp:send(ClientSocket,util:binary_concat(<<6:32,"same_normal_user_already_logined">>,User#users.name));
+                    gen_tcp:send(ClientSocket,util:binary_concat([<<6:32,"same_normal_user_already_logined">>,User#users.name]));
                 anonymous ->                    %如果已经有一个匿名登录用户，
                     %% gen_tcp:send(ClientSocket,<<6:32,"anonymous">>)
                     case  query_activated_user(User#users.name) of %首先查出同名已经登录的匿名用户名相关信息
@@ -210,12 +210,12 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
                     gen_tcp:send(ClientSocket,<<6:32,"anonymous">>),
                     put(user_login_p,anonymous);
                 true ->                         %有同名用户正常登录,则此次匿名登录失败
-                    gen_tcp:send(ClientSocket,util:binary_concat(<<6:32,"same_normal_user_already_logined">>,User#users.name));
+                    gen_tcp:send(ClientSocket,util:binary_concat([<<6:32,"same_normal_user_already_logined">>,User#users.name]));
                 anonymous ->                    %有一个同名匿名登录用户,则此次匿名登录失败
-                    gen_tcp:send(ClientSocket,util:binary_concat(<<6:32,"same_anonymous_user_already_logined">>,User#users.name))
+                    gen_tcp:send(ClientSocket,util:binary_concat([<<6:32,"same_anonymous_user_already_logined">>,User#users.name]))
             end;
         BinMsg ->
-            gen_tcp:send(ClientSocket,util:binary_concat(<<6:32>>,BinMsg))    %
+            gen_tcp:send(ClientSocket,util:binary_concat([<<6:32>>,BinMsg]))    %
     end;
 handle_command(<<7:32,_Logout/binary>>,ClientSocket)-> % 7:32 ,logout
     chat_log:debug("server:logout ~p....~n",[get(name)]),
