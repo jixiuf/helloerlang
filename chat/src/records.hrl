@@ -1,4 +1,9 @@
--record(room,{room_name,client_socket_id}).
+%%所有的聊天室，set
+%% 如果某聊天室长年没有用户进入，系统会delete 此聊天室,update_time用于
+%% 记录此最后一次用户登录给聊天室的时间
+-record(room,{room_name,desc ,create_time,update_time}).
+%% 关于哪些聊天室有哪些用户进入的一张表,bag
+-record(room_user,{room_name,user_name}).
 %% -record(users,{id,name,nickname,password}).
 -record(users,{name,nickname,password}).
 
