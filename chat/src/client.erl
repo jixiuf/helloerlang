@@ -132,6 +132,12 @@ handle_command(<<8:32,JoinInfo/binary>>,_ServerSocket)-> %8:32 表示join 加入
             ok
         end
      ;
+handle_command(<<9:32,MsgInfo/binary>>,_ServerSocket)-> %9:32 表示向其他用户，或聊天室发送消息
+    case MsgInfo of
+        _ ->
+            ok
+        end
+     ;
 handle_command(Bin,_ServerSocket) ->
     io:format("other unhandled command ~p~n",[Bin])
         .
