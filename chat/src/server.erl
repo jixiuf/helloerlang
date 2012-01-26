@@ -59,9 +59,13 @@ handle_command(<<1:32,MsgBody/binary>>,ClientSocket)-> % 1:32 ,echo
 %% login ,部分，传递用户名
 handle_command(<<2:32,UserName/binary>>,ClientSocket)-> % 2:32 ,user
     chat_log:debug("Server got :cmd:user~p~n",[UserName]),
-    put(name,binary_to_list(UserName)),
-    gen_tcp:send(ClientSocket,<<2:32,"ok">>)    %
-        ;
+    case  string:chr(binary_to_list(UserName),$#)  of %判断name 是不是以
+        1->
+            gen_tcp:send(ClientSocket,<<2:32,"username_cannot_start_with_#">>) ;   %
+        _ ->
+            put(name,binary_to_list(UserName)),
+            gen_tcp:send(ClientSocket,<<2:32,"ok">>)    %
+    end ;
 handle_command(<<3:32,Password/binary>>,ClientSocket)-> % 3:32 ,Password
     chat_log:debug("Server got :cmd:password~p~n",[Password]),
     put(password,binary_to_list(Password)),
@@ -70,16 +74,25 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 4:32 ,register
     chat_log:debug("Server got cmd:register ~n",[]),
     User = #users{name=get(name),password=get(password),nickname=get(nickname)},
     CheckUser = fun()->
-                    if User#users.name =:= undefined
-                       -> throw( <<"username_undefined">>);
-                        User#users.password=:= undefined
-                       -> throw( <<"password_undefined">>);
-                       User#users.nickname =:= undefined
-                       -> %% User#users{name=get(name)},
-                          throw( <<"no_nickname">>); %use username as nickname if undefined,just a warning.
-                       true -> <<"ok">>
-                    end
-            end,
+                        case User#users.name of
+                            undefined->
+                                throw( <<"username_undefined">>);
+                            _ ->
+                                ok
+                        end,
+                        case User#users.password of
+                            undefined->
+                                throw( <<"password_undefined">>);
+                            _ ->
+                                ok
+                        end,
+                        case User#users.nickname  of
+                            undefined->
+                                throw( <<"no_nickname">>); %use username as nickname if undefined,just a warning.
+                            _ ->
+                                <<"ok">>
+                        end
+                end,
     case catch CheckUser() of
         <<"ok">> ->
             Fun = fun()->
@@ -110,7 +123,7 @@ handle_command(<<4:32,_/binary>>,ClientSocket)-> % 4:32 ,register
         BinMsg ->
             gen_tcp:send(ClientSocket,util:binary_concat(<<4:32>>,BinMsg))    %
     end
-;
+        ;
 handle_command(<<5:32,Nickname/binary>>,ClientSocket)-> % 5:32 ,nickname
     chat_log:debug("server got nickname[~p] msg from client.~n",[Nickname]),
     put(nickname,binary_to_list(Nickname)),
@@ -120,15 +133,25 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
     chat_log:debug("Server got cmd:login ~n",[]),
     User = #users{name=get(name),password=get(password),nickname=get(nickname)},
     CheckUser = fun()->
-                    if User#users.name =:= undefined
-                       -> throw( <<"username_undefined">>);
-                        User#users.password=:= undefined
-                       -> throw( <<"password_undefined">>);
-                        User#users.password=:= "" % 匿名login
-                       -> throw( <<"anonymous">>);
-                       true -> <<"ok">>
-                    end
-            end,
+                        case User#users.name of
+                            undefined->
+                                throw( <<"username_undefined">>);
+                            _ ->
+                                ok
+                        end,
+                        case User#users.password of
+                            undefined->
+                                throw( <<"password_undefined">>);
+                            _ ->
+                                ok
+                        end,
+                        case User#users.nickname  of
+                            undefined->
+                                throw( <<"no_nickname">>); %use username as nickname if undefined,just a warning.
+                            _ ->
+                                <<"ok">>
+                        end
+                end,
     case catch CheckUser() of
         <<"ok">> ->                             %正常用户登录，
             Fun = fun()->
@@ -143,7 +166,7 @@ handle_command(<<6:32,_/binary>>,ClientSocket) -> %login
                             gen_tcp:send(ClientSocket,<<6:32,"ok">>);
                         false->
                             gen_tcp:send(ClientSocket,<<6:32,"password_not_match">>)
-                        end ;
+                    end ;
                 true ->
                     gen_tcp:send(ClientSocket,util:binary_concat(<<6:32,"same_normal_user_already_logined">>,User#users.name));
                 anonymous ->                    %如果已经有一个匿名登录用户，
