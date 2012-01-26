@@ -1,5 +1,5 @@
 -module(client).
--export([logout/1,login/1,nickname/2,password/2,register/1,user/2,do_recv/1,close/1,echo/2,connect/2]).
+-export([join/2,logout/1,login/1,nickname/2,password/2,register/1,user/2,do_recv/1,close/1,echo/2,connect/2]).
 
 
 connect(Host,Port) ->
@@ -121,6 +121,9 @@ handle_command(<<7:32,Logout_Res/binary>>,_ServerSocket)-> %7:32 表示logout
         <<"ok">>->
             chat_log:debug("logout successful.~n",[])
     end ;
+handle_command(<<8:32,JoinInfo/binary>>,_ServerSocket)-> %8:32 表示join 加入聊天室
+    io:format("test~p~n",[JoinInfo])
+     ;
 handle_command(Bin,_ServerSocket) ->
     io:format("other unhandled command ~p~n",[Bin])
         .
@@ -147,6 +150,9 @@ login(Socket) ->                             %
     ok .
 logout(Socket) ->                             %
     whereis(?MODULE) ! {send ,<<7:32>>,Socket},
+    ok .
+join(Socket,RoomName) when is_list(RoomName)->            %RoomName is string
+    whereis(?MODULE) ! {send ,util:binary_concat(<<8:32>>,RoomName),Socket},
     ok .
 
 close(Socket)->
