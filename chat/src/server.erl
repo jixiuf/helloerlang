@@ -238,7 +238,7 @@ user_login_p(UserName)->
 %% check password ok ,
 %% @return : true or false
 user_login(UserName,Password)->
-    Fun = fun()->
+    Fun = fun()->                                                        %select name from users where name=? and password=?
                   MatchPattern=  #users{_='_',name='$1',password='$2' }, %相当于将name绑定到$1, 上，下文中Guard,Result 可以引用之，
                   Guard=[{'==','$1', UserName},{'==','$2', Password}],                   %$1 == Username 作为 判断条件
                   Result=['$1'],                            %结果，只取$1作为返回值
