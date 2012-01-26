@@ -1,5 +1,5 @@
 -module(util).
--export([time_to_string/1,binary_concat/2,int32_2_binary/1,read_int32/1]).
+-export([time_to_string/1,binary_concat/1,int32_2_binary/1,read_int32/1]).
 
 %util function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% read int32 from head of Bin data
@@ -45,14 +45,30 @@ int32_2_binary(Bin) when is_binary(Bin) ->                          %若本就Bi
 %%     {BitLen,Bin}
 %% .
 
-binary_concat(Bin1,Bin2) when is_binary(Bin1) and is_binary(Bin2)->
-    iolist_to_binary([Bin1,Bin2])    ;
-binary_concat(Bin1,String) when is_binary(Bin1) and is_list(String) ->
-    iolist_to_binary([Bin1,list_to_binary(String)]);
-binary_concat(String,Bin1) when is_binary(Bin1) and is_list(String) ->
-    iolist_to_binary([Bin1,list_to_binary(String)]);
-binary_concat(String1,String2) when is_list(String1) and is_list(String2) ->
-    iolist_to_binary([list_to_binary(String1),list_to_binary(String2)]).
+%% binary_concat(Bin1,Bin2) when is_binary(Bin1) and is_binary(Bin2)->
+%%     iolist_to_binary([Bin1,Bin2])    ;
+%% binary_concat(Bin1,String) when is_binary(Bin1) and is_list(String) ->
+%%     iolist_to_binary([Bin1,list_to_binary(String)]);
+%% binary_concat(String,Bin1) when is_binary(Bin1) and is_list(String) ->
+%%     iolist_to_binary([Bin1,list_to_binary(String)]);
+%% binary_concat(String1,String2) when is_list(String1) and is_list(String2) ->
+%%     iolist_to_binary([list_to_binary(String1),list_to_binary(String2)]).
+
+binary_concat(Bins)->
+    binary_concat(Bins,<<"">>)
+    .
+binary_concat([],Result) ->
+    Result;
+binary_concat([H|T],Result) when is_binary(H) ->
+    NewR=iolist_to_binary([Result,H]),
+    binary_concat(T,NewR) ;
+binary_concat([H|T],Result) when is_list(H) ->
+    NewR=iolist_to_binary([Result,list_to_binary(H)]),
+    binary_concat(T,NewR).
+
+
+
+
 
 %% Time (as return by calendar:local_time() to string conversion.
 %% "2012-01-06 09:55:12"
