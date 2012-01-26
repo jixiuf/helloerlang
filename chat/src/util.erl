@@ -1,5 +1,5 @@
 -module(util).
--export([binary_concat/2,int32_2_binary/1,read_int32/1]).
+-export([time_to_string/1,binary_concat/2,int32_2_binary/1,read_int32/1]).
 
 %util function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% read int32 from head of Bin data
@@ -53,3 +53,11 @@ binary_concat(String,Bin1) when is_binary(Bin1) and is_list(String) ->
     iolist_to_binary([Bin1,list_to_binary(String)]);
 binary_concat(String1,String2) when is_list(String1) and is_list(String2) ->
     iolist_to_binary([list_to_binary(String1),list_to_binary(String2)]).
+
+%% Time (as return by calendar:local_time() to string conversion.
+%% "2012-01-06 09:55:12"
+time_to_string({{Y,Mo,D},{H,Mi,S}}) ->
+    String = io_lib:format( "~4.4w-~2.2.0w-~2.2.0w ~2.2.0w:~2.2.0w:~2.2.0w",
+                            [Y,Mo,D,H,Mi,S] ),
+
+         lists:flatten(String).
