@@ -1,5 +1,5 @@
 -module(server).
--export([user_login/2,query_activated_user/1,user_login_p/1,user_exists/1,start_server/1]).
+-export([start_server/1]).
 -include("records.hrl").
 
 
@@ -249,10 +249,17 @@ do_logout(UserName)->
           end,
     mnesia:transaction(Fun)
     .
-
-do_join(_UserName,_RoomName,_ClientSocket)->
-    io:format("server do join .~n",[])
-    .
+%% 如果roomname 已经存在，则直接将用户加入到聊天室，否则，先创建聊天室，后加入
+do_join(UserName,RoomName,_ClientSocket)->
+    io:format("server do join .~n",[]),
+    case  room_exists(RoomName) of
+        true->
+            ok;
+        false ->                                %先创建聊天室，(若不存在)
+            create_room(RoomName,UserName)
+    end,
+    insert_room_user(RoomName,UserName)
+        .
 
 handle_tcp_closed(ClientSocket)->
     chat_log:debug(" tcp_closed:~p!~n",[ClientSocket])
@@ -262,12 +269,43 @@ prepare_db()->
     mnesia:start(),
     mnesia:create_table(users,[{type,set},{attributes,record_info(fields ,users)}]), %set 不允许重复数据
     mnesia:create_table(room,[{type,set},{attributes,record_info(fields ,room)}]), %set 不允许重复数据
+    mnesia:create_table(room_user,[{type,bag},{attributes,record_info(fields ,room_user)}]) ,%bag 允许重复数据
     mnesia:create_table(activated_user,[{type,set},{attributes,record_info(fields ,activated_user)}]) %set 不允许重复数据
     .
 %% return true or false,whether user exists in db
 user_exists(UserName)->
     Fun = fun()->
                   mnesia:read(users,UserName)  %参数{Tab,Key},似乎这个Key 是-record的第一个属性
+          end,
+    {atomic,Result}= mnesia:transaction(Fun),
+    case length(Result) of
+        0->                                     %
+            false;
+        _ ->
+            true
+    end.
+
+%% 创建聊天室
+create_room(RoomName,UserName)->
+    Desc = "room name :"++ RoomName++ " create by:" ++UserName++ " @:"++util:time_to_string( calendar:local_time()),
+    Room = #room{room_name=RoomName,desc=Desc,creater=UserName,create_time=now(),update_time=now()},
+    Fun = fun()->
+                  mnesia:write(Room)
+          end,
+    mnesia:transaction(Fun)
+    .
+
+insert_room_user(RoomName,UserName)->
+    RoomUser = #room_user{room_name=RoomName,user_name=UserName},
+    Fun = fun()->
+                  mnesia:write(RoomUser)
+          end,
+    mnesia:transaction(Fun)
+.
+
+room_exists(RoomName)->
+    Fun = fun()->
+                  mnesia:read(room,RoomName)  %参数{Tab,Key},似乎这个Key 是-record的第一个属性
           end,
     {atomic,Result}= mnesia:transaction(Fun),
     case length(Result) of
@@ -304,7 +342,7 @@ user_login_p(UserName)->
 user_login(UserName,Password)->
     Fun = fun()->                                                        %select name from users where name=? and password=?
                   MatchPattern=  #users{_='_',name='$1',password='$2' }, %相当于将name绑定到$1, 上，下文中Guard,Result 可以引用之，
-                  Guard=[{'==','$1', UserName},{'==','$2', Password}],                   %$1 == Username 作为 判断条件
+                  Guard=[{'==','$1', UserName},{'==','$2', Password}],                   %$1 == UserName 作为 判断条件
                   Result=['$1'],                            %结果，只取$1作为返回值
                   mnesia:select(users,[{MatchPattern,Guard,Result}])
           end,
