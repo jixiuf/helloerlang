@@ -116,7 +116,7 @@ handle_command(<<6:32,Login_Res/binary>>,_ServerSocket)-> %6:32 表示login
         <<"same_anonymous_user_already_logined",UserName/binary>> ->
             chat_log:debug("user[~p] same_anonymous_user_already_logined.~n",[UserName])
     end
-        ;
+u        ;
 handle_command(<<7:32,Logout_Res/binary>>,_ServerSocket)-> %7:32 表示logout
     case Logout_Res of
         <<"ok">>->
@@ -136,12 +136,12 @@ handle_command(<<9:32,MsgInfo/binary>>,_ServerSocket)-> %9:32 表示向其他用
     case MsgInfo of
         <<"dest_user_doesnot_logined">> ->
             chat_log:debug("cannot send msg to un logined user.~n",[]);
-        Msg ->
+        <<"msg",Msg/binary>> ->
             chat_log:debug("msg~p~n",[Msg])
         end
      ;
 handle_command(Bin,_ServerSocket) ->
-    io:format("other unhandled command ~p~n",[Bin])
+    chat_log:info("other unhandled command ~p~n",[Bin])
         .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
