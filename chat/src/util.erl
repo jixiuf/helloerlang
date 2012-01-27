@@ -1,5 +1,5 @@
 -module(util).
--export([time_to_string/1,binary_concat/1,int32_2_binary/1,read_int32/1]).
+-export([split_binary_by_head_int_value/1,time_to_string/1,binary_concat/1,int32_2_binary/1,read_int32/1]).
 
 %util function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% read int32 from head of Bin data
@@ -15,6 +15,15 @@ read_int32(Bin)when is_binary(Bin)->
         ;
 read_int32(_NoneBin) ->
     {error,message_not_bin}.
+
+%% Bin格式为:<<Size_Of_Part1:32,Part1,Tail>>
+%% return {Part1,Tail}
+%%split_binary_by_head_int_value(<<5:32,"helloworld">>)={<<"hello">>,<<"world">>}
+split_binary_by_head_int_value(Bin) when is_binary(Bin)->
+    {Len,Body} = read_int32(Bin),
+    <<Header:Len/binary,Tail/binary>> = Body,
+    {Header,Tail}.
+
 
 %%int按网络字节流 转成binary
 %%网络传输一般采用大端序big，也被称之为网络字节序，或网络序
