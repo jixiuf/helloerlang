@@ -116,7 +116,7 @@ handle_command(<<6:32,Login_Res/binary>>,_ServerSocket)-> %6:32 表示login
         <<"same_anonymous_user_already_logined",UserName/binary>> ->
             chat_log:debug("user[~p] same_anonymous_user_already_logined.~n",[UserName])
     end
-u        ;
+        ;
 handle_command(<<7:32,Logout_Res/binary>>,_ServerSocket)-> %7:32 表示logout
     case Logout_Res of
         <<"ok">>->
