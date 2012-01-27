@@ -125,7 +125,7 @@ handle_command(<<7:32,Logout_Res/binary>>,_ServerSocket)-> %7:32 表示logout
 handle_command(<<8:32,JoinInfo/binary>>,_ServerSocket)-> %8:32 表示join 加入聊天室
     case JoinInfo of
         <<"username_must_start_with_#">>->
-            chat_log:debug("username_must_start_with_#~n",[]);
+            chat_log:debug("roomname_must_start_with_#~n",[]);
         <<"login_first">>->
             chat_log:debug("you should login first ,then run join command .",[]);
         _ ->

@@ -235,7 +235,7 @@ handle_command(<<8:32,RoomNameBin/binary>>,ClientSocket)-> % 8:32 ,join room
                 1->
                     do_join(get(name),RoomName,ClientSocket);
                 _ ->
-                    gen_tcp:send(ClientSocket,<<8:32,"username_must_start_with_#">>)    %
+                    gen_tcp:send(ClientSocket,<<8:32,"roomname_must_start_with_#">>)    %
             end
     end
  .
