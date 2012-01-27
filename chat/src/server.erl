@@ -1,5 +1,5 @@
 -module(server).
--export([room_p/1,start_server/1]).
+-export([query_users_in_room/1,room_p/1,start_server/1]).
 -include("records.hrl").
 
 
@@ -248,8 +248,14 @@ handle_command(<<9:32,MsgInfo/binary>>,ClientSocket)-> % 9:32 ,msg
         end
  .
 %% send msg to all user in roomname
-do_msg_room(RoomName,Msg,_ClientSocket)->
-    io:format("room name:~p said:~p~n",[RoomName,Msg])
+do_msg_room(RoomName,Msg,ClientSocket)->
+    UserNames= query_users_in_room(binary_to_list(RoomName)),
+        lists:map(
+          fun(UserName)->
+                  do_msg_user(UserName,Msg,ClientSocket)
+          end,
+          UserNames
+         )
     .
 %% send msg to user
 do_msg_user(UserName,Msg,ClientSocket)->
@@ -391,6 +397,16 @@ user_login(UserName,Password)->
         end
 
     .
+query_users_in_room(RoomName)->
+    Fun = fun()->
+                  MatchPattern=  #room_user{_='_',user_name='$1',room_name='$2' },
+                  Guard=[{'==','$2', RoomName}],
+                  Result=['$1'],                            %结果，只取$1作为返回值
+                  mnesia:select(room_user,[{MatchPattern,Guard,Result}])
+          end,
+    {atomic,Result}=mnesia:transaction(Fun),
+    Result.
+
 %% [{activated_user,"jixf",true,<0.81.0>,{1327,497303,181846}}]
 %% []
 query_activated_user(UserName)->
