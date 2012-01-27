@@ -258,14 +258,14 @@ do_msg_user(UserName,Msg,ClientSocket)->
                     gen_tcp:send(ClientSocket,<<9:32,"dest_user_doesnot_logined">>)    %
                 ;
             [{activated_user,_Name,_Registered,_Client_pid,Client_socket_id,_Update_time }] ->
-                gen_tcp:send(Client_socket_id,util:binary_concat([<<9:32>>,Msg]))    %
+                gen_tcp:send(Client_socket_id,util:binary_concat([<<9:32>>,"msg",Msg]))    %
             end
 
 
     .
 
 do_logout(UserName)->
-    io:format("server do logout clean up job.~n",[]),
+    chat_log:debug("server do logout clean up job.~n",[]),
         %% TODO:db clean up,tcp clean up
     Fun = fun()->
                   mnesia:delete({activated_user,UserName})
@@ -274,7 +274,7 @@ do_logout(UserName)->
     .
 %% 如果roomname 已经存在，则直接将用户加入到聊天室，否则，先创建聊天室，后加入
 do_join(UserName,RoomName,_ClientSocket)->
-    io:format("server do join .~n",[]),
+    chat_log:debug("server do join .~n",[]),
     case  room_exists(RoomName) of
         true->
             ok;
