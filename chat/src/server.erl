@@ -1,5 +1,5 @@
 -module(server).
--export([start_server/1]).
+-export([room_p/1,start_server/1]).
 -include("records.hrl").
 
 
@@ -237,9 +237,32 @@ handle_command(<<8:32,RoomNameBin/binary>>,ClientSocket)-> % 8:32 ,join room
                 _ ->
                     gen_tcp:send(ClientSocket,<<8:32,"roomname_must_start_with_#">>)    %
             end
-    end
+    end;
+handle_command(<<9:32,MsgInfo/binary>>,ClientSocket)-> % 9:32 ,msg
+    {RoomOrUserName,Msg} =util:split_binary_by_head_int_value(MsgInfo),
+        case room_p(RoomOrUserName) of
+            true->
+                do_msg_room(RoomOrUserName,Msg,ClientSocket);
+            false ->
+                do_msg_user(RoomOrUserName,Msg,ClientSocket)
+        end
  .
+%% send msg to all user in roomname
+do_msg_room(RoomName,Msg,_ClientSocket)->
+    io:format("room name:~p said:~p~n",[RoomName,Msg])
+    .
+%% send msg to user
+do_msg_user(UserName,Msg,ClientSocket)->
+        case query_activated_user(binary_to_list(UserName)) of
+            []->
+                    gen_tcp:send(ClientSocket,<<9:32,"dest_user_doesnot_logined">>)    %
+                ;
+            [{activated_user,_Name,_Registered,_Client_pid,Client_socket_id,_Update_time }] ->
+                gen_tcp:send(Client_socket_id,util:binary_concat([<<9:32>>,Msg]))    %
+            end
 
+
+    .
 
 do_logout(UserName)->
     io:format("server do logout clean up job.~n",[]),
@@ -302,6 +325,22 @@ insert_room_user(RoomName,UserName)->
           end,
     mnesia:transaction(Fun)
 .
+%% check RoomName 是否合法( 以#  开头)
+room_p(RoomName) when is_list(RoomName)->
+    case  string:chr(RoomName,$#)  of %判断name 是不是以#开头
+        1->                                           %是
+            true;
+        _ ->
+            false
+    end ;
+room_p(RoomName)when is_binary(RoomName) ->
+    <<Char:1/binary,_Tail/binary>> = RoomName,
+    case Char of
+        <<"#">>->
+            true;
+        _ ->
+            false
+    end.
 
 room_exists(RoomName)->
     Fun = fun()->
