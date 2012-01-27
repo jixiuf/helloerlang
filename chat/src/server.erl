@@ -253,16 +253,13 @@ do_msg_room(RoomName,Msg,_ClientSocket)->
     .
 %% send msg to user
 do_msg_user(UserName,Msg,ClientSocket)->
-        case query_activated_user(binary_to_list(UserName)) of
-            []->
-                    gen_tcp:send(ClientSocket,<<9:32,"dest_user_doesnot_logined">>)    %
+    case query_activated_user(binary_to_list(UserName)) of
+        []->
+            gen_tcp:send(ClientSocket,<<9:32,"dest_user_doesnot_logined">>)    %
                 ;
-            [{activated_user,_Name,_Registered,_Client_pid,Client_socket_id,_Update_time }] ->
-                gen_tcp:send(Client_socket_id,util:binary_concat([<<9:32>>,"msg",Msg]))    %
-            end
-
-
-    .
+        [{activated_user,_Name,_Registered,_Client_pid,Client_socket_id,_Update_time }] ->
+            gen_tcp:send(Client_socket_id,util:binary_concat([<<9:32>>,"msg",Msg]))    %
+    end.
 
 do_logout(UserName)->
     chat_log:debug("server do logout clean up job.~n",[]),
