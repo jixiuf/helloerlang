@@ -252,7 +252,7 @@ do_msg_room(RoomName,Msg,ClientSocket)->
     UserNames= query_users_in_room(binary_to_list(RoomName)),
         lists:map(
           fun(UserName)->
-                  do_msg_user(UserName,Msg,ClientSocket)
+                  do_msg_user(list_to_binary(UserName),Msg,ClientSocket)
           end,
           UserNames
          )
