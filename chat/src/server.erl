@@ -264,7 +264,8 @@ do_msg_user(UserName,Msg,ClientSocket)->
             gen_tcp:send(ClientSocket,<<9:32,"dest_user_doesnot_logined">>)    %
                 ;
         [{activated_user,_Name,_Registered,_Client_pid,Client_socket_id,_Update_time }] ->
-            gen_tcp:send(Client_socket_id,util:binary_concat([<<9:32>>,"msg",Msg]))    %
+            Sender = list_to_binary(get(name)),
+            gen_tcp:send(Client_socket_id,util:binary_concat([<<9:32>>,"msg",util:binary_length_concat(Sender,Msg)]))    %
     end.
 
 do_logout(UserName)->

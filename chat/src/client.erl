@@ -136,8 +136,9 @@ handle_command(<<9:32,MsgInfo/binary>>,_ServerSocket)-> %9:32 表示向其他用
     case MsgInfo of
         <<"dest_user_doesnot_logined">> ->
             chat_log:debug("cannot send msg to un logined user.~n",[]);
-        <<"msg",Msg/binary>> ->
-            chat_log:debug("msg~p~n",[Msg])
+        <<"msg",Sender_Msg/binary>> ->
+            {Sender,Msg}= util:split_binary_by_head_int_value(Sender_Msg),
+            chat_log:debug("msg :~p from ~p~n",[Msg,Sender])
         end
      ;
 handle_command(Bin,_ServerSocket) ->
