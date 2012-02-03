@@ -1,3 +1,4 @@
+
 * 消息协议格式:
 采用二进制数据作为消息格式
 server 与client 同时使用 {packet ,4}作为参数，故省去了消息的截取与组装，关于
@@ -7,6 +8,9 @@ packet 参数，详见：server.erl 注释
 比如echo 消息格式为<<1:32,Msg/binary>>
 用一个4字节的int 表示此消息的具体含义
 
+* 用mnesia 保存信息
+
+* 使用方法  
 server:start_server(8888).
 
 {ok,S}=client:connect("localhost",8888).
