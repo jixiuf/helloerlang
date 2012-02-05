@@ -26,6 +26,9 @@ loop(Req, DocRoot) ->
         case Req:get(method) of
             Method when Method =:= 'GET'; Method =:= 'HEAD' ->
                 case Path of
+                    "time" ->%% 新增了 /timer 这个 URL，它是一个 HTTP Chunked 的例子
+                    Response = Req:ok({"text/plain", chunked}),
+                    time(Response);
                     _ ->
                         Req:serve_file(Path, DocRoot)
                 end;
@@ -53,6 +56,15 @@ loop(Req, DocRoot) ->
 
 get_option(Option, Options) ->
     {proplists:get_value(Option, Options), proplists:delete(Option, Options)}.
+
+
+
+%% 打印当前时间，间隔一秒，再在已经打开的 http 连接之上，再次打印，这也就是所谓 HTTP长连接/ServerPush 的一种
+time(Resp)->
+    Resp:write_chunk(io_lib:format("The time is: ~p~n",
+                                   [calendar:local_time()])),
+    timer:sleep(1000),
+    time(Resp)        .
 
 %%
 %% Tests
