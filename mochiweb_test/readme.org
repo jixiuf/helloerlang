@@ -1,0 +1,16 @@
+* mochiweb 的使用
+  1. 先得到源码 
+   #+begin_src sh
+   git clone git://github.com/mochi/mochiweb.git 
+   #+end_src
+  2. 在根目录下make 进行编译
+  3.
+    #+begin_src sh
+      make app PROJECT=mochiweb_test 
+    #+end_src
+    然后在mochiweb 同级目录下会生成mochiweb_test目录
+    在这个目录下，运行make 
+    对这个项目进行一定的准备工作，比如得到它depend 的项目mochiweb(会上网继续下载mochiweb)
+    
+
+  
