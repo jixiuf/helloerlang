@@ -43,3 +43,22 @@ time(Resp)->
         ./start-dev.sh启动模式下，会自动加载编译的文件，只需要在浏览器中刷新即
         可
         
+
+* 可开tcp连接数的 测试
+  tcp_load_test.erl
+  #+begin_src erlang
+    %% tcp_load_test:start(10000).
+    %%或
+    %% tcp_load_test:start("http://localhost:8080/time",10000).
+    %% 实是际访问
+    %% http://localhost:8080/time?id=1
+    %% ...
+    %% http://localhost:8080/time?id=10000
+  #+end_src
+  结果似乎是连接达到4000的时候，cpu 占用率已经极大，响应变慢
+  达到4900时，测试用的客户端，因
+  eheap_alloc: Cannot allocate 583848200 bytes of memory (of type "heap").
+  退出,
+  客户端的cpu 似乎比mochiweb服务器的占用率大，故，若非单机测试，结果或许会好一
+  些.
+
