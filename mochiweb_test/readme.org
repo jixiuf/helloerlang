@@ -58,9 +58,15 @@ time(Resp)->
   #+end_src
   结果似乎是连接达到4000的时候，cpu 占用率已经极大，响应变慢
   达到4900时，测试用的客户端，因
+  #+begin_src sh
   eheap_alloc: Cannot allocate 583848200 bytes of memory (of type "heap").
+  #+end_src
   退出,
   客户端的cpu 似乎比mochiweb服务器的占用率大，故，若非单机测试，结果或许会好一
   些.
-结果以{Active, Closed, Chunks} 格式在客户端显示出来
+结果以下面格式在客户端显示出来
+#+begin_src
+ {Active, Closed, Chunks}
 {活动连接数，关闭的连接数(测试过程中始终为0),由服务端端发送的chunks总数}
+
+#+end_src
