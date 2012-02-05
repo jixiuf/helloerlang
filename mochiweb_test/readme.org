@@ -11,6 +11,11 @@
     然后在mochiweb 同级目录下会生成mochiweb_test目录
     在这个目录下，运行make 
     对这个项目进行一定的准备工作，比如得到它depend 的项目mochiweb(会上网继续下载mochiweb)
-    
+    启动mochiweb , 
+    #+begin_src sh
+        ./start-dev.sh
+    #+end_src
+    然后在浏览器里访问http://localhost:8080/
 
+    
   
