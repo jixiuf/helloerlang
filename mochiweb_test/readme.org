@@ -45,6 +45,7 @@ time(Resp)->
         
 
 * 可开tcp连接数的(http长连接) 测试
+  参考了http://www.metabrew.com/article/a-million-user-comet-application-with-mochiweb-part-1
   tcp_load_test.erl
   #+begin_src erlang
     %% tcp_load_test:start(10000).
