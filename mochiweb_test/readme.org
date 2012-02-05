@@ -39,6 +39,7 @@ time(Resp)->
   #+end_src
   当访问http://localhost:8080/time 时,调用 time(Resp )方法进行处理,变是一种长
   连接
-  
-    
-  
+在对 src/目录下的erl 文件进行编辑后，运行make 命令，在    
+        ./start-dev.sh启动模式下，会自动加载编译的文件，只需要在浏览器中刷新即
+        可
+        
