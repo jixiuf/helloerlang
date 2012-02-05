@@ -1,3 +1,6 @@
+#+TITLE:  mochiweb 的使用 及 可开tcp连接数的(http长连接) 测试 
+* 测试代码位置
+  https://github.com/jixiuf/helloerlang/tree/master/mochiweb_test
 * mochiweb 的使用
   1. 先得到源码 
    #+begin_src sh
@@ -65,7 +68,7 @@ time(Resp)->
   客户端的cpu 似乎比mochiweb服务器的占用率大，故，若非单机测试，结果或许会好一
   些.
 结果以下面格式在客户端显示出来
-#+begin_src
+#+begin_src sh
  {Active, Closed, Chunks}
 {活动连接数，关闭的连接数(测试过程中始终为0),由服务端端发送的chunks总数}
 
