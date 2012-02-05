@@ -15,7 +15,7 @@ start(Options) ->
     Loop = fun (Req) ->
                    ?MODULE:loop(Req, DocRoot)
            end,
-    mochiweb_http:start([{name, ?MODULE}, {loop, Loop} | Options1]).
+    mochiweb_http:start([{name, ?MODULE},{max,10000}, {loop, Loop} | Options1]).
 
 stop() ->
     mochiweb_http:stop(?MODULE).
@@ -26,9 +26,12 @@ loop(Req, DocRoot) ->
         case Req:get(method) of
             Method when Method =:= 'GET'; Method =:= 'HEAD' ->
                 case Path of
-                    "time" ->%% 新增了 /timer 这个 URL，它是一个 HTTP Chunked 的例子
-                    Response = Req:ok({"text/plain", chunked}),
-                    time(Response);
+                    "time" ->%% 新增了 /time 这个 URL，它是一个 HTTP Chunked 的例子
+                        Response = Req:ok({"text/plain", chunked}),
+
+                        Params = Req:parse_qs(), %get query string
+                        Id = proplists:get_value("id", Params), % http://localhost:8080/time?id=1
+                        time(Response,Id);
                     _ ->
                         Req:serve_file(Path, DocRoot)
                 end;
@@ -60,11 +63,17 @@ get_option(Option, Options) ->
 
 
 %% 打印当前时间，间隔一秒，再在已经打开的 http 连接之上，再次打印，这也就是所谓 HTTP长连接/ServerPush 的一种
-time(Resp)->
-    Resp:write_chunk(io_lib:format("The time is: ~p~n",
-                                   [calendar:local_time()])),
+time(Resp,Id)->
+    case Id of
+        undefined->
+            Resp:write_chunk(io_lib:format("The time for Id:~p is: ~p~n",[0 ,calendar:local_time()])),
+            io:format("~p~n",[io:format("The time for Id:~p is: ~p~n",[0 ,calendar:local_time()])]);
+        _ ->
+            Resp:write_chunk(io_lib:format("The time for Id:~p is: ~p~n",[Id ,calendar:local_time()])),
+            io:format("~p~n",[io:format("The time for Id:~p is: ~p~n",[Id ,calendar:local_time()])])
+    end,
     timer:sleep(1000),
-    time(Resp)        .
+    time(Resp,Id).
 
 %%
 %% Tests
