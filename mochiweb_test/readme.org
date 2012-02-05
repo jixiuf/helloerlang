@@ -44,7 +44,7 @@ time(Resp)->
         可
         
 
-* 可开tcp连接数的 测试
+* 可开tcp连接数的(http长连接) 测试
   tcp_load_test.erl
   #+begin_src erlang
     %% tcp_load_test:start(10000).
