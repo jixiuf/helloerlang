@@ -1,0 +1,9 @@
+%% -*- erlang -*-
+{application, mochiweb_comet_chat,
+ [{description, "mochiweb_comet_chat"},
+  {vsn, "0.1"},
+  {modules, []},
+  {registered, []},
+  {mod, {'mochiweb_comet_chat_app', []}},
+  {env, []},
+  {applications, [kernel, stdlib, crypto]}]}.
