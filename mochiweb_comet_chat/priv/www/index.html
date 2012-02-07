@@ -26,9 +26,7 @@
       }
       function getMsg(data){
           $("#history").append(data+"<br/>");
-              setTimeout(function(){
-                  get();
-              }, 3000);              
+          get();
       }
       // <![CDATA[
       $(document).ready(function() {
