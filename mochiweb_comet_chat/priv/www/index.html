@@ -4,15 +4,15 @@
     </script>
   </head>
   <body>
-    <div id ='history'>
-    </div>
+    <div id='status'>&nbsp;</div>
     <form method='post' action="chat" name='dataform' >
       message:<input type="text" id="message" name="message" />
       <br/>
       <input id ='send' type="button" value="Send"  />
     </form>
-    status:<br/>
-    <div id='status'>no status!</div>
+    history:<br/>
+    <div id ='history'> </div>
+    
   </body>
 </html>
     <script type="text/javascript">
@@ -25,7 +25,7 @@
                 });
       }
       function getMsg(data){
-          $("#history").append(data+"<br/>");
+          $("#history").append(new Date().toLocaleString()+":"+data+"<br/>");
           get();
       }
       // <![CDATA[
