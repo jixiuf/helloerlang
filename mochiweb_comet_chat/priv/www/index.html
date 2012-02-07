@@ -20,6 +20,7 @@
               $.ajax({
                   type: "GET",
                   url: "chat",
+                  cache:false,
                   success:getMsg
                 });
       }
@@ -40,6 +41,7 @@
               $.ajax({
                   type: "POST",
                   url: "chat",
+                  cache:false,
                   data: "message="+$("#message").val(),
                   success: function(msg){
                       $("#status").empty(); // remove children
