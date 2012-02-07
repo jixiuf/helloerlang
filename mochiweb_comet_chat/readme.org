@@ -1,4 +1,6 @@
 #+TITLE: 网上即时聊天原理
+* 代码 位置
+  https://github.com/jixiuf/helloerlang/tree/master/mochiweb_comet_chat
 * 操作:
   分别打开两个网页，然后，对textfield中输入内容，在另一个网页中会即时显现.
 * Comet 
