@@ -1,0 +1,84 @@
+* Comet 
+Comet 是一项很时髦的技术。其目的很简单：由于历史原因，目前 HTTP 协议信息都是客
+户端向服务器要（Poll），服务器没有办法推送信息给客户端（Sever Push）。这在实现
+某些应用的时候就会遇到麻烦。例如：
+    + 当邮件服务器收到新的邮件时，及时报告给用户，如果他在线的话（GMail 这样做了）
+    + 当 Web Chat 服务器收到新的信息时，及时发送信息到相应的在线用户（Web Chat 的基本需求）。
+    + 聊天时提示你对方正在输入（时下 IM 客户端很时髦的一个功能）。
+      
+Comet 技术对服务端的要求还是很高的，Long Polling减少了网络流量，但是服务端的连
+接数并没有减少。因此基于 Comet 的应用，很容易在 Scale（伸缩性）上出现问题。使用
+Erlang + MochiWeb，还是很好的利用了 Erlang 可以轻松建立大量连接这个特性。需要指
+出的是，很可能 Comet 应用的时髦，将会很大程度上促进了业界对 Erlang 的关注。
+* 代码讲解
+  index.html
+  #+begin_src javascript
+      function get(){
+              $.ajax({
+                  type: "GET",
+                  url: "chat",
+                  cache:false,
+                  success:getMsg
+                });
+      }
+      function getMsg(data){
+          $("#history").append(new Date().toLocaleString()+":"+data+"<br/>");
+          get();
+      }
+  
+  #+end_src
+  在index.html 加载完比后，会先调用一次:
+ #+begin_src javascript
+ get();
+ #+end_src
+ 上面的函数是以GET方式向服务器端发起请求的代码，可以看出，在回调方法中，再次调
+ 用get() 方法，向服务器端发起请求。这跟那种每隔一定时间向服务器端请求一次看有
+ 没有新的消息的方式完全不一样。
+ 因为这种以GET方式发起的请求，在服务器端是阻塞的，即由服务器端来控制 ，如果没
+ 有新的消息就不返回（达到超时时间除外（代码中设为20s））。
+
+ #+begin_src javascript
+      $('#send').click(         
+          function(){
+              $.ajax({
+                  type: "POST",
+                  url: "chat",
+                  cache:false,
+                  data: "message="+$("#message").val(),
+                  success: function(msg){
+                      $("#status").empty(); // remove children
+                      $("#status").append(new Date().toLocaleString()+":"+msg); // add child
+                  }
+              });               
+          }
+      );        
+      });
+ 
+ #+end_src
+点击发送按钮的时候，会以POST方式,向服务器发送一条消息，
+服务器在接到这条消息后,会进行如下处理:
+#+begin_src erlang
+  Data = Req:parse_post(),
+  Room = get_the_room(),
+  % post
+  io:format("message from post:~p~n",[proplists:get_value("message", Data)]) ,
+  Room ! {self(), post, list_to_binary(proplists:get_value("message", Data))},
+#+end_src
+某进程接到上面发送的消息会，会查看room 中有哪些用户在等待，
+然后一一取出，将上面接收到的那条信息分别发送给他们 ，然后清空等待队列
+那些以GET方式请求的客户端到此时才返回（如果没有超时的话。）
+#+begin_src erlang
+        {From, post, Message} ->
+            From ! posted,
+            lists:foreach(fun(User) ->
+                                                % broadcast the message
+                                  User ! Message
+                          end, Users),
+            %% room(Users),
+            %% 所有等待的用户都会接收的消息，
+            %% 从队列中去掉他们
+            room([]),
+            io:format("~n",[]) ;
+        %% room([]);
+
+#+end_src
