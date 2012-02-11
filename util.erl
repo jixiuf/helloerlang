@@ -8,15 +8,15 @@ time_to_string( {{Y,Mo,D},{H,Mi,S}} ) ->
                             [Y,Mo,D,H,Mi,S] ),
 
          lists:flatten(String).
+%% 好像不太对。仅到秒
+%% timestamp_to_datetime(TimeStamp)->
+%%     Second1 = calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}}),
+%%     DateTime = TimeStamp +Second1,
+%%     calendar:datetime_to_gregorian_seconds(DateTime)
+%%     .
 
-timestamp_to_datetime(TimeStamp)->
-    Second1 = calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}}),
-    DateTime = TimeStamp +Second1,
-    calendar:datetime_to_gregorian_seconds(DateTime)
-    .
-
-datetime_to_timestamp({Date,Time})->
-    Second1 = calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}}),
-    Second2=calendar:datetime_to_gregorian_seconds({Date,Time}),
-    Second2-Second1
-        .
+%% datetime_to_timestamp({Date,Time})->
+%%     Second1 = calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}}),
+%%     Second2=calendar:datetime_to_gregorian_seconds({Date,Time}),
+%%     Second2-Second1
+%%         .
