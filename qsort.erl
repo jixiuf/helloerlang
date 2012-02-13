@@ -1,6 +1,7 @@
+ %% -*- coding:utf-8 -*-
 -module(qsort).
 -export([sort/1]).
-%%‰õ‘¬”r˜
+%%å¿«é€ŸæŽ’åº
 
 sort([])->
     [];
