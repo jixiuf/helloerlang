@@ -1,0 +1,38 @@
+* chat 目录为一聊天程序雏形(模仿irc协议)
+  使用的技术mnesia gen_tcp 及对binary 的处理.
+  
+  采用二进制数据作为消息格式
+  server 与client 同时使用 {packet ,4}作为参数，故省去了消息的截取与组装，关于
+  packet 参数，详见：server.erl 注释
+  而具体的消息格式为
+  [4字节消息类型,具体的消息体]
+  比如echo 消息格式为<<1:32,Msg/binary>>
+  用一个4字节的int 表示此消息的的类型。
+* ppool 是一个进程池
+  用到了 supervisor (simple_one_for_one one_for_one one_for_all)
+  supervisor:start_child
+  %%一个ppool_super是一个pool, 而ppool_super的父节点是ppool_supersuper
+  %% 即此程序中可以存在多个pool ，一个 pool 的死活与另一个pool 不相干 ，
+  %%故在ppool_supersuper中使用one_for_one 启动ppool_super.
+  %%而ppool_super的两个子节点，ppool_worker_sup与ppool_serv却是同生共死才能完成一个
+  %% pool 的功能 。
+  %%故ppool_worker_sup与ppool_serv 进行关联启动， 可以理解了。
+
+* erlcount erlcount_java erlcount_release
+  分别是用来统计某目录下erl文件中出现某种正则表达示的数目,并用java写了一版 以
+  便进行对比 .
+  用到了OTP的Psupervisor,还用到了上一个例程ppool
+  正则表达式在erlcount.app文件 中指定
+  
+    可以通过这种方式来覆盖appname.app 中env 变量的值。
+    erl -AppName key1 value1 key2 value2
+    如 :
+    erl -erlcount directory '.' regex  '["if","case"]' max_files
+     application:start(ppool).
+      application:start(erlcount).
+  
+
+* mochiweb_comet_chat
+  使用了mochiweb
+  是一个网页版即时聊天系统的原理代码(Comet ,long pull技术),据说faceboot 的网上
+  聊天系统使用的是mochiweb 
