@@ -1,0 +1,13 @@
+# -*- coding:utf-8 -*-
+#+LANGUAGE:  zh
+#+TITLE:     erlang中type 定义 
+#+AUTHOR:    纪秀峰
+#+EMAIL:     jixiuf@gmail.com
+#+DATE:     2012-02-13 月
+#+DESCRIPTION:erlang中type 定义 
+#+KEYWORDS: erlang type 
+#+OPTIONS:   H:2 num:nil toc:t \n:t @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil 
+#+FILETAGS: @Erlang
+litaocheng写有博文：很详细的介绍了erlang中的类型定义，就不重复了。
+http://erlangdisplay.iteye.com/blog/404570
