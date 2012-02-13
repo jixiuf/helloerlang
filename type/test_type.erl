@@ -1,5 +1,5 @@
 %% -*- coding:utf-8 -*-
--module(test).
+-module(test_type).
 %% type 定义 示例
 -type my_type():: integer|true|false.
 
@@ -33,8 +33,15 @@
                 f3      :: 'undefined' | 'a' | 'b'}).
 
 %% 所以，推荐您在定义record时，指明初始值。
+
+
 %% record定义后，我们可以作为一个类型来使用，其用法如下:
 %% #rec5{}
+-record(cron_field, {
+        type  :: my_type(),   % field type
+        value :: my_type()              % field value
+    }).
+-type cron_field() :: #cron_field{}.
 
 %% 在使用recored类型时，我们也可以重新指定某个field的类型:
 %% 没有指明的filed，类型与record定义时指明的类型相同。
