@@ -1,5 +1,5 @@
 -module(util).
--export([string_2_date/1,datetime_to_timestamp/1,timestamp_to_datetime/1,time_to_string/1]).
+-export([string_2_datetime/1,string_2_date/1,time_to_string/1]).
 
 %% Time (as return by calendar:local_time() to string conversion.
 %% "2012-01-06 09:55:12"
@@ -23,3 +23,11 @@ time_to_string( {{Y,Mo,D},{H,Mi,S}} ) ->
 %%string_2_date("2011-1-1")
 string_2_date(DateStr)->
     list_to_tuple( lists:map(fun erlang:list_to_integer/1, string:tokens(DateStr,"-"))).
+
+%% util:string_2_datetime("2011-1-1 10:10:10").
+string_2_datetime(DateTimeStr)->
+    [DateStr,TimeStr]= string:tokens(DateTimeStr," "),
+    Date=list_to_tuple( lists:map(fun erlang:list_to_integer/1, string:tokens(DateStr,"-"))),
+    Time=list_to_tuple( lists:map(fun erlang:list_to_integer/1, string:tokens(TimeStr,":"))),
+    {Date,Time}
+        .
