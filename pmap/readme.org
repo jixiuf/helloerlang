@@ -1,0 +1,3 @@
+L = lists:seq(0,35).  
+lists:map(fun(X) -> fib:fib(X) end, L).  
+pmap:pmap(fun(X) -> fib:fib(X) end, L).  
