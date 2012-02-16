@@ -68,7 +68,8 @@ handle_cast(_Request,State)->
 %% messages that were sent directly with the ! operator and special ones like init/1's timeout,
 %% monitors' notifications and 'EXIT' signals.
 %% 对于直接使用! 发送过来的消息由handle_info()进行处理
-%% 另外，init/1 的timeout
+%% 另外，init/1 的timeout 也可以在此处处理，
+%% 但是像gen_server:call 的默认超时5s ，好像不能。
 handle_info({'EXIT',_Pid,_Reason}=Info,State)->
     io:format("handle_info/2 is called & a process exited:~p~n",[Info]),
     {noreply, State};
