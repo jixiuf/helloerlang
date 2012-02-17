@@ -1,0 +1,31 @@
+# -*- coding:utf-8 -*-
+* 如何处理gen_server 的终止
+  比如在gen_server:call/3 中指定的Timeout ,而当出现超时时，
+  gen_server 就会被终止.(例子：gen_server_call_timeout.erl)
+  
+  如果在init/1中加上trap_exit ,当gen_server 意外退出时，terminate/2会被调用
+  #+begin_src erlang
+    init(S)->
+        %% 如果这里加上trap_exit ,当gen_server 意外退出时，terminate/2会被调用
+        process_flag(trap_exit,true),
+        {ok, S}
+            .
+  #+end_src
+
+* 关于gen_server里的几个Timeout的测试
+  | init_timeout.erl            | 测试init/1中返回值                                       |
+  | handle_call_timeout.erl     | 测试handle_call,handle_cast,handle_info返回值里的timeout |
+  | gen_server_call_timeout.erl | 测试gen_server:call/3 里的timeout                        |
+
+* 关于handle_call里返回值为noreply与reply 的区别
+  首先一个gen_server:call 过去后， 必然会收到一个reply 的返回值
+  所以对于{reply,Reply,State} 的返回值 好理解
+  而对于{noreply,State}的返回值 ，并不是说不必返回一个reply
+  而是通过 其他方式返回reply ,即gen_server:reply/2
+  所以，如果返回值为{noreply,} ,则在这段handle_call中
+  必须要有一个gen_server:reply ，否则会有错,call会一值等待
+* 并发地对gen_server的访问，会出现瓶颈
+  详细内容见gens.erl 测试代码中的注释
+  解决办法是
+  {noreply}+ gen_server:reply 来处理
+  
