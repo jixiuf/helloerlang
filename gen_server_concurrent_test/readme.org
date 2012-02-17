@@ -10,5 +10,43 @@
 
 在gen_server主循环gen_server:loop中从消息队列中依次取出消息并处理，注意这是串行的，在
 一条消息处理完毕之前，不会处理下一条消息。
-这几个例子用来测试当并发很高时，gen_server 的瓶颈问题
+这几个例子用来测试当并发很高时，gen_server 的瓶颈问题.
+* gen_server 的瓶颈
+  test1_client.erl
+  test1_server.erl
+* 解法1
+  test2_client.erl
+  test2_server.erl
+  这种方法，其实是埋天过海、自欺欺人，gen_server 的瓶颈虽然解决了，但是瓶颈转移动
+  具体的业务逻辑进程.
+  具体做法是，在handle_call 中注册一个进程用来处理具体费时的业务逻辑(处理完后
+  用gen_server:reply 将结果返回给gen_server:call的调用者) ，
+  而handle_call 本身则以{noreply,State}返回。
 
+  惟一一点好处是，由于瓶颈的转移，gen_server在处理其他的
+  handle_call,handle_cast 子句时，不会因某一handle_call子句的消息堆积过多而得不
+  到及时的处理。
+* 解法2
+  灵感来源于解法1 ，解法1的缺点是 瓶颈转移到具体的业务逻辑处理进程（只有一个），
+  而此法与之的惟一不同点是，起用多个业务逻辑处理进程 ，当收到消息时，平分到这
+  几个进程里去处理。
+** pg2
+   本来想用pg2模块来处理的
+   可以借助于pg2模块，进程组的概念
+   http://blog.csdn.net/southflow/article/details/6868731
+   pg2:create(group1).
+   
+   %%查看所有可见的组
+   pg2:which_groups().
+   
+   %%同一个进程可以多次加入到组中，如果需要将一个进程加入到一个组中，如
+   pg2:join(group1,self()).
+   pg2:get_members(group1).
+   pg2:leave(group1,self()).
+   
+   %%获取本节点内位于组内的进程
+   pg2:get_local_members(group1).
+
+   %%从进程组中，首先尝试获取位于进程组内、属于本地节点的pid ,如果没有才随机获
+   取，但是测试时，所有节点都位于本地节点 ，并不随机 。所以最终放弃使用pg2
+   pg2:get_closest_pid(group1).
