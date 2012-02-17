@@ -1,0 +1,14 @@
+# -*- coding:utf-8 -*-
+#+LANGUAGE:  zh
+#+TITLE:     gen_server 并发瓶颈测试
+#+AUTHOR:    纪秀峰
+#+EMAIL:     jixiuf@gmail.com
+#+DATE:     2012-02-17 
+#+DESCRIPTION:gen_server 并发测试
+#+KEYWORDS: Erlang gen_server 并发
+#+FILETAGS:@Erlang  
+
+在gen_server主循环gen_server:loop中从消息队列中依次取出消息并处理，注意这是串行的，在
+一条消息处理完毕之前，不会处理下一条消息。
+这几个例子用来测试当并发很高时，gen_server 的瓶颈问题
+
