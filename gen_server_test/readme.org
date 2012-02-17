@@ -28,4 +28,7 @@
   详细内容见gens.erl 测试代码中的注释
   解决办法是
   {noreply}+ gen_server:reply 来处理
+* 
   
+* 一些参考
+  http://www.cnblogs.com/me-sa/archive/2011/12/20/erlang0023.html
