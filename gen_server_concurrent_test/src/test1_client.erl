@@ -10,7 +10,7 @@ start()->
     timer:apply_interval(timer:seconds(1), util, pid_msg_info, [gen_server_pid]),
 
     %%每隔1ms 向gen_server_pid 发送一个请求
-    timer:apply_interval(1, ?MODULE, call, [whereis(gen_server_pid)])
+    timer:apply_interval(100, ?MODULE, call, [whereis(gen_server_pid)])
         .
 
 
