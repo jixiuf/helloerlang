@@ -1,1 +1,32 @@
 main:start_link().
+        
+        
+有着 simple_one_for_one 重启规则的督程就是一个简化的 one_for_one 督程，其中所
+有的子进程都是动态添加的同一个进程的实例。
+当启动后，该督程不会启动任何子进程。所有的子进程都是通过调用以下函数动态添加的：
+supervisor:start_child(Sup,List)
+Sup 是督程的pid或者名字。 List 是任意的值列表，它会被添加到子进程规范中指定的参
+数列表中。如果启动函数被指定为 {M, F, A} ，那么会通过调用 apply(M, F, A++List)
+来启动。
+
+例如，为上面的 添加一个子进程：
+{ok,{{simple_one_for_one,5,3000},
+         [{workerid,                           %id
+           {worker,start_link,[]},
+           temporary, 5000, worker, [worker]
+          } %using spec snippet for childspec
+         ]}}
+supervisor:start_child(Pid,[id1])
+会导致通过 apply(call, start_link, []++[id1]) 来启动子进程，即call:start_link(id1)
+
+{ok,{{simple_one_for_one,5,3000},
+         [{workerid,                           %id
+           {worker,start_link,[hello]},
+           temporary, 5000, worker, [worker]
+          } %using spec snippet for childspec
+         ]}}
+supervisor:start_child(Pid,[id1])
+会导致通过 apply(call, start_link, [hello]++[id1]) 来启动子进程， 或者更直接点：
+即call:start_link(hello,id1)
+        
+http://hi.baidu.com/zai215837829/blog/item/3d2b121fbee7ce0541341794.html
