@@ -33,6 +33,8 @@ start_link()->
         .
 
 init(S)->
+    %% 如果这里加上trap_exit ,当gen_server 意外退出时，terminate/2会被调用
+    process_flag(trap_exit,true),
     {ok, S}
         .
 
@@ -50,6 +52,7 @@ handle_info(_Info,State)->
     {noreply, State}.
 
 terminate(_Reason,_State)->
+    io:format("shutdown~n",[]) ,
     ok .
 
 code_change(_Previous_Version,State,_Extra)->
