@@ -1,0 +1,8 @@
+将echo.c 编译好后，命令为echo.exe on windows
+将将其copy 到ebin/目录下,
+因为echo.erl 中
+#+begin_src erlang
+                  Port = open_port({spawn, "echo.exe"}, [{packet, 1}]),
+                  %% Port = open_port({spawn, "./echo"}, [{packet, 1}]),
+#+end_src
+另外在linux 上的话，上面两句要变一下，
