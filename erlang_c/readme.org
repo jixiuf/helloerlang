@@ -6,3 +6,9 @@
                   %% Port = open_port({spawn, "./echo"}, [{packet, 1}]),
 #+end_src
 另外在linux 上的话，上面两句要变一下，
+
+使用
+echo:start().
+echo:echo("hello").
+echo:stop().
+
