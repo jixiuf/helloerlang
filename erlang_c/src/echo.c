@@ -62,13 +62,19 @@ int8 read_exact(byte* buf, int8 len)
   }while (got < len);
   return (len);
 }
-/* 将 buf中的内容写到标准输出中,最多写入len 字节，返回实际写进的字节长度。
-   因为buf中字字节数可能比len 小
+/* 将 buf中的内容写到标准输出中,最多写入len 字节，len
+   如果没能成功写入len 字节 ，则返回 0 或-1
  */
 int8 write_exact(byte* buf, int8 len)
 {
   int i, wrote=0;
   do {
+    /* filedes: */
+    /* The file descriptor of where to write the output. */
+    /*   You can either use a file descriptor obtained from the open system call, or */
+    /*   you can use 0, 1, or 2, to refer to standard input, standard output, or standard error, respectively. */
+    /* read(0,..) 从标准输入读*/
+    /* write(1,)向标准输出写 */
     if ((i= write(1, buf+wrote, len-wrote)) <= 0)
       return (i);
     wrote += i;
