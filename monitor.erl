@@ -43,3 +43,4 @@ test2()->
     end
 
         .
+%% 　解除对进程的监视最好调用erlang:demonitor(Reference, [flush])，因为demonitor调用之前监视的进程可能就DOWN掉了。
