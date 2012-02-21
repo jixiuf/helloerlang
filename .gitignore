@@ -5,3 +5,6 @@ TAGS
 .#*
 *.class
 *~
+*.dat
+*.log
+*.out
