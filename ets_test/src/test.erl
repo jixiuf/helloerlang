@@ -1,5 +1,5 @@
 -module(test).
--export([test_create2/0,test_create1/0]).
+-export([test_lookup/0,test_create2/0,test_create1/0]).
 
 %% http://www.cnblogs.com/me-sa/archive/2011/08/11/erlang0007.html
 -record(emp, {empno,     %Employee number as a string, the key
@@ -63,6 +63,13 @@ test_create1()->
         .
 test_create2()->
     T=ets:new(t2,[named_table]),
-    ets:insert(T,[{1,11},{2,222,22222}])
+    ets:insert(T,[{1,11},{2,222,22222}])        %可一次插多值
     %% ets:i(t2). %
+        .
+
+test_lookup()->
+    T=ets:new(t2,[named_table]),
+    ets:insert(T,[{1,11},{2,222,22222}]),        %可一次插多值
+    Result= ets:lookup(T ,1),
+    io:format("result:~p~n",[Result])
         .
