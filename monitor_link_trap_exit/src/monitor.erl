@@ -1,5 +1,5 @@
 -module(monitor).
--export([test1/0,test2/0]).
+-export([test_exit_kill2/0,test_exit_kill2/0,test_exit_kill/0,test1/0,test2/0]).
 -export([test_exit_normal/0,test_exit_unnormal/0]).
 
 %% erlang:monitor(process,Pid),与 link 的不同是
@@ -62,6 +62,29 @@ test2()->
 test_exit_unnormal()->
     %% process_flag(trap_exit,true),
     Pid = Pid = spawn_link(fun()-> timer:sleep(1000) ,exit(shutdown)end),
+    receive
+        {'EXIT',Pid,Reason}->
+            io:format("process :~p exit with reason:~p~n",[Pid,Reason])
+
+    end
+        .
+
+%% 有人说:{'EXIT', Pid, Reason}Reason如果是kill,关联进程无论是否trap_exit都会死掉
+%% 但是，我测试了一下，好像结果不符
+%%test_exit_kill/0 test_exit_kill2/0 结果可证其伪
+test_exit_kill()->
+    process_flag(trap_exit,true),
+    Pid = Pid = spawn_link(fun()-> timer:sleep(1000) ,exit(kill)end),
+    receive
+        {'EXIT',Pid,Reason}->
+            io:format("process :~p exit with reason:~p~n",[Pid,Reason])
+
+    end
+        .
+
+test_exit_kill2()->
+    %% process_flag(trap_exit,true),
+    Pid = Pid = spawn_link(fun()-> timer:sleep(1000) ,exit(kill)end),
     receive
         {'EXIT',Pid,Reason}->
             io:format("process :~p exit with reason:~p~n",[Pid,Reason])
