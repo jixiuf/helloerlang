@@ -1,0 +1,38 @@
+# -*- coding:utf-8 -*-
+#+LANGUAGE:  zh
+#+TITLE:     erlang 的继承
+#+AUTHOR:    纪秀峰
+#+EMAIL:     jixiuf@gmail.com
+#+DATE:     2012-03-08 四
+#+DESCRIPTION:erlang 的继承
+#+KEYWORDS: erlang  
+#+OPTIONS:   H:2 num:nil toc:t \n:t @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil 
+#+FILETAGS: @Erlang
+
+* -extends()
+  
+  测试代码 parent.erl child.erl
+  #+BEGIN_SRC erlang
+    (emacs@jf.org)19> child:m().
+    fun parent:m/0 
+    (emacs@jf.org)20> child:m1(1).
+    fun child:m1/1 and param is 1
+  #+END_SRC
+  #+BEGIN_SRC erlang
+  child:module_info().
+ {attributes,[{vsn,[262783194572185841999846210942161182584]},
+              {extends,[parent]}]},                          #<---------这里
+
+  #+END_SRC
+  
+
+
+* 测试 参数化module 支不支持继承
+ param_child_normal.erl (一个正常modlue)
+ param_child_param_1.erl (子,parameter module)
+ param_child_param_2.erl (子,parameter module) 
+ param_parent.erl (父,parameter module)
+
+%% 一个正常 的module 可以续承 参数化模块param_parent
+%% 证明  一个parameter module 可以继承另一个 parameter module
