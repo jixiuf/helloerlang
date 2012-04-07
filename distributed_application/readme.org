@@ -1,0 +1,128 @@
+# -*- coding:utf-8 -*-
+#+LANGUAGE:  zh
+#+TITLE:     Distributed Applications
+#+AUTHOR:    纪秀峰
+#+EMAIL:     jixiuf@gmail.com
+#+DATE:     2012-04-07 六
+#+DESCRIPTION:erlang Distributed Applications
+#+KEYWORDS:
+#+OPTIONS:   H:2 num:nil toc:t \n:t @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil
+#+FILETAGS: @Erlang
+
+* distributed application 某节点挂了后，此种application 会在另外一个节点上启动
+ http://www.erlang.org/doc/design_principles/distributed_applications.html
+ http://learnyousomeerlang.com/distributed-otp-applications
+#+BEGIN_QUOTE
+ distributed = [{Application, [Timeout,] NodeDesc}]
+                                         NodeDesc = [Node | {Node,...,Node}]
+#+END_QUOTE
+
+ NodeDesc 表示此种Application可以在哪些节点上启动，优先级按NodeDesc[]中出现的顺序而定，但在{} 中的节点优先级相同
+ 比如:
+ #+BEGIN_SRC erlang
+ {distributed, [{game_log_server, 5000, ['emacs@localhost', {'c@localhost','c2@localhost','c3@localhost' }]}]}
+ #+END_SRC
+  game_log_server 会优先在'emacs@localhost'上启动，当'emacs@localhost'当掉后，会从{'c@localhost','c2@localhost','c3@localhost' }
+ 中选择一个节点，在此节点上启动game_log_server application
+ Timeout
+  表示等待多少ms 才决定在其他节点上来启动此 application(即当前节点或许会在
+ Timeout时间内重启成功。如果当前节点在timeout时间内恢复了，则在此节点上启动
+ （个人理解）)
+#+BEGIN_QUOTE
+ sync_nodes_mandatory = [Node]
+     Specifies which other nodes must be started (within the timeout specified by sync_nodes_timeout.
+ sync_nodes_optional = [Node]
+     Specifies which other nodes can be started (within the timeout specified by sync_nodes_timeout.
+ sync_nodes_timeout = integer() | infinity
+     Specifies how many milliseconds to wait for the other nodes to start.
+#+END_QUOTE
+
+ When started, the node will wait for all nodes specified by sync_nodes_mandatory and sync_nodes_optional to come up
+ 在启动当前节点的过程中，会等待 sync_nodes_mandatory 与 sync_nodes_optional属性中指定的节点启动后才启动,如果sync_nodes_mandatory
+ 中有任一节点启动失败，则此停止此节点的启动
+ 所有这些节点中
+ distributed and sync_nodes_timeout,两属性的值必须相同.
+ 当所有distributed属性中指定的节点启动成功后，此 application会首先在
+ emacs@localhost上启动
+
+master.config
+#+BEGIN_SRC erlang
+ [{kernel,
+  [{distributed, [{distributed_application, 5000, ['emacs@localhost', {'c@localhost','c2@localhost' }]}]},
+   {sync_nodes_mandatory, ['c@localhost','c2@localhost' ]},
+   {sync_nodes_timeout, 30000}
+  ]
+ }
+].
+#+END_SRC
+
+c.config
+#+BEGIN_SRC erlang
+[{kernel,
+  [{distributed, [{distributed_application, 5000, ['emacs@localhost', {'c@localhost','c2@localhost' }]}]},
+   {sync_nodes_mandatory, ['c2@localhost','emacs@localhost' ]},
+   {sync_nodes_timeout, 30000}
+  ]
+ }
+].
+#+END_SRC
+c2.config
+#+BEGIN_SRC erlang
+[{kernel,
+  [{distributed, [{distributed_application, 5000, ['emacs@localhost', {'c@localhost','c2@localhost' }]}]},
+   {sync_nodes_mandatory, ['c@localhost','emacs@localhost' ]},
+   {sync_nodes_timeout, 30000}
+  ]
+ }
+].
+#+END_SRC
+#+BEGIN_SRC sh
+erl -sname emacs@localhost -config master.config -pa ebin
+erl -sname c@localhost -config c.config -pa ebin
+erl -sname c2@localhost -config c2.config -pa ebin
+#+END_SRC
+依次在三个终端上运行以上，三个终端会等待其他节点启动，即，只有三个节点在
+30000ms内同时启动
+三个终端启动成功后在每个节点上运行
+#+BEGIN_SRC erlang
+application:start(distributed_application).
+#+END_SRC
+但是你会发现，只有 emacs@localhost上真正运行了
+(Distributed Applications 有两有状态started ,running).
+当在每个节点上运行application:start(distributed_application).
+时，只有主节点上的distributed_application达到了running状态，其他节点都是
+started 状态 ，started 状态的distributed_application 基本没运行过
+distributed_application的代码。running状态的application 运行了
+#+BEGIN_SRC erlang
+distributed_application_app:start(normal,_Args).
+#+END_SRC
+此后让 emacs@localhost挂掉后，一段时间 内，你会发现 c2@localhost c@localhost
+其中之一运行了
+distributed_application_app:start(normal,_Args).
+然后重启 emacs@localhost,并在其上启动distributed_application
+#+BEGIN_SRC sh
+ erl -sname emacs@localhost -config master.config -pa ebin
+ application:start(distributed_application).
+#+END_SRC
+你会发现 emacs@localhost 启动后，运行了以下代码
+#+BEGIN_SRC erlang
+distributed_application_app:start({takeover,Node},_Args).
+#+END_SRC
+并且在 c2@localhost 上运行了
+#+BEGIN_SRC erlang
+distributed_application_app:stop/1.
+#+END_SRC
+即， application从c2@localhost 转移到了 emacs@localhost
+
+ application:start(Application)
+ Module:start(normal, StartArgs)
+ 当 emacs@localhost 当掉后,首先会尝试在等5000ms 让 emacs@localhost重启。
+ application会在新的节点上以
+ Module:start(normal, StartArgs)的方式重启，
+ 例外是如果此 application 定义的tart_phases(http://www.erlang.org/doc/design_principles/included_applications.html)
+ 则 Module:start({failover, Node}, StartArgs)
+
+ 如果 emacs@localhost重启了。则此时 Takeover 事件会发生，即此 application会在 emacs@localhost 上重启，而 在old node
+ 上stop
+ Module:start({takeover, Node}, StartArgs)
