@@ -33,3 +33,4 @@ COMMIT_EDITMSG
 *.dump
 *.beam
 ebin/*.app
+*.tmp
