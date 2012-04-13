@@ -1,0 +1,14 @@
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `gamelog`.`select_today_money_sum`$$
+
+CREATE PROCEDURE `select_today_money_sum`()
+BEGIN
+/* 今日总充值金额 */
+
+/* 上线下线类型（1=创建角色，2=登入游戏，3=退出游戏） */
+/* 需要一个类型区分 是充值还是普通金币的获得 */
+select  ifnull(sum(ifnull(fld_money,0)),0)  from tbl_getgold where fld_getgold_type=1 and  datediff(fld_datetime,now())=0 ;
+END$$
+
+DELIMITER ;

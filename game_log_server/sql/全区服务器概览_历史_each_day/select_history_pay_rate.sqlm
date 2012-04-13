@@ -1,0 +1,14 @@
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `gamelog`.`select_history_pay_rate`$$
+
+CREATE PROCEDURE `select_history_pay_rate`()
+BEGIN
+/* 今日总付费率*/
+/* 个人理解为 今日充值人数/今日登录人数 */
+/* 上线下线类型（1=创建角色，2=登入游戏，3=退出游戏） */
+/* 需要一个类型区分 是充值还是普通金币的获得 */
+select( (select count(fld_account_id) from tbl_getgold where fld_getgold_type=1 )/      (select count(id) from tbl_onoff where (onOffType=1 or onOffType=2 ) ) )as today_pay_rate;
+END$$
+
+DELIMITER ;

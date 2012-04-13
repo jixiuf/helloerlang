@@ -1,0 +1,14 @@
+/* 历史在线人数 */
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `gamelog`.`select_history_online_count`$$
+
+CREATE PROCEDURE `select_history_online_count`()
+BEGIN
+
+/* 上线下线类型（1=创建角色，2=登入游戏，3=退出游戏） */
+select count(id) from tbl_onoff where onOffType=2;
+END$$
+
+DELIMITER ;

@@ -1,0 +1,22 @@
+%% Emysql .app file template
+%% This template is filled out by rebar, 
+%% or make (Makefile made to fill modules in)
+%% and then cp src/emysql.app.src ebin/emysql.app
+
+%% Settings (defaults in include/emysql.hrl):
+%% default_timeout (TIMEOUT = 8000)
+%% lock_timeout (LOCK_TIMEOUT = 5000)
+
+{application, emysql, [
+    {description, "Emysql - Erlang MySQL driver"},
+    {vsn, "0.2"},
+    {{modules, [emysql_app, emysql_auth, emysql_conn, emysql_conn_mgr, emysql, emysql_statements, emysql_sup, emysql_tcp, emysql_tracer, emysql_util, emysql_worker]}}, 
+<<<<<<< .mine
+    {mod, {emysql_app, ["2012年 04月 11日 星期三 18:41:38 CST"]}},
+=======
+    {mod, {emysql_app, ["2012年 04月 13日 星期五 14:46:55 CST"]}},
+>>>>>>> .r678
+    {registered, []},
+    {applications, [kernel, stdlib, crypto]},
+    {env, [{default_timeout, 5000}]}
+]}.

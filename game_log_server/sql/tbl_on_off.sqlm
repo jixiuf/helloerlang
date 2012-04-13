@@ -1,0 +1,52 @@
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `addOnOff`$$
+
+CREATE PROCEDURE `addOnOff`(
+IN inOnOffType INT,
+IN inAccountId INT,
+IN inAccountType INT,
+IN inPlayerId INT,
+IN inPlayerLevel INT,
+IN inPlayerName varchar(45),
+IN inDatetime datetime,
+IN inClientVersion varchar(100),
+IN inClientType varchar(100),
+IN inIssuers varchar(45),
+IN inFlashPlayerVersion varchar(45),
+IN inConnectType varchar(100),
+IN inGameServerName varchar(45)
+)
+BEGIN
+insert into `tbl_on_off`(
+`onOffType`,
+`accountId`,
+`accountType`,
+`playerId`,
+`playerLevel`,
+`playerName`,
+`dateTime`,
+`clientVersion`,
+`clientType`,
+`issuers`,
+`flashPlayerVersion`,
+`connectType`,
+`gameServerName`
+)  values(
+inOnOffType,
+inAccountId,
+inAccountType,
+inPlayerId,
+inPlayerLevel,
+inPlayerName,
+inDatetime,
+inClientVersion,
+inClientType,
+inIssuers,
+inFlashPlayerVersion,
+inConnectType,
+inGameServerName
+);
+END$$
+
+DELIMITER ;

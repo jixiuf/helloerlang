@@ -1,0 +1,20 @@
+
+/* /\* 今日登陆人数    *\/ */
+/* select count(id) from tbl_onoff where (onOffType=1 or onOffType=2 ) and datediff(onOffDatetime,now())=0; */
+
+/* /\* 上线下线类型（1=创建角色，2=登入游戏，3=退出游戏） *\/ */
+/* /\* 或者（如果创建角色不算登录人数） *\/ */
+/* select count(id) from tbl_onoff where onOffType=2 and datediff(onOffDatetime,now())=0; */
+
+/* 存储过程 */
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `gamelog`.`select_today_login_count`$$
+
+CREATE PROCEDURE `select_today_login_count`()
+BEGIN
+select count(id) from tbl_onoff where (onOffType=1 or onOffType=2 ) and datediff('onOffDatetime',now())=0;
+END$$
+
+DELIMITER ;

@@ -1,0 +1,55 @@
+
+/* 存储过程 */
+/*  */
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `select_month_login`$$
+
+CREATE PROCEDURE `select_month_login`(
+IN Inyear int,
+IN InMonthIndex int             /* 第几月*/
+)
+BEGIN
+/* 查某年第N月的 月登录情况 */
+/* 根据XXXX年的第几月的格式来记录的 */
+/* 上线下线类型（1=创建角色，2=登入游戏，3=退出游戏） */
+select count(id) from tbl_on_off where onOffType=2 and year(onOffDatetime) =Inyear and  month(onOffDatetime)=InMonthIndex ;
+END$$
+
+DELIMITER ;
+
+
+/* 存储过程 */
+/*  */
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `select_month_login_one_year`$$
+
+CREATE PROCEDURE `select_month_login_one_year`(
+IN Inyear int
+)
+BEGIN
+/* 查某年所有月登录情况 */
+/* 根据XXXX年的第几月的格式来记录的 */
+/* 上线下线类型（1=创建角色，2=登入游戏，3=退出游戏） */
+select month(onOffDatetime) month,count(id) as num  from tbl_on_off where onOffType=2 and year(onOffDatetime) =Inyear group by month(onOffDatetime);
+END$$
+
+DELIMITER ;
+
+
+/* 存储过程 */
+/*  */
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `select_month_login_all`$$
+
+CREATE PROCEDURE `select_month_login_all`()
+BEGIN
+/* 查所有月登录情况 */
+/* 根据XXXX年的第几月的格式来记录的 */
+/* 上线下线类型（1=创建角色，2=登入游戏，3=退出游戏） */
+select year(onOffDatetime) year  ,month(onOffDatetime) month, count(id) num from tbl_on_off where onOffType=2 group by  year(onOffDatetime)  ,month(onOffDatetime);
+END$$
+
+DELIMITER ;

@@ -1,0 +1,9 @@
+K 10
+svn:ignore
+V 32
+*.beam
+ebin/*.beam
+*.dump
+*.app
+
+END
