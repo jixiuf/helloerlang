@@ -1,0 +1,10 @@
+%% http://www.erlang.org/doc/design_principles/distributed_applications.html
+%% erl -name emacs@l92.168.0.44 -config master.config
+[{kernel,
+  [{distributed, [{game_log_server, 5000, ['sgLog@192.168.0.126', {'sgLog2@192.168.0.126' }]}]},
+   {sync_nodes_mandatory, [ ]},
+   {sync_nodes_optional, ['sgLog@192.168.0.126' ]},
+   {sync_nodes_timeout, 30000}
+  ]
+ }
+].

@@ -1,30 +1,64 @@
 10
 
 dir
-680
+695
 svn://192.168.0.200/sgServer/sgLogServer/test
 svn://192.168.0.200/sgServer
-add
-
-
-2012-04-13T10:45:06.621899Z
-665
-jizhe
 
 
 
+2012-04-13T22:48:12.499615Z
+695
+jixiufeng
 
 
 
 
 
-copied
-svn://192.168.0.200/sgServer/sgLogServer/src/test
-680
+
+
+
+
+
+
 
 
 
 1159637a-74c3-47e7-ad99-b97b8c0e843a
+
+test.erl
+file
+700
+
+
+
+2012-04-13T22:43:13.000000Z
+90f45094315db5eb8e7f4e8c9c97cb8d
+2012-04-13T22:57:32.356000Z
+700
+jixiufeng
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3693
 
 emysql_server.erl
 file
@@ -34,9 +68,9 @@ file
 
 2012-04-13T19:39:38.000000Z
 de4784ba219c99301a31360c8ba7130c
-2012-04-13T10:45:06.621899Z
-665
-jizhe
+2012-04-13T22:48:12.499615Z
+695
+jixiufeng
 
 
 
@@ -45,7 +79,7 @@ jizhe
 
 
 
-copied
+
 
 
 
@@ -62,24 +96,7 @@ copied
 
 node2_test.erl
 file
-
-
-
-
-2012-04-13T19:39:38.000000Z
-2a3b62b1a02739fadb74b76432f8ec75
-2012-04-13T10:45:06.621899Z
-665
-jizhe
-
-
-
-
-
-
-
-
-copied
+699
 
 
 
@@ -92,5 +109,12 @@ copied
 
 
 
-2958
+
+
+
+
+
+
+
+deleted
 

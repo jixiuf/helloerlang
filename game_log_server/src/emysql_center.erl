@@ -1,9 +1,9 @@
 -module(emysql_center).
 -behaviour(gen_server).
 
--export([stop/0,start_link/0]).
+-export([get_game_log_server_listener/0,stop/0,start_link/0]).
 %%对外接口
--export([send_log/2,add_node/1,get_all_mysql_proxy_node/0,get_random_mysql_proxy_node/1,get_all_mysql_proxy_node/1]).
+-export([send_log/2,add_node/1,get_all_mysql_proxy_node/0]).
 -export([quote/1]).
 %% gen_server export
 -export([code_change/3,handle_call/3,handle_cast/2,handle_info/2,init/1,terminate/2]).
@@ -64,27 +64,61 @@ execute(RandomMySqlProxyNode,CommandMsg) ->
 %%       node()
 %% @end
 %%-----------------------------------------------------------------------------
--spec get_random_mysql_proxy_node(pid()) -> node().
-get_random_mysql_proxy_node(Pid) when is_pid(Pid)->
-    gen_server:call(Pid,get_random_mysql_proxy_node);
-get_random_mysql_proxy_node(Global_name) when is_atom(Global_name)->
-    gen_server:call( global:whereis_name(Global_name) ,get_random_mysql_proxy_node) .
+%% -spec get_random_mysql_proxy_node(pid()) -> node().
+%% get_random_mysql_proxy_node(Pid) when is_pid(Pid)->
+%%     gen_server:call(Pid,get_random_mysql_proxy_node);
+%% get_random_mysql_proxy_node(Global_name) when is_atom(Global_name)->
+%%     gen_server:call( global:whereis_name(Global_name) ,get_random_mysql_proxy_node) .
+
+get_game_log_server_listener()->
+    get_game_log_server_listener(10)
+.
+get_game_log_server_listener(0)->
+    case  global:whereis_name(?LISTENER)  of
+        undefined->
+            undefined;
+        Pid ->
+            Pid
+    end ;
+get_game_log_server_listener(Count)->
+    case  global:whereis_name(?LISTENER)  of
+        undefined->
+            timer:sleep(2000),
+            get_game_log_server_listener(Count-1);
+        Pid ->
+            Pid
+    end.
+
 
 get_all_mysql_proxy_node()->
-    gen_server:call( global:whereis_name(?LISTENER),get_all_mysql_proxy_node).
+    case get_game_log_server_listener()  of
+        undefined->
+            {error,game_log_server_is_down};
+        Pid ->
+            gen_server:call(Pid,get_all_mysql_proxy_node)
+    end.
 
-get_all_mysql_proxy_node(Pid)when is_pid(Pid)->
-    gen_server:call(Pid,get_all_mysql_proxy_node);
-get_all_mysql_proxy_node(Global_name)when is_atom(Global_name) ->
-    gen_server:call( global:whereis_name(Global_name) ,get_all_mysql_proxy_node).
+%% get_all_mysql_proxy_node(Pid)when is_pid(Pid)->
+%%     gen_server:call(Pid,get_all_mysql_proxy_node);
+%% get_all_mysql_proxy_node(Global_name)when is_atom(Global_name) ->
+%%     gen_server:call( global:whereis_name(Global_name) ,get_all_mysql_proxy_node).
 %% = get_random_mysql_proxy_node(),
 
 stop()->
-    gen_server:cast( global:whereis_name(?LISTENER),stop)
-    .
+    case get_game_log_server_listener()  of
+        undefined->
+            {error,game_log_server_is_down};
+        Pid ->
+            gen_server:cast( Pid,stop)
+    end .
 
 add_node(Node) when is_atom(Node) ->
-    gen_server:cast( global:whereis_name(?LISTENER),{add_node,Node}).
+        case get_game_log_server_listener()  of
+        undefined->
+            {error,game_log_server_is_down};
+        Pid ->
+            gen_server:cast( Pid,{add_node,Node})
+    end .
 
 start_link()->
     NodeListInfo = game_log_server:get_current_app_env(node_list_info,?DEF_NODE_LIST),
