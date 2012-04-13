@@ -1,4 +1,5 @@
 -module(json).
+%% http://pastebin.com/SZ9qQpGV
 %% @doc Utilities for working with mochijson2 struct.
 %%
 %% COPYRIGHT - stickyNotes sample application by beepbeep.
