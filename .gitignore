@@ -32,3 +32,4 @@ xcopy /y %emacs_dir%\bin\emacsclient.exe  %emacs_dir%\bin\ec.exe
 COMMIT_EDITMSG
 *.dump
 *.beam
+ebin/*.app
