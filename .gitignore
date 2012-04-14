@@ -35,3 +35,4 @@ COMMIT_EDITMSG
 *.beam
 ebin/*.app
 *.tmp
+TAGS
