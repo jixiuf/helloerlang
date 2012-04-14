@@ -36,3 +36,4 @@ COMMIT_EDITMSG
 ebin/*.app
 *.tmp
 TAGS
+erl_crash.dump
