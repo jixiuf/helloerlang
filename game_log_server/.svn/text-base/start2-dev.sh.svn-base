@@ -1,7 +1,0 @@
-#!/bin/sh
-# NOTE: mustache templates need \ because they are not awesome.
-exec erl -pa ebin edit deps/*/ebin \
-	-name sgLog2@192.168.0.126 \
-	-rsh ssh \
-	-config slave.config \
-	-s start_app
