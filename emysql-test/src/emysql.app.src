@@ -14,5 +14,7 @@
     {mod, {emysql_app, ["%MAKETIME%"]}},
     {registered, []},
     {applications, [kernel, stdlib, crypto]},
-    {env, [{default_timeout, 5000}]}
+    {env, [{default_timeout, 5000},
+           {lock_timeout,infinity}
+          ]}
 ]}.
