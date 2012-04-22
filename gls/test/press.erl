@@ -80,3 +80,23 @@ test2()->
 get_timestamp() ->
     {Mega,Sec,Micro} = erlang:now(),
     ((Mega*1000000+Sec)*1000000+Micro)/1000.
+
+%%  CREATE TABLE `tbl_on_off` (
+%%   `id` int(11) NOT NULL AUTO_INCREMENT,
+%%   `onOffType` int(11) DEFAULT NULL,
+%%   `accountId` int(11) DEFAULT NULL,
+%%   `accountType` int(11) DEFAULT NULL,
+%%   `playerId` int(11) DEFAULT NULL,
+%%   `headHeroId` int(11) DEFAULT NULL,
+%%   `playerLevel` int(11) DEFAULT NULL,
+%%   `playerName` varchar(255) DEFAULT NULL,
+%%   `logTime` datetime DEFAULT NULL,
+%%   `clientVersion` varchar(255) DEFAULT NULL,
+%%   `clientType` varchar(255) DEFAULT NULL,
+%%   `issuers` varchar(255) DEFAULT NULL,
+%%   `flashPlayerVersion` int(11) DEFAULT NULL,
+%%   `connectType` int(11) DEFAULT NULL,
+%%   `gameServerName` varchar(255) DEFAULT NULL,
+%%   `ipAddr` varchar(255) DEFAULT NULL,
+%%   PRIMARY KEY (`id`)
+%% )
