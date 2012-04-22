@@ -1,0 +1,10 @@
+-define(DEF_NODE_LIST, [{'192.168.11.179',3}]).
+-define(DEF_CONNECTION_COUNT_EACH_NODE,3).
+-define(DEF_MYSQL_USERNAME,"tyLog").
+-define(DEF_MYSQL_PASSWORD,"2104").
+-define(DEF_MYSQL_HOSTNAME,"192.168.11.155").
+-define(DEF_MYSQL_PORT,3306).
+-define(DEF_MYSQL_DBNAME,"tyLog").
+-define(DEF_MYSQL_ENCODING,utf8).
+-define(DEF_POOL_ID,hello_pool).
+-define(LISTENER,game_log_server).
