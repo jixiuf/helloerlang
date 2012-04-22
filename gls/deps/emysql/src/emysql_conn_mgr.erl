@@ -367,7 +367,8 @@ pass_on_or_queue_as_available(State, Connection) ->
 		        %% for a connection. If so, send the connection. Regardless,
     		    %% update the pool & queue in state once the head has been removed.
     	    	false ->
-
+                    Len=queue:len(Waiting),
+                    io:format("~p~n",[Len]), 
 	    	    	{{value, Pid}, OtherWaiting} = queue:out(Waiting),
    	    			PoolNow = Pool#pool{ waiting = OtherWaiting },
 			    	StateNow = State#state{ pools = [PoolNow|OtherPools] },

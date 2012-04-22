@@ -13,4 +13,4 @@
 #%% erl -name emacs@192.168.0.44 -rsh ssh -config master.config -pa ./ebin/ deps/*/ebin/
 #%% erl -name emacs2@192.168.0.44 -rsh ssh -config emacs2.config  -pa ./ebin/ deps/*/ebin/
 # NOTE: mustache templates need \ because they are not awesome.
-exec erl -pa ./ebin ./deps/*/ebin     -name emacs@192.168.11.157     -rsh ssh     -s start_app
+exec erl -pa ./ebin ./deps/*/ebin     -name emacs@192.168.1.108     -rsh ssh     -s start_app

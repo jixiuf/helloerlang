@@ -283,7 +283,7 @@ test2()->
 
 
 
-    net_kernel:connect_node('emacs@192.168.11.157'),
+    net_kernel:connect_node('emacs@192.168.1.108'),
 
     NodeList= game_log_server:get_all_mysql_proxy_node(),
     Node=game_log_server:get_random_node(NodeList),

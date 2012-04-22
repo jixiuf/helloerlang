@@ -60,7 +60,7 @@ send_log(RandomMySqlProxyNode,#tbl_on_off{}=Record) ->
 
 -spec execute(node(),fun()) -> any().
 execute(RandomMySqlProxyNode,CommandMsg) ->
-    io:format("~p~n",[RandomMySqlProxyNode]),
+    %% io:format("~p~n",[RandomMySqlProxyNode]),
     rpc:call(RandomMySqlProxyNode, emysql_execute, execute, [CommandMsg]).
 
 %% get_random_mysql_proxy_node()->

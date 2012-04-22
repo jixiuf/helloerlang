@@ -6,14 +6,14 @@
                                 {registered, []},
                                 {applications, [kernel, stdlib, emysql]},
                                 {env, [{default_timeout, 5000},
-                                       {node_list_info,[{'192.168.11.157',3}]},
-                                       {connection_count_each_node,10},
-                                       {cookie,"DJQWUOCYZCIZNETCXWES"},
+                                       {node_list_info,[{'192.168.1.108',10}]},
+                                       {connection_count_each_node,3},
+                                       {cookie,"mycookie"},
                                        {mysql_username,"root"},
                                        {mysql_password,"root"},
-                                       {mysql_hostname,"192.168.11.157"},
+                                       {mysql_hostname,"192.168.1.108"},
                                        {mysql_port,3306},
-                                       {mysql_dbname,"tylog"},
+                                       {mysql_dbname,"tyLog"},
                                        {mysql_encoding,utf8}
                                       ]}
                                ]}.

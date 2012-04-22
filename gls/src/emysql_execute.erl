@@ -272,11 +272,11 @@ execute({insert_tbl_on_off,#tbl_on_off{}=Record}) ->
             quote(Record#tbl_on_off.ipAddr               ) ++","++
             quote(Record#tbl_on_off.onOffType            ) ++
             ")",
-        io:format("sql:~p~n",[Sql]) ,
+        %% io:format("sql:~p~n",[Sql]) ,
         Result=emysql:execute(?DEF_POOL_ID, list_to_binary(Sql)),
         case Result of
             #error_packet{}=R->
-                io:format("~p~n",[R]) ,
+                %% io:format("~p~n",[R]) ,
                 error;
             #ok_packet{}->
                 ok
