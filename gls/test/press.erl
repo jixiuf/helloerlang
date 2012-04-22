@@ -3,7 +3,7 @@
 
 -include("tbl_fileds.hrl").
 -record(state,{running=0,start_time,process_count_all,sql_count_each_process}).
-
+%% 启动ProcessCount个进程，每个进程执行SqlCountEachProcess次sql 操作
 start(ProcessCount,SqlCountEachProcess)->
     net_kernel:connect_node('emacs@192.168.1.108'),
     CurrentTime=get_timestamp(),
