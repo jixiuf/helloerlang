@@ -72,7 +72,9 @@ test2()->
         error->
             io:format("~p~n",[Result]) ;
         _ ->
+            io:format("~p~n",[Result]),
             ok
+
         end
 
     %% Pid=global:whereis_name(emysql_center)
@@ -100,3 +102,4 @@ get_timestamp() ->
 %%   `ipAddr` varchar(255) DEFAULT NULL,
 %%   PRIMARY KEY (`id`)
 %% )
+%%1 conn  process_count:10000 sql count each process:100 used time:2106406.6318359375
