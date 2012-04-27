@@ -4,6 +4,17 @@
  %% spawntest:serial_spawn(1).
 %% 3.58599e+5
 %% 创建1000000个进程消耗的时间
+
+%% (emacsdd@localhost)12> spawn_test:serial_spawn(1).
+%% 537634.4086021506
+%% 并行(10)的创建进程 100000/10
+%% (emacsdd@localhost)14> spawn_test:serial_spawn(10).
+%% 124285.35918468806
+%% (emacsdd@localhost)15> spawn_test:serial_spawn(100).
+%% 123793.01807378065
+%% (emacsdd@localhost)16> spawn_test:serial_spawn(1000).
+%% 121906.61952944046
+
 -export([serial_spawn/1]).
 
 serial_spawn(M) ->
