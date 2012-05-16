@@ -22,7 +22,7 @@ make() ->
 
 make_src(Tree) -> make_src(Tree,[]).
 
-make_src([],Acc)                              -> lists:flatten([make_index(Acc,[]),make_key(Acc,[])]);
+make_src([],Acc)                              -> top_and_tail([make_index(Acc,[]),make_key(Acc,[])]);
 make_src([{attribute,_,record,Record}|T],Acc) -> make_src(T,[Record|Acc]);
 make_src([_H|T],Acc)                          -> make_src(T,Acc).
 
@@ -95,16 +95,16 @@ mk2(Name,N) -> "no_of_fields("++atom_to_list(Name)++") -> "++
            integer_to_list(N)++";\n".
 
 
-%% top_and_tail(Acc1)->
-%%     Top="%% This module automatically generated - do not edit\n"++
-%%     "\n"++
-%%     "%%% This module provides utilities for use in building\n"++
-%%     "%%% match specifications from records\n"++
-%%     "\n"++
-%%     "-module("++?MODULENAME++").\n"++
-%%     "\n"++
-%%     "-export([get_index/2,no_of_fields/1]).\n"++
-%%     "\n",
-%%     Tail1="no_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
-%%     "++Other}).\n\n\n",
-%%     Top++lists:flatten(Acc1)++Tail2.
+top_and_tail(Acc1)->
+    Top="%% This module automatically generated - do not edit\n"++
+    "\n"++
+    "%%% This module provides utilities for use in building\n"++
+    "%%% match specifications from records\n"++
+    "\n"++
+    "-module("++?MODULENAME++").\n"++
+    "\n"++
+    "-export([get_index/2,get_key/2,no_of_fields/1]).\n"++
+    "\n",
+    %% Tail1="no_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
+    %% "++Other}).\n\n\n",
+    Top++lists:flatten(Acc1).
