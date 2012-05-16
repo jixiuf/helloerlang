@@ -10,7 +10,7 @@
 %% http://forum.trapexit.org/viewtopic.php?p=21790
 %% -include("myhead.hrl").
 -define(HEAD_FILE_PATH,"../src/myhead.hrl").
--define(MODULENAME,"myhead_util2").
+-define(MODULENAME,"myhead_util").
 
 -export([make/0]).
 
@@ -79,7 +79,10 @@ mk_get_key(Name) -> "get_key("++atom_to_list(Name)++",Index) -> "++
 
 mk_get_key(Name,Field,N) ->
     "get_key("++atom_to_list(Name)++","++
-    integer_to_list(N)++")-> "++atom_to_list(Field)++";\n".
+    integer_to_list(N)++")-> "++atom_to_list(Field)++";\n"++
+    "get_key(Record,"++integer_to_list(N)++") when  is_tuple(Record) andalso size(Record)>0 andalso element(1,Record)=="++atom_to_list(Name)++"->"++
+     atom_to_list(Field)++";\n"
+        .
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
