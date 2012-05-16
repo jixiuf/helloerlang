@@ -22,7 +22,7 @@ make() ->
 
 make_src(Tree) -> make_src(Tree,[]).
 
-make_src([],Acc)                              -> make_index(Acc,[]);
+make_src([],Acc)                              -> lists:flatten([make_index(Acc,[]),make_key(Acc,[])]);
 make_src([{attribute,_,record,Record}|T],Acc) -> make_src(T,[Record|Acc]);
 make_src([_H|T],Acc)                          -> make_src(T,Acc).
 
@@ -56,6 +56,39 @@ mk_get_index(Name) -> "get_index("++atom_to_list(Name)++",F) -> "++
 mk_get_index(Name,Field,N) ->
     "get_index("++atom_to_list(Name)++","++
     atom_to_list(Field)++")-> "++integer_to_list(N)++";\n".
+
+
+
+make_key([],Acc1)    ->
+    lists:flatten(Acc1)++
+        "get_key(Record,_Index) -> exit({error,\""++
+        "Invalid Record Name: \"++Record}).\n";
+make_key([H|T],Acc1) -> NewAcc1=make_get_key(H,[]),
+                  make_key(T,[NewAcc1|Acc1]).
+
+
+make_get_key([],Acc)->
+    Acc;
+make_get_key({RecName,Def},Acc) ->
+    expand_key(RecName,Def,1,[])
+        .
+
+expand_key(Name,[],N,Acc) -> lists:reverse([mk_get_key(Name)|Acc]);
+expand_key(Name,[{record_field,_,{atom,_,F},_}|T],N,Acc) ->
+    expand_key(Name,T,N+1,[mk_get_key(Name,F,N)|Acc]);
+expand_key(Name,[{record_field,_,{atom,_,F}}|T],N,Acc) ->
+    expand_key(Name,T,N+1,[mk_get_key(Name,F,N)|Acc]);
+expand_key(Name,[H|T],N,Acc) -> expand_key(Name,T,N+1,Acc).
+
+%% mk_get_key/1 builds an error line
+mk_get_key(Name) -> "get_key("++atom_to_list(Name)++",Index) -> "++
+        "exit({error,\"Record: "++atom_to_list(Name)++
+        " has no field called \"++atom_to_list(Index)});\n".
+
+mk_get_key(Name,Field,N) ->
+    "get_key("++atom_to_list(Name)++","++
+    integer_to_list(N)++")-> "++atom_to_list(Field)++";\n".
+
 
 %% mk2/1 builds the no of fields fns
 mk2(Name,N) -> "no_of_fields("++atom_to_list(Name)++") -> "++
