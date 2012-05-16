@@ -31,22 +31,17 @@ make_index([],Acc1)    ->
     lists:flatten(Acc1)++
         "get_index(Record,_Field) -> exit({error,\""++
         "Invalid Record Name: \"++Record}).\n";
-make_index([H|T],Acc1) -> NewAcc1=make_get_index(H,[]),
+make_index([{RecName,Def}|T],Acc1) -> NewAcc1=expand_index(RecName,Def,1,[]),
                   make_index(T,[NewAcc1|Acc1]).
 
 
-make_get_index([],Acc)->
-    Acc;
-make_get_index({RecName,Def},Acc) ->
-    expand_index(RecName,Def,1,[])
-        .
 
-expand_index(Name,[],N,Acc) -> lists:reverse([mk_get_index(Name)|Acc]);
+expand_index(Name,[],_N,Acc) -> lists:reverse([mk_get_index(Name)|Acc]);
 expand_index(Name,[{record_field,_,{atom,_,F},_}|T],N,Acc) ->
     expand_index(Name,T,N+1,[mk_get_index(Name,F,N)|Acc]);
 expand_index(Name,[{record_field,_,{atom,_,F}}|T],N,Acc) ->
     expand_index(Name,T,N+1,[mk_get_index(Name,F,N)|Acc]);
-expand_index(Name,[H|T],N,Acc) -> expand_index(Name,T,N+1,Acc).
+expand_index(Name,[_H|T],N,Acc) -> expand_index(Name,T,N+1,Acc).
 
 %% mk_get_index/1 builds an error line
 mk_get_index(Name) -> "get_index("++atom_to_list(Name)++",F) -> "++
@@ -57,28 +52,21 @@ mk_get_index(Name,Field,N) ->
     "get_index("++atom_to_list(Name)++","++
     atom_to_list(Field)++")-> "++integer_to_list(N)++";\n".
 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_key([],Acc1)    ->
     lists:flatten(Acc1)++
         "get_key(Record,_Index) -> exit({error,\""++
         "Invalid Record Name: \"++Record}).\n";
-make_key([H|T],Acc1) -> NewAcc1=make_get_key(H,[]),
+make_key([{RecName,Def}|T],Acc1) -> NewAcc1=expand_key(RecName,Def,1,[]),
                   make_key(T,[NewAcc1|Acc1]).
 
 
-make_get_key([],Acc)->
-    Acc;
-make_get_key({RecName,Def},Acc) ->
-    expand_key(RecName,Def,1,[])
-        .
-
-expand_key(Name,[],N,Acc) -> lists:reverse([mk_get_key(Name)|Acc]);
+expand_key(Name,[],_N,Acc) -> lists:reverse([mk_get_key(Name)|Acc]);
 expand_key(Name,[{record_field,_,{atom,_,F},_}|T],N,Acc) ->
     expand_key(Name,T,N+1,[mk_get_key(Name,F,N)|Acc]);
 expand_key(Name,[{record_field,_,{atom,_,F}}|T],N,Acc) ->
     expand_key(Name,T,N+1,[mk_get_key(Name,F,N)|Acc]);
-expand_key(Name,[H|T],N,Acc) -> expand_key(Name,T,N+1,Acc).
+expand_key(Name,[_H|T],N,Acc) -> expand_key(Name,T,N+1,Acc).
 
 %% mk_get_key/1 builds an error line
 mk_get_key(Name) -> "get_key("++atom_to_list(Name)++",Index) -> "++
