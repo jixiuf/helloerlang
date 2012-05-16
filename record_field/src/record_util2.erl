@@ -22,7 +22,12 @@ make() ->
 
 make_src(Tree) -> make_src(Tree,[]).
 
-make_src([],Acc)                              -> top_and_tail([make_index(Acc,[]),make_key(Acc,[])]);
+make_src([],Acc)                              ->
+    top_and_tail([make_index(Acc,[]),
+                  "\n",
+                  make_key(Acc,[]),
+                  "\n",
+                  make_length(Acc,[])]);
 make_src([{attribute,_,record,Record}|T],Acc) -> make_src(T,[Record|Acc]);
 make_src([_H|T],Acc)                          -> make_src(T,Acc).
 
@@ -31,10 +36,9 @@ make_index([],Acc1)    ->
     lists:flatten(Acc1)++
         "get_index(Record,_Field) -> exit({error,\""++
         "Invalid Record Name: \"++Record}).\n";
-make_index([{RecName,Def}|T],Acc1) -> NewAcc1=expand_index(RecName,Def,1,[]),
-                  make_index(T,[NewAcc1|Acc1]).
-
-
+make_index([{RecName,Def}|T],Acc1) ->
+    NewAcc1=expand_index(RecName,Def,1,[]),
+    make_index(T,[NewAcc1|Acc1]).
 
 expand_index(Name,[],_N,Acc) -> lists:reverse([mk_get_index(Name)|Acc]);
 expand_index(Name,[{record_field,_,{atom,_,F},_}|T],N,Acc) ->
@@ -78,10 +82,16 @@ mk_get_key(Name,Field,N) ->
     integer_to_list(N)++")-> "++atom_to_list(Field)++";\n".
 
 
-%% mk2/1 builds the no of fields fns
-mk2(Name,N) -> "no_of_fields("++atom_to_list(Name)++") -> "++
-           integer_to_list(N)++";\n".
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+make_length([],Acc1)->
+    Tail1="no_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
+    "++Other}).\n\n\n",
+    lists:reverse([Tail1|Acc1]);
+make_length([{RecName,Def}|T],Acc1)->
+    Cause= "no_of_fields("++atom_to_list(RecName)++") -> "++
+           integer_to_list(length(Def))++";\n",
+    make_length(T,[Cause|Acc1])
+    .
 
 top_and_tail(Acc1)->
     Top="%% This module automatically generated - do not edit\n"++
