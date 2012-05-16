@@ -1,14 +1,14 @@
 -module(record_util2).
 %%%-------------------------------------------------------------------
 %%% File        : record_util.erl
-%%% Author      : Gordon Guthrie gordon@hypernumbers.com
+%%% Author      : 纪秀峰 jixiuf@gmail.com
 %%% Description : utilities for manipulating records
 %%%
-%%% Created     :  2 Sep 2008 by Gordon Guthrie
+%%% Created     :  2012-05-17 00:42
 %%%-------------------------------------------------------------------
+%% reference:
 %% http://trapexit.org/Match%5FSpecifications%5FAnd%5FRecords%5F%28Dynamically!%29
 %% http://forum.trapexit.org/viewtopic.php?p=21790
-%% -include("myhead.hrl").
 -define(HEAD_FILE_PATH,"../src/myhead.hrl").
 -define(MODULENAME,"myhead_util").
 
