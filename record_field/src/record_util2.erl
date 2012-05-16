@@ -84,11 +84,11 @@ mk_get_key(Name,Field,N) ->
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_length([],Acc1)->
-    Tail1="no_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
+    Tail1="num_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
     "++Other}).\n\n\n",
     lists:reverse([Tail1|Acc1]);
 make_length([{RecName,Def}|T],Acc1)->
-    Cause= "no_of_fields("++atom_to_list(RecName)++") -> "++
+    Cause= "num_of_fields("++atom_to_list(RecName)++") -> "++
            integer_to_list(length(Def))++";\n",
     make_length(T,[Cause|Acc1])
     .
@@ -101,8 +101,8 @@ top_and_tail(Acc1)->
     "\n"++
     "-module("++?MODULENAME++").\n"++
     "\n"++
-    "-export([get_index/2,get_key/2,no_of_fields/1]).\n"++
+    "-export([get_index/2,get_key/2,num_of_fields/1]).\n"++
     "\n",
-    %% Tail1="no_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
+    %% Tail1="num_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
     %% "++Other}).\n\n\n",
     Top++lists:flatten(Acc1).
