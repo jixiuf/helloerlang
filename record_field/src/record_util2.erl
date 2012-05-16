@@ -27,7 +27,10 @@ make_src([],Acc)                              ->
                   "\n",
                   make_key(Acc,[]),
                   "\n",
-                  make_length(Acc,[])]);
+                  make_length(Acc,[]),
+                  "\n",
+                  make_info(Acc,[])
+                 ]);
 make_src([{attribute,_,record,Record}|T],Acc) -> make_src(T,[Record|Acc]);
 make_src([_H|T],Acc)                          -> make_src(T,Acc).
 
@@ -96,6 +99,23 @@ make_length([{RecName,Def}|T],Acc1)->
     make_length(T,[Cause|Acc1])
     .
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+make_info([],Acc1)->
+    Tail1="fields_info(Other) -> exit({error,\"Invalid Record Name: \""++
+    "++Other}).\n\n\n",
+    lists:reverse([Tail1|Acc1]);
+make_info([{RecName,Def}|T],Acc1)->
+    io:format("~p~n",[Def]) ,
+    Fields=lists:map(fun({record_field,_Num,{atom,_Num2,Field}})-> Field end,Def),
+    Cause= "fields_info("++atom_to_list(RecName)++") -> "++
+          lists:flatten( io_lib:format("~p",[Fields])) ++";\n"++
+        "fields_info(Record) when is_tuple(Record) andalso size(Record)>0 andalso element(1,Record)=="++atom_to_list(RecName)++"->"++
+        lists:flatten( io_lib:format("~p",[Fields])) ++";\n"
+        ,
+    make_info(T,[Cause|Acc1])
+    .
+
+
 top_and_tail(Acc1)->
     Top="%% This module automatically generated - do not edit\n"++
     "\n"++
@@ -104,7 +124,7 @@ top_and_tail(Acc1)->
     "\n"++
     "-module("++?MODULENAME++").\n"++
     "\n"++
-    "-export([get_index/2,get_key/2,num_of_fields/1]).\n"++
+    "-export([get_index/2,get_key/2,num_of_fields/1,fields_info/1]).\n"++
     "\n",
     %% Tail1="num_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
     %% "++Other}).\n\n\n",
