@@ -98,7 +98,7 @@ mk_get_key(Name,Field,N) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_length([],Acc1)->
     Tail1="num_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
-    "++Other}).\n\n\n",
+    "++Other}).\n",
     lists:reverse([Tail1|Acc1]);
 make_length([{RecName,Def}|T],Acc1)->
     Cause= "num_of_fields("++atom_to_list(RecName)++") -> "++
