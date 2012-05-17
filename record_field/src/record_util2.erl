@@ -10,6 +10,8 @@
 %% http://forum.trapexit.org/viewtopic.php?p=21790
 -include("myhead.hrl").
 -define(HEAD_FILE_PATH,"../include/myhead.hrl").
+%% save ?MODULENAME.erl in this dir
+-define(DEST_DIR,"../src").                     %relative to ebin/
 -define(MODULENAME,"myhead_util").
 -define(INCLUDE_CMD,"-include(\""++?HEAD_FILE_PATH++"\").").
 
@@ -19,7 +21,7 @@
 make() ->
     {ok,Tree}=epp:parse_file(?HEAD_FILE_PATH,["./"],[]),
     Src=make_src(Tree),
-    ok=file:write_file(?MODULENAME++".erl",list_to_binary(Src)).
+    ok=file:write_file(filename:join([?DEST_DIR,?MODULENAME])++".erl",list_to_binary(Src)).
 
 make_src(Tree) -> make_src(Tree,[]).
 
