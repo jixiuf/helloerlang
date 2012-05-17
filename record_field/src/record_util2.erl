@@ -8,9 +8,10 @@
 %%%-------------------------------------------------------------------
 %% http://trapexit.org/Match%5FSpecifications%5FAnd%5FRecords%5F%28Dynamically!%29
 %% http://forum.trapexit.org/viewtopic.php?p=21790
-%% -include("myhead.hrl").
--define(HEAD_FILE_PATH,"../src/myhead.hrl").
+-include("myhead.hrl").
+-define(HEAD_FILE_PATH,"../include/myhead.hrl").
 -define(MODULENAME,"myhead_util").
+-define(INCLUDE_CMD,"-include(\""++?HEAD_FILE_PATH++"\").").
 
 -export([make/0]).
 
@@ -80,7 +81,7 @@ expand_key(Name,[_H|T],N,Acc) -> expand_key(Name,T,N+1,Acc).
 %% mk_get_key/1 builds an error line
 mk_get_key(Name) -> "get_key("++atom_to_list(Name)++",Index) -> "++
         "exit({error,\"Record: "++atom_to_list(Name)++
-        " has no field called \"++atom_to_list(Index)});\n".
+        " has no field index \"++integer_to_list(Index)});\n".
 
 mk_get_key(Name,Field,N) ->
     "get_key("++atom_to_list(Name)++","++
@@ -122,6 +123,8 @@ top_and_tail(Acc1)->
     "%%% match specifications from records\n"++
     "\n"++
     "-module("++?MODULENAME++").\n"++
+    "\n"++
+    ?INCLUDE_CMD++
     "\n"++
     "-export([get_index/2,get_key/2,num_of_fields/1,fields_info/1]).\n"++
     "\n",
