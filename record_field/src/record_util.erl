@@ -8,8 +8,8 @@
 %%%-------------------------------------------------------------------
 %% http://trapexit.org/Match%5FSpecifications%5FAnd%5FRecords%5F%28Dynamically!%29
 %% http://forum.trapexit.org/viewtopic.php?p=21790
--include("myhead.hrl").
--define(HEAD_FILE_PATH,"../include/myhead.hrl").
+%% -include("myhead.hrl").
+-define(HEAD_FILE_PATH,"../include/myhead.hrl").%relative to ebin/
 %% save ?MODULENAME.erl in this dir
 -define(DEST_DIR,"../src").                     %relative to ebin/
 -define(MODULENAME,"myhead_util").
