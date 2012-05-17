@@ -13,7 +13,7 @@
 %% save ?MODULENAME.erl in this dir
 -define(DEST_DIR,"../src").                     %relative to ebin/
 -define(MODULENAME,"myhead_util").
--define(INCLUDE_CMD,"-include(\""++?HEAD_FILE_PATH++"\").").
+-define(INCLUDE_CMD_IN_DEST_MODULE,"-include(\"myhead.hrl\").").
 
 -export([make/0]).
 
@@ -157,7 +157,7 @@ top_and_tail(Acc1)->
     "\n"++
     "-module("++?MODULENAME++").\n"++
     "\n"++
-    ?INCLUDE_CMD++
+    ?INCLUDE_CMD_IN_DEST_MODULE++
     "\n"++
     "-export([get_index/2,get_key/2,get_value/2,num_of_fields/1,fields_info/1]).\n"++
     "\n",
