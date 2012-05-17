@@ -1,4 +1,4 @@
--module(record_util2).
+-module(record_util).
 %%%-------------------------------------------------------------------
 %%% File        : record_util.erl
 %%% Author      : Gordon Guthrie gordon@hypernumbers.com
