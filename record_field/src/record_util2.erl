@@ -62,7 +62,7 @@ mk_get_index(Name) -> "get_index("++atom_to_list(Name)++",F) -> "++
 mk_get_index(Name,Field,N) ->
     "get_index("++atom_to_list(Name)++","++
     atom_to_list(Field)++")-> "++integer_to_list(N)++";\n"++
-        "get_index(Record,"++atom_to_list(Field)++") when  is_tuple(Record) andalso size(Record)>0 andalso element(1,Record)=="++atom_to_list(Name)++"->"++
+        "get_index(Record,"++atom_to_list(Field)++") when is_record(Record,"++atom_to_list(Name)++")->"++
      integer_to_list(N)++";\n"
 .
 
@@ -90,7 +90,7 @@ mk_get_key(Name) -> "get_key("++atom_to_list(Name)++",Index) -> "++
 mk_get_key(Name,Field,N) ->
     "get_key("++atom_to_list(Name)++","++
     integer_to_list(N)++")-> "++atom_to_list(Field)++";\n"++
-    "get_key(Record,"++integer_to_list(N)++") when  is_tuple(Record) andalso size(Record)>0 andalso element(1,Record)=="++atom_to_list(Name)++"->"++
+    "get_key(Record,"++integer_to_list(N)++") when is_record(Record,"++atom_to_list(Name)++") ->"++
      atom_to_list(Field)++";\n"
         .
 
