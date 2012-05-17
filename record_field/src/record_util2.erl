@@ -27,6 +27,8 @@ make_src([],Acc)                              ->
                   "\n",
                   make_key(Acc,[]),
                   "\n",
+                  make_info(Acc,[]),
+                  "\n",
                   make_length(Acc,[])]);
 make_src([{attribute,_,record,Record}|T],Acc) -> make_src(T,[Record|Acc]);
 make_src([_H|T],Acc)                          -> make_src(T,Acc).
@@ -54,7 +56,10 @@ mk_get_index(Name) -> "get_index("++atom_to_list(Name)++",F) -> "++
 
 mk_get_index(Name,Field,N) ->
     "get_index("++atom_to_list(Name)++","++
-    atom_to_list(Field)++")-> "++integer_to_list(N)++";\n".
+    atom_to_list(Field)++")-> "++integer_to_list(N)++";\n"++
+        "get_index(Record,"++atom_to_list(Field)++") when  is_tuple(Record) andalso size(Record)>0 andalso element(1,Record)=="++atom_to_list(Name)++"->"++
+     integer_to_list(N)++";\n"
+.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_key([],Acc1)    ->
@@ -92,8 +97,22 @@ make_length([],Acc1)->
     lists:reverse([Tail1|Acc1]);
 make_length([{RecName,Def}|T],Acc1)->
     Cause= "num_of_fields("++atom_to_list(RecName)++") -> "++
+           integer_to_list(length(Def))++";\n"++
+        "num_of_fields(Record ) when is_tuple(Record) andalso size(Record)>0 andalso element(1,Record)=="++atom_to_list(RecName)++"->"++
            integer_to_list(length(Def))++";\n",
     make_length(T,[Cause|Acc1])
+    .
+make_info([],Acc1)->
+    Tail1="fields_info(Other) -> exit({error,\"Invalid Record Name: \""++
+    "++Other}).\n\n\n",
+    lists:reverse([Tail1|Acc1]);
+make_info([{RecName,Def}|T],Acc1)->
+    Fields=[F|| {record_field,_Num,{atom,_Num2,F}} <- Def ],
+    Cause= "fields_info("++atom_to_list(RecName)++") -> "++
+           io_lib:format("~p",[Fields])++";\n"++
+        "fields_info(Record ) when is_tuple(Record) andalso size(Record)>0 andalso element(1,Record)=="++atom_to_list(RecName)++"->"++
+           io_lib:format("~p",[Fields])++";\n",
+    make_info(T,[Cause|Acc1])
     .
 
 top_and_tail(Acc1)->
@@ -104,7 +123,7 @@ top_and_tail(Acc1)->
     "\n"++
     "-module("++?MODULENAME++").\n"++
     "\n"++
-    "-export([get_index/2,get_key/2,num_of_fields/1]).\n"++
+    "-export([get_index/2,get_key/2,num_of_fields/1,fields_info/1]).\n"++
     "\n",
     %% Tail1="num_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
     %% "++Other}).\n\n\n",
