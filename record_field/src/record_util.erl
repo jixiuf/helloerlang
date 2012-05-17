@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 %% http://trapexit.org/Match%5FSpecifications%5FAnd%5FRecords%5F%28Dynamically!%29
 %% http://forum.trapexit.org/viewtopic.php?p=21790
--include("myhead.hrl").
+%% -include("myhead.hrl").
 -define(HEAD_FILE_PATH,"d:/helloerlang/record_field/src/myhead.hrl").
 -define(MODULENAME,"myhead_util2").
 
