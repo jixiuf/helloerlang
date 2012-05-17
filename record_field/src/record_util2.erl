@@ -28,6 +28,8 @@ make_src(Tree) -> make_src(Tree,[]).
 make_src([],Acc)                              ->
     top_and_tail([make_index(Acc,[]),
                   "\n",
+                  make_value(Acc,[]),
+                  "\n",
                   make_key(Acc,[]),
                   "\n",
                   make_info(Acc,[]),
@@ -105,6 +107,7 @@ make_length([{RecName,Def}|T],Acc1)->
            integer_to_list(length(Def))++";\n",
     make_length(T,[Cause|Acc1])
     .
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_info([],Acc1)->
     Tail1="fields_info(Other) -> exit({error,\"Invalid Record Name: \""++
     "++Other}).\n\n\n",
@@ -118,6 +121,34 @@ make_info([{RecName,Def}|T],Acc1)->
     make_info(T,[Cause|Acc1])
     .
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+make_value([],Acc1)    ->
+    lists:flatten(Acc1)++
+        "get_value(Record,_KeyIndex) -> exit({error,\""++
+        "Invalid Record Name: \"++Record}).\n";
+make_value([{RecName,Def}|T],Acc1) -> NewAcc1=expand_value(RecName,Def,1,[]),
+                  make_value(T,[NewAcc1|Acc1]).
+
+
+expand_value(Name,[],_N,Acc) -> lists:reverse([mk_get_value(Name)|Acc]);
+expand_value(Name,[{record_field,_,{atom,_,F},_}|T],N,Acc) ->
+    expand_value(Name,T,N+1,[mk_get_value(Name,F,N)|Acc]);
+expand_value(Name,[{record_field,_,{atom,_,F}}|T],N,Acc) ->
+    expand_value(Name,T,N+1,[mk_get_value(Name,F,N)|Acc]);
+expand_value(Name,[_H|T],N,Acc) -> expand_value(Name,T,N+1,Acc).
+
+%% mk_get_value/1 builds an error line
+mk_get_value(Name) -> "get_value("++atom_to_list(Name)++",Index) -> "++
+        "exit({error,\"Record: "++atom_to_list(Name)++
+        " has no field index \"++integer_to_list(Index)});\n".
+
+mk_get_value(Name,Field,N) ->
+    "get_value(Record,"++atom_to_list(Field)++") when  is_record(Record,"++atom_to_list(Name)++")->"++
+     "Record#"++atom_to_list(Name)++"."++atom_to_list(Field)++";\n"++
+    "get_value(Record,"++integer_to_list(N)++") when  is_record(Record,"++atom_to_list(Name)++")->"++
+     "Record#"++atom_to_list(Name)++"."++atom_to_list(Field)++";\n"
+        .
+
 top_and_tail(Acc1)->
     Top="%% This module automatically generated - do not edit\n"++
     "\n"++
@@ -128,7 +159,7 @@ top_and_tail(Acc1)->
     "\n"++
     ?INCLUDE_CMD++
     "\n"++
-    "-export([get_index/2,get_key/2,num_of_fields/1,fields_info/1]).\n"++
+    "-export([get_index/2,get_key/2,get_value/2,num_of_fields/1,fields_info/1]).\n"++
     "\n",
     %% Tail1="num_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
     %% "++Other}).\n\n\n",
