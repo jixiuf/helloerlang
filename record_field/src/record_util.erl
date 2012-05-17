@@ -1,7 +1,7 @@
 -module(record_util).
 %%%-------------------------------------------------------------------
 %%% File        : record_util.erl
-%%% Author      : Gordon Guthrie gordon@hypernumbers.com
+%%% Author      : 纪秀峰 jixiuf@gmail.com
 %%% Description : utilities for manipulating records
 %%%
 %%% Created     :  2 Sep 2008 by Gordon Guthrie
