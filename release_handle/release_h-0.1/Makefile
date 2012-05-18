@@ -5,7 +5,7 @@ all:
 	@$(REBAR) get-deps compile
 
 
-test:
+eunit:
 	@rm -rf .eunit
 	@mkdir -p .eunit
 	@$(REBAR) skip_deps=true eunit
