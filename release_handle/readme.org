@@ -1,0 +1,28 @@
+# -*- coding:utf-8 -*-
+#+LANGUAGE:  zh
+#+TITLE:     readme.org
+#+AUTHOR:    纪秀峰
+#+EMAIL:     jixiuf@gmail.com
+#+DATE:     2012-05-18 星期五
+#+DESCRIPTION:readme.org
+#+KEYWORDS:
+#+OPTIONS:   H:2 num:nil toc:t \n:t @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil
+#+FILETAGS:
+* appup文件的格式
+  #+BEGIN_QUOTE
+  {Vsn,                         % Vsn 为当前version的appliction版本号
+  [{UpFromVsn1, InstructionsU1}, %UpFromVsn1 是前一版的版本号 ,InstructionsU1  是一个 指令 list
+  ...,
+  {UpFromVsnK, InstructionsUK}],
+  [{DownToVsn1, InstructionsD1},
+  ...,
+  {DownToVsnK, InstructionsDK}]}.
+  #+END_QUOTE
+  参考：
++ https://bitbucket.org/basho/rebar/wiki/ReleaseHandling
++ http://www.metabrew.com/article/erlangotp-releases-rebar-release_handler-appup-etc
++ http://www.erlang.org/doc/design_principles/release_handling.html
++ http://www.erlang.org/doc/design_principles/appup_cookbook.html#sup
++ http://www.erlang.org/doc/system_principles/create_target.html
++ http://www.erlang.org/doc/man/reltool.html
