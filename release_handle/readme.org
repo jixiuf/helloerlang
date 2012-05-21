@@ -21,6 +21,7 @@
   #+END_QUOTE
   参考：
 + https://bitbucket.org/basho/rebar/wiki/ReleaseHandling
++ https://github.com/basho/rebar/wiki/Upgrades
 + http://www.metabrew.com/article/erlangotp-releases-rebar-release_handler-appup-etc
 + http://stackoverflow.com/questions/7324556/cannot-start-sample-erlang-release-generated-with-rebar
 + http://www.metabrew.com/article/erlang-rebar-tutorial-generating-releases-upgrades
