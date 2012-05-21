@@ -22,10 +22,5 @@
   }
  ],              %
  %%降级为0.1
- [{"0.1", [{load_module, tool}%% 对于普通的tool.el模块的升级，只要加载它就可以了
-           {add_module, mod_to_be_deleted},             %添加一个新模块
-           {delete_module, world_gen},  %删除mod_to_be_deleted.erl
-           {update, hello_gen, {advanced, "Extra info for code_change/3 from 0.2 to 0.1"}},
-           {update, hello_sup, supervisor}
-          ]}]
+ [{"0.1", []}]
 }.
