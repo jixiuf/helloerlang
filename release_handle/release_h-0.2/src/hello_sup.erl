@@ -7,6 +7,7 @@
 -export([start_link/0,init/1]).
 
 start_link()->
+    io:format("~p start link~n",[?MODULE]) ,
     supervisor:start_link(?MODULE,[])
         .
 init([])->
