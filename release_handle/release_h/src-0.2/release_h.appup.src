@@ -1,0 +1,39 @@
+%% 要重命令为 release_h.appup，放到ebin目录下
+
+%% {Vsn,                         % Vsn 为当前version的appliction版本号
+%%  [{UpFromVsn1, InstructionsU1}, %UpFromVsn1 是前一版的版本号 ,InstructionsU1  是一个 指令 list
+%%   ...,
+%%   {UpFromVsnK, InstructionsUK}],
+%%  [{DownToVsn1, InstructionsD1},
+%%   ...,
+%%   {DownToVsnK, InstructionsDK}]}.
+
+
+{"0.2",
+ %% 把tool.el从0.1升级到0.2
+ 
+ [{"0.1", [{load_module, tool},%% 对于普通的tool.el模块的升级，只要加载它就可以了
+           {delete_module, mod_to_be_deleted},  %删除mod_to_be_deleted.erl
+           {update, hello_gen, {advanced, "Extra info for code_change/3"}},
+           %% 注意 这三个的顺序不能错
+           %% 首先添加 world_gen模块，
+           %%  hello_sup 时也对world_gen进行监督，所以需要{update, hello_sup, supervisor}
+           %% 但是 {update, hello_sup, supervisor}并不会启动world_gen子进程，需要
+           %% {apply,supervisor,restart_child,[hello_sup,world_gen]}
+           %% 手动启动之，注意，在hello_sup中使用了{local,?MODULE},
+           %% 才能通过hello_sup名字找到督程hello_sup，从而运行restart_child
+           %%如写没有 {local,hello_sup} 需要自己写一个方法，找到相应的pid ,用apply
+           %% 执行之。
+           {add_module, world_gen},             %添加一个新模块
+           {update, hello_sup, supervisor},
+           {apply,supervisor,restart_child,[hello_sup,world_gen]}
+           
+           %% release_h.erl依然是0.1版的，所以不必在此列出
+          ]
+  }
+ ],              %
+ %%降级为0.1
+ [{"0.1", [
+           %% 这里什么规则都没有， 暂不执行降级行为
+          ]}]
+}.
