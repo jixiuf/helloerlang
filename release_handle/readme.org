@@ -29,3 +29,239 @@
 + http://www.erlang.org/doc/design_principles/appup_cookbook.html#sup
 + http://www.erlang.org/doc/system_principles/create_target.html
 + http://www.erlang.org/doc/man/reltool.html
+
+* 操作步骤
+  #+BEGIN_SRC sh
+  cd release_handle/release_h/
+  make clean
+  #+END_SRC
+
+  #+BEGIN_SRC sh
+  cp src-0.1 src
+  make
+  #+END_SRC
+  先使用0.1版的src进行编译
+
+  #+BEGIN_SRC sh
+  make createnode
+  #这个make 指令其实执行如下命令
+  mkdir rel;cd rel;../rebar create-node nodeid=release_h
+  #+END_SRC
+
+  生成 ./rel目录,
+  不太明白为什么rebar起名字叫create-node
+  但是要想运行 rebar generate
+  ./rel/目录下必须有rebar create-node nodeid=$(PROJECT) 命令生成的
+  一系列文件才行，比如 reltool.config
+  生成的reltool.config形如：
+  #+BEGIN_SRC erlang
+    {sys, [
+           {lib_dirs, []},
+           {erts, [{mod_cond, derived}, {app_file, strip}]},
+           {app_file, strip},
+           {rel, "release_h", "1",
+            [
+             kernel,
+             stdlib,
+             sasl,
+             release_h
+            ]},
+           {rel, "start_clean", "",
+            [
+             kernel,
+             stdlib
+            ]},
+           {boot_rel, "release_h"},
+           {profile, embedded},
+           {incl_cond, exclude},
+           {excl_archive_filters, [".*"]}, %% Do not archive built libs
+           {excl_sys_filters, ["^bin/.*", "^erts.*/bin/(dialyzer|typer)",
+                               "^erts.*/(doc|info|include|lib|man|src)"]},
+           {excl_app_filters, ["\.gitignore"]},
+           {app, sasl,   [{incl_cond, include}]},
+           {app, stdlib, [{incl_cond, include}]},
+           {app, kernel, [{incl_cond, include}]},
+           {app, release_h, [{incl_cond, include}]}
+          ]}.
+
+    {target_dir, "release_h"}.
+
+    {overlay, [
+               {mkdir, "log/sasl"},
+               {copy, "files/erl", "\{\{erts_vsn\}\}/bin/erl"},
+               {copy, "files/nodetool", "\{\{erts_vsn\}\}/bin/nodetool"},
+               {copy, "files/release_h", "bin/release_h"},
+               {copy, "files/release_h.cmd", "bin/release_h.cmd"},
+               {copy, "files/start_erl.cmd", "bin/start_erl.cmd"},
+               {copy, "files/install_upgrade.escript", "bin/install_upgrade.escript"},
+               {copy, "files/sys.config", "releases/\{\{rel_vsn\}\}/sys.config"},
+               {copy, "files/vm.args", "releases/\{\{rel_vsn\}\}/vm.args"}
+              ]}.
+  #+END_SRC
+  这个生成的reltool.config有几处需要修改
+ + 注释掉这一行，{app_file, strip},
+   可能是rebar bug的原因，
+   我在 rebar generate-upgrade。。。 时，会报错，注释掉这句就可以了
+ + {lib_dirs, ["../.."]},
+          将本项目源码所在目录加到reltool.config的 lib_dirs中，这里使用了相对
+   目径，这样 reltool才能找到 本源目
+ + 修改版本号为0.1    {rel, "release_h", "0.1",...}
+
+修改后的文件为
+
+  #+BEGIN_SRC erlang
+    {sys, [
+           {lib_dirs, ["../.."]},
+           {erts, [{mod_cond, derived}, {app_file, strip}]},
+           %% {app_file, strip},
+           {rel, "release_h", "0.1",
+            [
+             kernel,
+             stdlib,
+             sasl,
+             release_h
+            ]},
+           {rel, "start_clean", "",
+            [
+             kernel,
+             stdlib
+            ]},
+           {boot_rel, "release_h"},
+           {profile, embedded},
+           {incl_cond, exclude},
+           {excl_archive_filters, [".*"]}, %% Do not archive built libs
+           {excl_sys_filters, ["^bin/.*", "^erts.*/bin/(dialyzer|typer)",
+                               "^erts.*/(doc|info|include|lib|man|src)"]},
+           {excl_app_filters, ["\.gitignore"]},
+           {app, sasl,   [{incl_cond, include}]},
+           {app, stdlib, [{incl_cond, include}]},
+           {app, kernel, [{incl_cond, include}]},
+           {app, release_h, [{incl_cond, include}]}
+          ]}.
+
+    {target_dir, "release_h"}.
+
+    {overlay, [
+               {mkdir, "log/sasl"},
+               {copy, "files/erl", "\{\{erts_vsn\}\}/bin/erl"},
+               {copy, "files/nodetool", "\{\{erts_vsn\}\}/bin/nodetool"},
+               {copy, "files/release_h", "bin/release_h"},
+               {copy, "files/release_h.cmd", "bin/release_h.cmd"},
+               {copy, "files/start_erl.cmd", "bin/start_erl.cmd"},
+               {copy, "files/install_upgrade.escript", "bin/install_upgrade.escript"},
+               {copy, "files/sys.config", "releases/\{\{rel_vsn\}\}/sys.config"},
+               {copy, "files/vm.args", "releases/\{\{rel_vsn\}\}/vm.args"}
+              ]}.
+
+  #+END_SRC
+生成 ./rel/release_h
+#+BEGIN_SRC sh
+make generate
+#实际运行的是 ./rebar generate
+
+可以查看下确保release_h-0.1被 打包到相应版本中
+ ls ./rel/release_h/lib/|grep release_h
+mv ./rel/release_h/ ./rel/release_h-0.1/
+#+END_SRC
+0.1版的release_h已经生成好了,适运行一下
+#+BEGIN_SRC sh
+cd ./rel/release_h/bin
+./release_h console
+#+END_SRC
+#+BEGIN_SRC sh
+Eshell V5.9.1  (abort with ^G)
+(release_h@jixiufeng-Joseph)1> hello_gen:hello().
+1
+(release_h@jixiufeng-Joseph)2> hello_gen:module_info(attributes).
+[{vsn,"0.1"}]
+(release_h@jixiufeng-Joseph)3>
+(release_h@jixiufeng-Joseph)3> release_handler:which_releases().
+[{"release_h","0.1",
+  ["kernel-2.15.1","stdlib-1.18.1","sasl-2.2.1",
+   "release_h-0.1"],
+  permanent}]
+(release_h@jixiufeng-Joseph)4> tool:sayhello().
+this is just a common module withou process running on ,so
+update this module is easy
+ok
+(release_h@jixiufeng-Joseph)5>
+#+END_SRC
+
+修改./rel/reltool.config
+将版本号由0.1改成0.2
+#+BEGIN_SRC sh
+rm src
+cp src-0.2 src
+make clean
+make
+make generate
+ls rel/release_h/lib/|grep release_h
+make up
+ls rel/release_h/lib/release_h*/ebin |grep appup
+ls rel/|grep tar
+cp rel/release_h_0.2.tar.gz ./rel/release_h-0.1/releases/
+#+END_SRC
+
+用0.2版的代码生成新的 ./rel/release_h/
+注意在0.2版的代码中 src/有 release_h.appup.src
+编译过程中，会放到 ebin/release_h.appup
+make up 命令执行两个命令
+#+BEGIN_SRC sh
+    ./rebar generate-appups previous_release=release_h-0.1
+    ./rebar generate-upgrade previous_release=release_h-0.1
+#+END_SRC
+关于参数previous_release后面跟 相对于./rel/目录的路径，比如，我将0.1版的
+release_h目录命名为 release_h-0.1
+generate-appups会在 ./rel/release_h/lib/release_h-0.2/ebin目录下生成
+release_h.appup文件
+如果 你的ebin/目录下没有appup文件的话， rebar 会为你生成一个，然后这它放到
+ ./rel/release_h/lib/release_h-0.2/ebin目录中
+generate-upgrade命令会在./rebar 生成一个tar.gz包
+#+BEGIN_SRC sh
+把release_h_0.2.tar.gz升级包  copy到 0.1版 的releases目录下
+cp ./rel/release_h_0.2.tar.gz ./rel/release-0.1/releases/
+#+END_SRC
+在刚才测试0.1版的erlang shell中执行
+#+BEGIN_SRC erlang
+erl> release_handler:unpack_release("release_h_0.2"). %解包
+erl> release_handler:install_release("0.2"). % install
+erl> release_handler:make_permanent("0.2"). % 使0.2版成为默认版本
+#+END_SRC
+
+#+BEGIN_SRC erlang
+(release_h@jixiufeng-Joseph)2> release_handler:unpack_release("release_h_0.2").
+{ok,"0.2"}
+(release_h@jixiufeng-Joseph)3>  release_handler:install_release("0.2").
+if you see this line ,that means hello_gen.erl is updated
+hello_gen update from version 0.1 and current version is 0.2
+and the third param Extra is "Extra info for code_change/3"
+
+if you see this line that means world_gen is started
+{ok,"0.1",[]}
+(release_h@jixiufeng-Joseph)4>  release_handler:make_permanent("0.2").
+ok
+(release_h@jixiufeng-Joseph)5>
+#+END_SRC
+
+查看一下确认已经升级到0.2
+#+BEGIN_SRC erlang
+(release_h@jixiufeng-Joseph)5> release_handler:which_releases().
+[{"release_h","0.2",
+  ["kernel-2.15.1","stdlib-1.18.1","sasl-2.2.1",
+   "release_h-0.2"],
+  current},
+ {"release_h","0.1",
+  ["kernel-2.15.1","stdlib-1.18.1","sasl-2.2.1",
+   "release_h-0.1"],
+  permanent}]
+(release_h@jixiufeng-Joseph)7> whereis(world_gen).
+<0.60.0>
+(release_h@jixiufeng-Joseph)10> supervisor:which_children(hello_sup).
+[{world_gen,<0.60.0>,worker,[world_gen]},
+ {hello_gen,<0.49.0>,worker,[hello_gen]}]
+(release_h@jixiufeng-Joseph)11>
+(release_h@jixiufeng-Joseph)8> supervisor:which_children().
+(release_h@jixiufeng-Joseph)11> tool:sayworld().
+this is just a common module withou process running on ,so
+update this module is easy
+#+END_SRC
