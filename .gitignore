@@ -20,7 +20,6 @@ anything-c-adaptive-history
 cache
 doc/*
 *.pdf
-Makefile
 xhtml-loader.rnc
 site-lisp/org-mode-git/
 .gitignore
@@ -29,7 +28,6 @@ site-lisp/org-mode-git/
 /bin/mew-6.4/temp.el
 /eshell/history
 /eshell/lastdir
-xcopy /y %emacs_dir%\bin\emacsclient.exe  %emacs_dir%\bin\ec.exe 
 COMMIT_EDITMSG
 *.dump
 *.beam
