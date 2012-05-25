@@ -125,9 +125,10 @@ make_info([{RecName,Def}|T],Acc1)->
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_value([],Acc1)    ->
-    lists:flatten(Acc1)++
-        "get_value(Record,_KeyIndex) -> exit({error,\""++
-        "Invalid Record Name: \"++Record}).\n";
+    Head="%% get field value of a record by index(1 based) or field name\n",
+    Tail=       "get_value(Record,_KeyIndex) -> exit({error,\""++
+        "Invalid Record Name: \"++Record}).\n",
+    Head++ lists:flatten(Acc1) ++ Tail;
 make_value([{RecName,Def}|T],Acc1) -> NewAcc1=expand_value(RecName,Def,1,[]),
                   make_value(T,[NewAcc1|Acc1]).
 
