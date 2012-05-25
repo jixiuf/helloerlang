@@ -59,11 +59,11 @@ mk_get_index(Name) -> "get_index("++atom_to_list(Name)++",F) -> "++
         "exit({error,\"Record: "++atom_to_list(Name)++
         " has no field called \"++atom_to_list(F)});\n".
 
-mk_get_index(Name,Field,N) ->
+mk_get_index(Name,Field,_N) ->
     "get_index("++atom_to_list(Name)++","++
-    atom_to_list(Field)++")-> "++integer_to_list(N)++";\n"++
-        "get_index(Record,"++atom_to_list(Field)++") when is_record(Record,"++atom_to_list(Name)++")->"++
-     integer_to_list(N)++";\n"
+    atom_to_list(Field)++")-> #"++atom_to_list(Name)++"."++atom_to_list(Field)++";\n"++
+        "get_index(Record,"++atom_to_list(Field)++") when is_record(Record,"++atom_to_list(Name)++")-> #"++
+        atom_to_list(Name)++"."++atom_to_list(Field)++";\n"
 .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -97,26 +97,28 @@ mk_get_key(Name,Field,N) ->
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_length([],Acc1)->
-    Tail1="num_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
+    Head="%% get count of fields of a record\n",
+    Tail1="length(Other) -> exit({error,\"Invalid Record Name: \""++
     "++Other}).\n",
-    lists:reverse([Tail1|Acc1]);
+    [Head|lists:reverse([Tail1|Acc1])];
 make_length([{RecName,Def}|T],Acc1)->
-    Cause= "num_of_fields("++atom_to_list(RecName)++") -> "++
+    Cause= "length("++atom_to_list(RecName)++") -> "++
            integer_to_list(length(Def))++";\n"++
-        "num_of_fields(Record ) when is_tuple(Record) andalso size(Record)>0 andalso element(1,Record)=="++atom_to_list(RecName)++"->"++
+        "length(Record ) when is_record(Record,"++atom_to_list(RecName)++")->"++
            integer_to_list(length(Def))++";\n",
     make_length(T,[Cause|Acc1])
     .
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_info([],Acc1)->
+    Head="%% get all field name of a record\n",
     Tail1="fields_info(Other) -> exit({error,\"Invalid Record Name: \""++
-    "++Other}).\n\n\n",
-    lists:reverse([Tail1|Acc1]);
+    "++Other}).\n",
+    [Head|lists:reverse([Tail1|Acc1])];
 make_info([{RecName,Def}|T],Acc1)->
     Fields=[F|| {record_field,_Num,{atom,_Num2,F}} <- Def ],
     Cause= "fields_info("++atom_to_list(RecName)++") -> "++
            io_lib:format("~p",[Fields])++";\n"++
-        "fields_info(Record ) when is_tuple(Record) andalso size(Record)>0 andalso element(1,Record)=="++atom_to_list(RecName)++"->"++
+        "fields_info(Record ) when is_record(Record,"++atom_to_list(RecName)++")->"++
            io_lib:format("~p",[Fields])++";\n",
     make_info(T,[Cause|Acc1])
     .
@@ -152,15 +154,14 @@ mk_get_value(Name,Field,N) ->
 top_and_tail(Acc1)->
     Top="%% This module automatically generated - do not edit\n"++
     "\n"++
-    "%%% This module provides utilities for use in building\n"++
-    "%%% match specifications from records\n"++
+    "%%% This module provides utilities for getting info about records\n"++
     "\n"++
     "-module("++?MODULENAME++").\n"++
     "\n"++
     ?INCLUDE_CMD_IN_DEST_MODULE++
     "\n"++
-    "-export([get_index/2,get_key/2,get_value/2,num_of_fields/1,fields_info/1]).\n"++
+    "-export([get_index/2,get_key/2,get_value/2,length/1,fields_info/1]).\n"++
     "\n",
-    %% Tail1="num_of_fields(Other) -> exit({error,\"Invalid Record Name: \""++
+    %% Tail1="length(Other) -> exit({error,\"Invalid Record Name: \""++
     %% "++Other}).\n\n\n",
     Top++lists:flatten(Acc1).
