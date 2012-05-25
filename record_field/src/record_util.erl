@@ -40,6 +40,8 @@ make_src([_H|T],Acc)                          -> make_src(T,Acc).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_index([],Acc1)    ->
+    Head="%% get the filed index (1 based ) of a record\n",
+    Head++
     lists:flatten(Acc1)++
         "get_index(Record,_Field) -> exit({error,\""++
         "Invalid Record Name: \"++Record}).\n";
@@ -61,13 +63,15 @@ mk_get_index(Name) -> "get_index("++atom_to_list(Name)++",F) -> "++
 
 mk_get_index(Name,Field,_N) ->
     "get_index("++atom_to_list(Name)++","++
-    atom_to_list(Field)++")-> #"++atom_to_list(Name)++"."++atom_to_list(Field)++";\n"++
+    atom_to_list(Field)++")-> #"++atom_to_list(Name)++"."++atom_to_list(Field)++"-1 ;\n"++
         "get_index(Record,"++atom_to_list(Field)++") when is_record(Record,"++atom_to_list(Name)++")-> #"++
-        atom_to_list(Name)++"."++atom_to_list(Field)++";\n"
+        atom_to_list(Name)++"."++atom_to_list(Field)++"-1 ;\n"
 .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_key([],Acc1)    ->
+    Head="%% get field name by index\n",
+    Head++
     lists:flatten(Acc1)++
         "get_key(Record,_Index) -> exit({error,\""++
         "Invalid Record Name: \"++Record}).\n";
@@ -156,6 +160,19 @@ top_and_tail(Acc1)->
     Top="%% This module automatically generated - do not edit\n"++
     "\n"++
     "%%% This module provides utilities for getting info about records\n"++
+    "%% suppose there is a record in myhead.erl\n\n"++
+    "%% -record(user,[id,name,age]).\n"++
+    "%% U=#user{id=100,name=joseph,age=11}.\n\n"++
+    "%% get_index(user,id)==1\n"++
+    "%% get_index(U,id)==1\n\n"++
+    "%% get_value(U,id)==100\n"++
+    "%% get_value(U,1)==100\n\n"++
+    "%% get_key(U,1)==key\n"++
+    "%% get_key(user,1)==key\n\n"++
+    "%% fields_info(user)==[id,name,age]\n"++
+    "%% fields_info(U)==[id,name,age]\n\n"++
+    "%% length(user)==3\n"++
+    "%% length(U)==3\n"++
     "\n"++
     "-module("++?MODULENAME++").\n"++
     "\n"++
