@@ -74,7 +74,7 @@ make_key([],Acc1)    ->
     Head++
     lists:flatten(Acc1)++
         "get_key(Record,_Index) -> exit({error,\""++
-        "Invalid Record Name: \"++Record}).\n";
+        "Invalid  Record Name or Index out of bound : \"++lists:flatten(io_lib:format(\"~p\",[Record]))}).\n";
 make_key([{RecName,Def}|T],Acc1) -> NewAcc1=expand_key(RecName,Def,1,[]),
                   make_key(T,[NewAcc1|Acc1]).
 
