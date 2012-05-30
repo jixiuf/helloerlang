@@ -30,6 +30,8 @@ generate:
 
 gen:generate
 
+generatef:
+	$(REBAR) generate -f
 # rebar  generate-appups 指令与 appup文件有关，
 # 如果 ebin/目录下有一个 appup 文件，则直接使用这个文件，不为其自动生成一个
 # 如果没有，则为其自动生成一个,
