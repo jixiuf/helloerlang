@@ -34,7 +34,10 @@ make_src([],Acc)                              ->
                   "\n",
                   make_info(Acc,[]),
                   "\n",
-                  make_length(Acc,[])]);
+                  make_length(Acc,[])
+                  ,"\n"
+                  ,make_is_record(Acc,[])
+                 ]);
 make_src([{attribute,_,record,Record}|T],Acc) -> make_src(T,[Record|Acc]);
 make_src([_H|T],Acc)                          -> make_src(T,Acc).
 
@@ -128,6 +131,13 @@ make_info([{RecName,Def}|T],Acc1)->
     .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+make_is_record([],Acc1)->
+    lists:reverse(["is_record(_)->false.\n"|Acc1]);
+make_is_record([{RecName,_Def}|T],Acc1)->
+    Cause="is_record(Record ) when is_record(Record,"++atom_to_list(RecName)++")->true;\n",
+    make_is_record(T,[Cause|Acc1])
+    .
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_value([],Acc1)    ->
     Head="%% get field value of a record by index(1 based) or field name\n",
     Tail=       "get_value(Record,_KeyIndex) -> exit({error,\""++
@@ -178,7 +188,7 @@ top_and_tail(Acc1)->
     "\n"++
     ?INCLUDE_CMD_IN_DEST_MODULE++
     "\n"++
-    "-export([get_index/2,get_key/2,get_value/2,length/1,fields_info/1]).\n"++
+    "-export([get_index/2,get_key/2,get_value/2,length/1,fields_info/1,is_record/1]).\n"++
     "\n",
     %% Tail1="length(Other) -> exit({error,\"Invalid Record Name: \""++
     %% "++Other}).\n\n\n",
