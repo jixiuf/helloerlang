@@ -140,8 +140,8 @@ make_is_record([{RecName,_Def}|T],Acc1)->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 make_value([],Acc1)    ->
     Head="%% get field value of a record by index(1 based) or field name\n",
-    Tail=       "get_value(Record,_KeyIndex) -> exit({error,\""++
-        "Invalid Record Name: \"++Record}).\n",
+    Tail=       "get_value(_Record,_KeyIndex) -> exit({error,\""++
+        "Invalid Record Name\"}).\n",
     Head++ lists:flatten(Acc1) ++ Tail;
 make_value([{RecName,Def}|T],Acc1) -> NewAcc1=expand_value(RecName,Def,1,[]),
                   make_value(T,[NewAcc1|Acc1]).
@@ -155,9 +155,13 @@ expand_value(Name,[{record_field,_,{atom,_,F}}|T],N,Acc) ->
 expand_value(Name,[_H|T],N,Acc) -> expand_value(Name,T,N+1,Acc).
 
 %% mk_get_value/1 builds an error line
-mk_get_value(Name) -> "get_value("++atom_to_list(Name)++",Index) -> "++
+mk_get_value(Name) ->
+    "get_value(Record,Index)when is_record(Record,"++atom_to_list(Name)++"), is_integer(Index) -> "++
         "exit({error,\"Record: "++atom_to_list(Name)++
-        " has no field index \"++integer_to_list(Index)});\n".
+        " has no field index \"++integer_to_list(Index)});\n"++
+        "get_value(Record,Field)when is_record(Record,"++atom_to_list(Name)++"), is_atom(Field) -> "++
+        "exit({error,\"Record: "++atom_to_list(Name)++
+        " has no field  \"++atom_to_list(Field)});\n".
 
 mk_get_value(Name,Field,N) ->
     "get_value(Record,"++atom_to_list(Field)++") when  is_record(Record,"++atom_to_list(Name)++")->"++
