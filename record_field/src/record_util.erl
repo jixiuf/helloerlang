@@ -36,7 +36,9 @@ make_src([],Acc)                              ->
                   "\n",
                   make_length(Acc,[])
                   ,"\n"
-                  ,make_is_record(Acc,[])
+                  ,make_is_record(Acc,[]),
+                  "\n",
+                  make_json()
                  ]);
 make_src([{attribute,_,record,Record}|T],Acc) -> make_src(T,[Record|Acc]);
 make_src([_H|T],Acc)                          -> make_src(T,Acc).
@@ -169,6 +171,41 @@ mk_get_value(Name,Field,N) ->
      "Record#"++atom_to_list(Name)++"."++atom_to_list(Field)++";\n"
         .
 
+make_json()->
+    "encode_field(Field,FieldValue) when is_integer(FieldValue)->\n"++
+        "    [list_to_binary(atom_to_list(Field)),<<\":\">>,list_to_binary(integer_to_list(FieldValue))];\n"++
+        "encode_field(Field,FieldValue) when is_atom(FieldValue)->\n"++
+        "    [list_to_binary(atom_to_list(Field)),<<\":\\\"\">>,list_to_binary(erlang:atom_to_list(FieldValue)),\"\\\"\"];\n"++
+        "encode_field(Field,FieldValue) when is_list(FieldValue)->\n"++
+        "    [list_to_binary(atom_to_list(Field)),<<\":\\\"\">>,list_to_binary(FieldValue),<<\"\\\"\">>];\n"++
+        "encode_field(Field,FieldValue) when is_binary(FieldValue)->\n"++
+        "    [list_to_binary(atom_to_list(Field)),<<\":\\\"\">>,FieldValue,<<\"\\\"\">>] ;\n"++
+        "encode_field(Field,FieldValue) ->\n"++
+        "    case is_record(FieldValue) of\n"++
+        "        true->\n"++
+        "            [list_to_binary(atom_to_list(Field)),<<\":{\">>,record_to_json(FieldValue),<<\"}\">>];\n"++
+        "        false ->\n"++
+        "            exit(encode_record_error)\n"++
+        "    end\n"++
+        ".\n"++
+        "record_to_json(R)->\n"++
+        "    case is_record(R) of\n"++
+        "        true->\n"++
+        "            Fields=lists:reverse(fields_info(R)),\n"++
+        "            case Fields of\n"++
+        "                []->\n"++
+        "                    <<\"\">>;\n"++
+        "                [LastField|TailFields]->\n"++
+        "                    list_to_binary(\n"++
+        "                      [[encode_field(F,get_value(R,F)),<<\",\">>]||F<-lists:reverse(TailFields)]++\n"++
+        "                          [encode_field(LastField,get_value(R,LastField))]\n"++
+        "                     )\n"++
+        "            end\n"++
+        "                ;\n"++
+        "        false ->\n"++
+        "            exit(encode_record_error)\n"++
+        "    end.\n"
+        .
 top_and_tail(Acc1)->
     Top="%% This module automatically generated - do not edit\n"++
     "\n"++
@@ -191,7 +228,7 @@ top_and_tail(Acc1)->
     "\n"++
     ?INCLUDE_CMD_IN_DEST_MODULE++
     "\n"++
-    "-export([get_index/2,get_key/2,get_value/2,length/1,fields_info/1,is_record/1]).\n"++
+    "-export([get_index/2,get_key/2,get_value/2,length/1,fields_info/1,is_record/1,record_to_json/1]).\n"++
     "\n",
     %% Tail1="length(Other) -> exit({error,\"Invalid Record Name: \""++
     %% "++Other}).\n\n\n",
