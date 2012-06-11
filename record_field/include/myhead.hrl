@@ -1,3 +1,3 @@
 
--record(user,{name,id,age}).
+-record(user,{id,name,classes}).
 -record(classes,{name,id,nums}).
