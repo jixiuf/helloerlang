@@ -183,11 +183,12 @@ make_json()->
         "encode_field(Field,FieldValue) ->\n"++
         "    case is_record(FieldValue) of\n"++
         "        true->\n"++
-        "            [list_to_binary(atom_to_list(Field)),<<\":{\">>,record_to_json(FieldValue),<<\"}\">>];\n"++
+        "            [list_to_binary(atom_to_list(Field)),<<\":\">>,record_to_json(FieldValue)];\n"++
         "        false ->\n"++
         "            exit(encode_record_error)\n"++
         "    end\n"++
         ".\n"++
+        "%% eq:binary_to_list(myhead_util:record_to_json({user,1,<<\"joseph\">>,{classes,<<\"class1\">>,1,33}})).\n"++
         "record_to_json(R)->\n"++
         "    case is_record(R) of\n"++
         "        true->\n"++
@@ -197,8 +198,10 @@ make_json()->
         "                    <<\"\">>;\n"++
         "                [LastField|TailFields]->\n"++
         "                    list_to_binary(\n"++
+        "                    [<<\"{\">>]++\n"++
         "                      [[encode_field(F,get_value(R,F)),<<\",\">>]||F<-lists:reverse(TailFields)]++\n"++
-        "                          [encode_field(LastField,get_value(R,LastField))]\n"++
+        "                          [encode_field(LastField,get_value(R,LastField))]++\n"++
+        "                    [<<\"}\">>]\n"++
         "                     )\n"++
         "            end\n"++
         "                ;\n"++
