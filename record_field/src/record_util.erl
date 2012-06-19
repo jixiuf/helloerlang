@@ -197,11 +197,13 @@ make_json()->
         "                []->\n"++
         "                    <<\"\">>;\n"++
         "                [LastField|TailFields]->\n"++
+        "                    RecordName=element(1,R),\n"++
         "                    list_to_binary(\n"++
+        "                      [<<\"{\">>]++[list_to_binary(atom_to_list(RecordName))]++[\":\"]++\n"++
         "                    [<<\"{\">>]++\n"++
         "                      [[encode_field(F,get_value(R,F)),<<\",\">>]||F<-lists:reverse(TailFields)]++\n"++
         "                          [encode_field(LastField,get_value(R,LastField))]++\n"++
-        "                    [<<\"}\">>]\n"++
+        "                    [<<\"}}\">>]\n"++
         "                     )\n"++
         "            end\n"++
         "                ;\n"++
