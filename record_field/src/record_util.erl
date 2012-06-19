@@ -177,7 +177,7 @@ make_json()->
         "encode_field(Field,FieldValue) when is_atom(FieldValue)->\n"++
         "    [list_to_binary(atom_to_list(Field)),<<\":\\\"\">>,list_to_binary(erlang:atom_to_list(FieldValue)),\"\\\"\"];\n"++
         "encode_field(Field,FieldValue) when is_list(FieldValue)->\n"++
-        "    [list_to_binary(atom_to_list(Field)),<<\":\\\"\">>,list_to_binary(FieldValue),<<\"\\\"\">>];\n"++
+        "[list_to_binary(atom_to_list(Field)),<<\":[\">>,[record_to_json(Ele)||Ele<-FieldValue],<<\"]\">>];\n"++
         "encode_field(Field,FieldValue) when is_binary(FieldValue)->\n"++
         "    [list_to_binary(atom_to_list(Field)),<<\":\\\"\">>,FieldValue,<<\"\\\"\">>] ;\n"++
         "encode_field(Field,FieldValue) ->\n"++
