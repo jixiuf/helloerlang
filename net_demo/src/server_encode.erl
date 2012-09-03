@@ -13,7 +13,7 @@ encode(S2CProtocol)->
             throw({error,encode})
     end.
 
-encoding(#s2c_protocol{header=?S2C_PROTOCOL_ECHO,body=#echo{msg=Msg}})-> % 1:32 ,echo
+encoding(#s2c_protocol{header=?S2C_PROTOCOL_ECHO,body=#s2c_echo{msg=Msg}})-> % 1:32 ,echo
     Bin = <<?S2C_PROTOCOL_ECHO:?S2C_PROTOCOL_LENGTH,Msg/binary>>,
     Bin;
 encoding(_S2CProtocol) ->

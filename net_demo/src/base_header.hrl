@@ -17,5 +17,5 @@
 -record(c2s_protocol,{header,body}).
 -record(s2c_protocol,{error_id=?S2C_ERROR_SUCCESS,header,body}).
 
--record(echo,{msg}).
--record(s2c_echo,{error_id=0,msg}).
+-record(c2s_echo,{msg}).
+-record(s2c_echo,{msg}).

@@ -13,6 +13,6 @@ decode(Bin)->
 
 decoding(<<?C2S_PROTOCOL_ECHO:?C2S_PROTOCOL_LENGTH,MsgBody/binary>>)-> % 1:32 ,echo
     io:format("server got echo msg from client:~p~n",[MsgBody]),
-    EchoMsg= #echo{msg=MsgBody},
+    EchoMsg= #c2s_echo{msg=MsgBody},
     Protocol=#c2s_protocol{header=?C2S_PROTOCOL_ECHO,body=EchoMsg},
     {ok,Protocol}.

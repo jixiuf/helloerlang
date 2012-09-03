@@ -3,12 +3,12 @@
 
 -include_lib("../base_header.hrl").
 
-handle_echo(#echo{msg=Msg})->
+handle_echo(#c2s_echo{msg=Msg})->
     try
         echo:cmd_echo(Msg)
     catch
         throw:ErrorId->
-            [server_util:build_resp(?S2C_PROTOCOL_ECHO,#s2c_echo{error_id=ErrorId})];
+            [server_util:build_resp(ErrorId,?S2C_PROTOCOL_ECHO,#s2c_echo{})];
         _:_->
-            [server_util:build_resp(?S2C_PROTOCOL_ECHO,#s2c_echo{error_id=?S2C_ERROR_FAILED})]
+            [server_util:build_resp(?S2C_ERROR_FAILED,?S2C_PROTOCOL_ECHO,#s2c_echo{})]
     end.
