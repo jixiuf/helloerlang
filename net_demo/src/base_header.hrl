@@ -2,12 +2,12 @@
 
 -define(C2S_TCP_PACKET,2).
 -define(C2S_PROTOCOL_LENGTH,16).
--define(C2S_PROTOCOL_REGISTER,1).
+-define(C2S_PROTOCOL_ECHO,1).
 
 
 -define(S2C_PROTOCOL_LENGTH,16).
 -define(S2C_PROTOCOL_SERVER_ERROR,0).
--define(S2C_PROTOCOL_REGISTER,1).
+-define(S2C_PROTOCOL_ECHO,1).
 
 
 -record(c2s_protocol,{header,body}).

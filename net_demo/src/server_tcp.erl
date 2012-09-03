@@ -62,7 +62,11 @@ handle_data(Bin,ClientSocket) ->
             S2CProtocol=server_handle:handle(C2SProtocol),
             server_encode:encode(S2CProtocol)
         catch
-            _:_->
-                ok
+            throw:Msg->
+                io:format("~p:handle_data/2 error with reason:~p~n",[?MODULE,Msg]) ,
+                server_encode:encode_server_error();
+            error:ErrorId ->
+                io:format("~p:handle_data/2 error with reason:~p~n",[?MODULE,ErrorId]) ,
+                server_encode:encode_server_error()
         end,
     gen_tcp:send(ClientSocket,EncodeBin).
