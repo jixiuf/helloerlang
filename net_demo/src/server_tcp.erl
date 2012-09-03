@@ -56,11 +56,11 @@ handle_tcp_closed(ClientSocket)->
         .
 
 handle_data(Bin,ClientSocket) ->
-    EncodeBin=
+    EncodeData=
         try
             C2SProtocol=server_decode:decode(Bin) ,
-            S2CProtocol=server_handle:handle(C2SProtocol),
-            server_encode:encode(S2CProtocol)
+            S2CProtocols=server_handle:handle(C2SProtocol),
+            [server_encode:encode(S2CProtocol)||S2CProtocol<-S2CProtocols]
         catch
             throw:Msg->
                 io:format("~p:handle_data/2 error with reason:~p~n",[?MODULE,Msg]) ,
@@ -69,4 +69,4 @@ handle_data(Bin,ClientSocket) ->
                 io:format("~p:handle_data/2 error with reason:~p~n",[?MODULE,ErrorId]) ,
                 server_encode:encode_server_error()
         end,
-    gen_tcp:send(ClientSocket,EncodeBin).
+    gen_tcp:send(ClientSocket,EncodeData).
