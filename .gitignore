@@ -414,3 +414,5 @@ erl_crash.dump
 /gls/sgLogServer/deps/emysql/t/Makefile
 /gls/sgLogServer/Makefile
 /emysql-test/ebin/emysql.app
+/release_handle.rar
+/record_field/src/myhead_util.erl
