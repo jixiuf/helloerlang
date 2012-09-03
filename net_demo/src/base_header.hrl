@@ -6,6 +6,7 @@
 
 
 -define(S2C_PROTOCOL_LENGTH,16).
+-define(S2C_PROTOCOL_SERVER_ERROR,0).
 -define(S2C_PROTOCOL_REGISTER,1).
 
 

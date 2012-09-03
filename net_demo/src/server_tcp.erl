@@ -31,10 +31,16 @@ handle(ClientSocket) ->
     inet:setopts(ClientSocket, [{active, once}]),
     receive
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
-            handle_data(Bin);
+            io:format("server handle command...~n",[]),
+            case handle_data(Bin,ClientSocket)  of
+                ok->
+                    handle(ClientSocket) ;
+                {error, Reason}->
+                    self()!{exit,self(),Reason}
+            end;
         {tcp_closed,SocketSocket}->
             handle_tcp_closed(SocketSocket)
-            ;
+                ;
         {tcp_error, _Socket, Reason}->
             io:format("tcp_error with reason ~p~n:",[Reason]);
         {exit,_FromPid,Reason}->                                %服务器端强迫客户端下线，正常用户的登录强迫同名匿名用户下线
@@ -49,14 +55,14 @@ handle_tcp_closed(ClientSocket)->
     io:format(" tcp_closed:~p!~n",[ClientSocket])
         .
 
-handle_data(Bin) ->
-    io:format("server handle command...~n",[]),
-    C2SProtocol=server_decode:decode(Bin) ,
-    S2CProtocol=server_handle:handle(C2SProtocol),
-    {EncodeBin,NewSocket3}=server_encode:encode(S2CProtocol) ,
-    case gen_tcp:send(NewSocket3,EncodeBin) of
-        ok->
-            handle(NewSocket3) ;
-        {error, Reason}->
-            self()!{exit,self(),Reason}
-    end.
+handle_data(Bin,ClientSocket) ->
+    EncodeBin=
+        try
+            C2SProtocol=server_decode:decode(Bin) ,
+            S2CProtocol=server_handle:handle(C2SProtocol),
+            server_encode:encode(S2CProtocol)
+        catch
+            _:_->
+                ok
+        end,
+    gen_tcp:send(ClientSocket,EncodeBin).
