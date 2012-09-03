@@ -2,7 +2,9 @@
 
 -define(C2S_TCP_PACKET,2).
 -define(C2S_PROTOCOL_LENGTH,16).
--define(S2C_PROTOCOL_LENGTH,16).
+-define(S2C_PROTOCOL_LENGTH,16).                %协议号的长度
+-define(S2C_ERROR_ID_LENGTH,16).                %错误号的长度
+
 
 %% c2s 协议号
 -define(C2S_PROTOCOL_ECHO,1).
