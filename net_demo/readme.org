@@ -1,0 +1,38 @@
+
+* 消息协议格式:
+采用二进制数据作为消息格式
+server 与client 同时使用 {packet ,4}作为参数，故省去了消息的截取与组装，关于
+packet 参数，详见：server.erl 注释
+而具体的消息格式为
+[4字节消息类型,具体的消息体]
+比如echo 消息格式为<<1:32,Msg/binary>>
+用一个4字节的int 表示此消息的具体含义,比如1:32 表示此为echo 所发的消息,而3:32
+表示发送过来的是一个password
+
+* 用mnesia 保存信息
+
+* 使用方法  
+server:start_server(8888).
+
+{ok,S}=client:connect("localhost",8888).
+
+# 用户可以注册，也可password("") 匿名登录
+ client:user(S,"jixf").         %传递 用户名，
+ client:password(S,"jixf").    % 传递 password , user命令与password 命令顺序无关紧要
+ client:register(S).            % 用户名注册
+ 
+
+ client:user(S,"jixf").         %传递 用户名，
+ client:password(S,"jixf").    % 传递 password , user命令与password 命令顺序无
+ 关紧要
+ 前面如果运行过user/2,password/2 就可以进行login
+ client:login().            % login
+
+ # 创建或加入聊天室
+client:join(S,"#room1").
+
+# 向整个聊天室发送消息(“聊天室名必须以#开头，以便与用户名区分”)
+client:msg(S,"#room1","hello").
+
+# 向用户发送消息()
+client:msg(S,"jixf","hello").
