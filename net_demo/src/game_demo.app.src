@@ -1,0 +1,8 @@
+{application,game_demo,
+             [{description,"game demo"},
+              {vsn,"0.1"},
+              {modules,[]},
+              {mod,{game_demo,[]}},
+              {registered,[]},
+              {applications,[kernel,stdlib]},
+              {env,[]}]}.
