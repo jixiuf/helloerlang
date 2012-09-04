@@ -5,8 +5,8 @@
 %% internel
 -export([do_recv/1]).
 
--include_lib("include/base_header.hrl").
--include_lib("include/debug.hrl").
+-include("include/base_header.hrl").
+-include("include/debug.hrl").
 
 
 -define(TCP_OPTS,[binary,{active,false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET}]).

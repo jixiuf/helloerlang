@@ -1,8 +1,8 @@
 -module(server_handle).
 -export([handle/1]).
 %% 此模块中处理具体的业务逻辑
--include_lib("../include/base_header.hrl").
--include_lib("../include/debug.hrl").
+-include("../include/base_header.hrl").
+-include("../include/debug.hrl").
 
 handle(C2SProtocol)->
     S2CProtocolList=handling(C2SProtocol),

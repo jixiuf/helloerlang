@@ -3,7 +3,7 @@
 -export([get_current_app_env/1,get_current_app_env/2]).
 -define(DEFUALT_LISTEN_PORT,8888).
 
--include_lib("include/debug.hrl").
+-include("include/debug.hrl").
 
 start(normal,_Args)->
     Port=get_current_app_env(listen_port,?DEFUALT_LISTEN_PORT),

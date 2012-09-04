@@ -1,8 +1,8 @@
 -module(echo_handle).
 -export([handle_echo/1]).
 
--include_lib("../include/base_header.hrl").
--include_lib("../include/debug.hrl").
+-include("../include/base_header.hrl").
+-include("../include/debug.hrl").
 
 handle_echo(#c2s_echo{msg=Msg})->
     try

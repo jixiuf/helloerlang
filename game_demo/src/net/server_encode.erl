@@ -3,8 +3,8 @@
 
 -compile([inline,[encode_server_error/0]]).
 
--include_lib("../include/base_header.hrl").
--include_lib("../include/debug.hrl").
+-include("../include/base_header.hrl").
+-include("../include/debug.hrl").
 
 encode(S2CProtocol)->
     try
