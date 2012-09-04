@@ -36,16 +36,15 @@ handle(ClientSocket) ->
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
             ?DEBUG2("server handle command...~n",[]),
             case handle_data(Bin,ClientSocket)  of
-                ok->
-                    handle(ClientSocket) ;
-                {error, Reason}->
-                    self()!{exit,self(),Reason}
-            end;
-        {tcp_closed,SocketSocket}->
-            handle_tcp_closed(SocketSocket)
-                ;
-        {tcp_error, _Socket, Reason}->
-            ?DEBUG2("tcp_error with reason ~p~n:",[Reason]);
+                ok->ok;
+                {error, Reason}-> self()!{exit,self(),Reason}
+            end,
+            handle(ClientSocket);
+        {tcp_closed,Socket}->
+            handle_tcp_closed(Socket);
+        {tcp_error, Socket, Reason}->
+            ?DEBUG2("tcp_error with reason ~p~n:",[Reason]),
+            handle_tcp_closed(Socket);
         {exit,_FromPid,Reason}->                                %服务器端强迫客户端下线，正常用户的登录强迫同名匿名用户下线
             ?DEBUG2("exit with reason~p~n",[Reason]) ,
             handle_tcp_closed(ClientSocket),
@@ -54,8 +53,11 @@ handle(ClientSocket) ->
             ?DEBUG2("other msg ~p~n",[Other]),
             handle(ClientSocket)
     end.
+
 handle_tcp_closed(ClientSocket)->
-    ?DEBUG2(" tcp_closed:~p!~n",[ClientSocket])
+    ?DEBUG2(" tcp_closed:~p!~n",[ClientSocket]),
+    %% do some clean job here  ,when client socket lost
+    gen_tcp:close(ClientSocket)                 %try to close client socket
         .
 
 handle_data(Bin,ClientSocket) ->
