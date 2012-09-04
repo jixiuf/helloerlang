@@ -1,12 +1,15 @@
 -module(client).
+
 -export([close/1,echo/2]).
 -export([connect/2]).
-
 %% internel
 -export([do_recv/1]).
--include_lib("include/base_header.hrl").
--define(TCP_OPTS,[binary,{active,false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET}]).
 
+-include_lib("include/base_header.hrl").
+-include_lib("include/debug.hrl").
+
+
+-define(TCP_OPTS,[binary,{active,false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET}]).
 
 connect(Host,Port) ->
     case gen_tcp:connect(Host, Port,?TCP_OPTS ) of
@@ -22,49 +25,52 @@ connect(Host,Port) ->
     end
         .
 do_recv(ServerSocket)->
-    io:format("client do recving...~n",[]),
+    ?DEBUG2("client do recving...~n",[]),
     inet:setopts(ServerSocket, [{active, once}]),
     receive
         {send,Bin,Socket}->
-            io:format("client sending data to server ...~n",[]) ,
+            ?DEBUG2("client sending data to server ...~n",[]) ,
             gen_tcp:send(Socket,Bin),          %send Bin to ServerSocket
             do_recv(ServerSocket);
         {tcp, ServerSocket, Bin}->
-            io:format("client handle command ~n",[]),
+            ?DEBUG2("client handle command ~n",[]),
             handle_command(Bin,ServerSocket),
             do_recv(ServerSocket);
         {tcp_closed, ServerSocket} ->
-            io:format("client tcp_closed!!!!!~n",[]),
+            ?DEBUG2("client tcp_closed!!!!!~n",[]),
             gen_tcp:close(ServerSocket),
             exit(normal)
             %% do_recv(ServerSocket)
              ;
         {tcp_error, ServerSocket, Reason} ->
-            io:format("error ~p~n",[Reason]) ,
+            ?DEBUG2("error ~p~n",[Reason]) ,
             {error,Reason}
     end
     %% case   gen_tcp:recv(ServerSocket,0) of
     %%     {send,Bin,Socket}->
-    %%         io:format("client sending data to server ...~n",[]) ,
+    %%         ?DEBUG2("client sending data to server ...~n",[]) ,
     %%         %% gen_tcp:send(Socket,Bin),          %send Bin to ServerSocket
     %%         do_recv(ServerSocket);
     %%     {ok,Bin}->
     %%         handle_command(Bin,ServerSocket),
     %%         do_recv(ServerSocket);
     %%     {error,Reason} ->
-    %%         io:format("error ~p~n",[Reason]) ,
+    %%         ?DEBUG2("error ~p~n",[Reason]) ,
     %%         {error,Reason};
     %%     OtherMsg ->
-    %%         io:format("OtherMsg:~p~n",[OtherMsg]),
+    %%         ?DEBUG2("OtherMsg:~p~n",[OtherMsg]),
     %%         do_recv(ServerSocket)
     %% end
         .
-handle_command(<<1:32,EchoMsg/binary>>,_ServerSocket)-> %1:32 表示echo
-    chat_log:info("client get msg from server and server said :~p~n",[binary_to_list(EchoMsg)])
+handle_command(<<?S2C_PROTOCOL_ECHO:?S2C_PROTOCOL_LENGTH,EchoMsg/binary>>,_ServerSocket)-> %1:32 表示echo
+    {MsgBody,_OtherBin}=server_util:decode_str(EchoMsg),
+    ?INFO2("client get msg from server and server said :~p~n",[MsgBody])
 .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
-    whereis(?MODULE) ! {send ,util:binary_concat([<<1:16>>,Msg]),Socket},
+    MsgBin=server_util:encode_str(Msg),
+    Bin= <<?C2S_PROTOCOL_ECHO:?C2S_PROTOCOL_LENGTH,MsgBin/binary>>,
+    whereis(?MODULE) ! {send ,Bin,Socket},
     ok .
 
 close(Socket)->
