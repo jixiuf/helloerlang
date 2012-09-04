@@ -61,7 +61,7 @@ handle_tcp_closed(ClientSocket)->
 handle_data(Bin,ClientSocket) ->
     EncodeData=
         try
-            C2SProtocol=server_decode:decode(Bin) ,
+            {ok,C2SProtocol}=server_decode:decode(Bin) ,
             S2CProtocols=server_handle:handle(C2SProtocol),
             [server_encode:encode(S2CProtocol)||S2CProtocol<-S2CProtocols]
         catch
