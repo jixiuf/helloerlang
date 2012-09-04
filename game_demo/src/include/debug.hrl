@@ -1,17 +1,18 @@
 %% -define(NOLOG,true).
+
 -define(ML_FMT(F),"(~p:~p) "++(F)).
 -define(ML_DATA(D),[?MODULE,?LINE]++(D)).
 
 -ifdef(NOLOG).
 
-    -define(DEBUG(F),F).
-    -define(DEBUG2(F,D),{F,D}).
+    -define(DEBUG(F),ok).
+    -define(DEBUG2(F,D),ok).
 
-    -define(INFO(F),F).
-    -define(INFO2(F,D),{F,D}).
+    -define(INFO(F),ok).
+    -define(INFO2(F,D),ok).
 
-    -define(ERROR(F),F).
-    -define(ERROR2(F,D),{F,D}).
+    -define(ERROR(F),ok).
+    -define(ERROR2(F,D),ok).
 -else.
     -define(DEBUG(F),
             error_logger:info_msg(?ML_FMT("[D]"++F),?ML_DATA([]))).
