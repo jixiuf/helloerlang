@@ -1,6 +1,7 @@
 -module(server_tcp).
 -export([start_server/1]).
 -include_lib("base_header.hrl").
+-define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET}]).
 
 start_server(Port) ->
     Pid = spawn_link(fun() ->
@@ -13,7 +14,7 @@ start_server(Port) ->
                              %% 注意,这个过程是gen_tcp 自动执行的我们接收到的Bin 是100，而非104 ,即前4个字节已经自动切除掉了
                              %%而指定{header,4 }后，接收到的Bin [Byte1, Byte2,Byte3,Byte4 | Binary]即 4+96
                              %%而这4个字节用来表时消息类型
-                             {ok, Listen} = gen_tcp:listen(Port, [binary, {active, false},{packet ,?C2S_TCP_PACKET}]),
+                             {ok, Listen} = gen_tcp:listen(Port,?TCP_OPTS),
                              %% {ok, Listen} = gen_tcp:listen(Port, [binary, {active, false},{packet ,4},{header,4}]),
                              %% {ok, Listen} = gen_tcp:listen(Port, [binary, {active, false}]),
                              spawn(fun() -> acceptor(Listen) end),
