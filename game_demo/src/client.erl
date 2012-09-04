@@ -62,7 +62,8 @@ do_recv(ServerSocket)->
     %%         do_recv(ServerSocket)
     %% end
         .
-handle_command(<<?S2C_PROTOCOL_ECHO:?S2C_PROTOCOL_LENGTH,EchoMsg/binary>>,_ServerSocket)-> %1:32 表示echo
+handle_command(<<?S2C_PROTOCOL_ECHO:?S2C_PROTOCOL_LENGTH,ErrorId:?S2C_ERROR_ID_LENGTH,EchoMsg/binary>>,_ServerSocket)-> %1:32 表示echo
+    ?INFO2("errorid:~p(0==success)",[ErrorId]),
     {MsgBody,_OtherBin}=server_util:decode_str(EchoMsg),
     ?INFO2("client get msg from server and server said :~p~n",[MsgBody])
 .
