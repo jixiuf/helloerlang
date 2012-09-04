@@ -1,7 +1,8 @@
 -module(server_decode).
 -export([decode/1]).
 
--include_lib("base_header.hrl").
+-include_lib("include/base_header.hrl").
+-include_lib("include/debug.hrl").
 
 decode(Bin)->
     try
@@ -12,11 +13,11 @@ decode(Bin)->
     end.
 
 decoding(<<?C2S_PROTOCOL_ECHO:?C2S_PROTOCOL_LENGTH,MsgBody/binary>>)-> % 1:32 ,echo
-    io:format("server got echo msg from client:~p~n",[MsgBody]),
+    ?DEBUG2("server got echo msg from client:~p~n",[MsgBody]),
     EchoMsg= #c2s_echo{msg=MsgBody},
     Protocol=#c2s_protocol{header=?C2S_PROTOCOL_ECHO,body=EchoMsg},
     {ok,Protocol};
 decoding(Bin)-> % 1:32 ,echo
-    io:format("protocol decode error ,content:~p~n",[Bin]),
+    ?ERROR2("protocol decode error ,content:~p~n",[Bin]),
     throw({error,decode_unsupport_c2s_protocol})
 .

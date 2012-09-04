@@ -416,3 +416,6 @@ erl_crash.dump
 /emysql-test/ebin/emysql.app
 /release_handle.rar
 /record_field/src/myhead_util.erl
+/game_demo/ebin/game_demo.app
+/game_demo/net_protocol.rar
+/game_demo/~$net_protocol.xlsx

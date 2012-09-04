@@ -4,7 +4,7 @@
 
 %% internel
 -export([do_recv/1]).
--include_lib("base_header.hrl").
+-include_lib("include/base_header.hrl").
 -define(TCP_OPTS,[binary,{active,false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET}]).
 
 
@@ -22,25 +22,25 @@ connect(Host,Port) ->
     end
         .
 do_recv(ServerSocket)->
-    chat_log:debug("client do recving...~n",[]),
+    io:format("client do recving...~n",[]),
     inet:setopts(ServerSocket, [{active, once}]),
     receive
         {send,Bin,Socket}->
-            chat_log:debug("client sending data to server ...~n",[]) ,
+            io:format("client sending data to server ...~n",[]) ,
             gen_tcp:send(Socket,Bin),          %send Bin to ServerSocket
             do_recv(ServerSocket);
         {tcp, ServerSocket, Bin}->
-            chat_log:debug("client handle command ~n",[]),
+            io:format("client handle command ~n",[]),
             handle_command(Bin,ServerSocket),
             do_recv(ServerSocket);
         {tcp_closed, ServerSocket} ->
-            chat_log:debug("client tcp_closed!!!!!~n",[]),
+            io:format("client tcp_closed!!!!!~n",[]),
             gen_tcp:close(ServerSocket),
             exit(normal)
             %% do_recv(ServerSocket)
              ;
         {tcp_error, ServerSocket, Reason} ->
-            chat_log:debug("error ~p~n",[Reason]) ,
+            io:format("error ~p~n",[Reason]) ,
             {error,Reason}
     end
     %% case   gen_tcp:recv(ServerSocket,0) of

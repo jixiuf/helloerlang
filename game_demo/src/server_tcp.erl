@@ -1,6 +1,8 @@
 -module(server_tcp).
 -export([start_server/1]).
--include_lib("base_header.hrl").
+-include_lib("include/base_header.hrl").
+-include_lib("include/debug.hrl").
+
 -define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET}]).
 
 start_server(Port) ->
@@ -25,14 +27,14 @@ start_server(Port) ->
 acceptor(ListenSocket) ->
     {ok, Socket} = gen_tcp:accept(ListenSocket), %
     spawn(fun() -> acceptor(ListenSocket) end),  %每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
-    io:format("a new client is coming...~n",[]),
+    ?DEBUG2("a new client is coming...~n",[]),
     handle(Socket).
 
 handle(ClientSocket) ->
     inet:setopts(ClientSocket, [{active, once}]),
     receive
         {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
-            io:format("server handle command...~n",[]),
+            ?DEBUG2("server handle command...~n",[]),
             case handle_data(Bin,ClientSocket)  of
                 ok->
                     handle(ClientSocket) ;
@@ -43,17 +45,17 @@ handle(ClientSocket) ->
             handle_tcp_closed(SocketSocket)
                 ;
         {tcp_error, _Socket, Reason}->
-            io:format("tcp_error with reason ~p~n:",[Reason]);
+            ?DEBUG2("tcp_error with reason ~p~n:",[Reason]);
         {exit,_FromPid,Reason}->                                %服务器端强迫客户端下线，正常用户的登录强迫同名匿名用户下线
-            io:format("exit with reason~p~n",[Reason]) ,
+            ?DEBUG2("exit with reason~p~n",[Reason]) ,
             handle_tcp_closed(ClientSocket),
             exit(normal) ;
         Other ->
-            io:format("other msg ~p~n",[Other]),
+            ?DEBUG2("other msg ~p~n",[Other]),
             handle(ClientSocket)
     end.
 handle_tcp_closed(ClientSocket)->
-    io:format(" tcp_closed:~p!~n",[ClientSocket])
+    ?DEBUG2(" tcp_closed:~p!~n",[ClientSocket])
         .
 
 handle_data(Bin,ClientSocket) ->
@@ -64,10 +66,10 @@ handle_data(Bin,ClientSocket) ->
             [server_encode:encode(S2CProtocol)||S2CProtocol<-S2CProtocols]
         catch
             throw:Msg->
-                io:format("~p:handle_data/2 error with reason:~p~n",[?MODULE,Msg]) ,
+                ?DEBUG2("~p:handle_data/2 error with reason:~p~n",[?MODULE,Msg]) ,
                 server_encode:encode_server_error();
             error:ErrorId ->
-                io:format("~p:handle_data/2 error with reason:~p~n",[?MODULE,ErrorId]) ,
+                ?DEBUG2("~p:handle_data/2 error with reason:~p~n",[?MODULE,ErrorId]) ,
                 server_encode:encode_server_error()
         end,
     gen_tcp:send(ClientSocket,EncodeData).

@@ -2,7 +2,8 @@
 -export([cmd_echo/1]).
 
 
--include_lib("../base_header.hrl").
+-include_lib("../include/base_header.hrl").
+-include_lib("../include/debug.hrl").
 
 cmd_echo(Msg)->
     %% 逻辑处理很简单，只是简单的将Msg返回给客户端
