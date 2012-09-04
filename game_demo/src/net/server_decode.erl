@@ -1,8 +1,8 @@
 -module(server_decode).
 -export([decode/1]).
 
--include_lib("include/base_header.hrl").
--include_lib("include/debug.hrl").
+-include_lib("../include/base_header.hrl").
+-include_lib("../include/debug.hrl").
 
 decode(Bin)->
     try

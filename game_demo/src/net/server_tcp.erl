@@ -1,7 +1,7 @@
 -module(server_tcp).
 -export([start_server/1]).
--include_lib("include/base_header.hrl").
--include_lib("include/debug.hrl").
+-include_lib("../include/base_header.hrl").
+-include_lib("../include/debug.hrl").
 
 -define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET}]).
 
