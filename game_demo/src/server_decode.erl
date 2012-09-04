@@ -15,4 +15,8 @@ decoding(<<?C2S_PROTOCOL_ECHO:?C2S_PROTOCOL_LENGTH,MsgBody/binary>>)-> % 1:32 ,e
     io:format("server got echo msg from client:~p~n",[MsgBody]),
     EchoMsg= #c2s_echo{msg=MsgBody},
     Protocol=#c2s_protocol{header=?C2S_PROTOCOL_ECHO,body=EchoMsg},
-    {ok,Protocol}.
+    {ok,Protocol};
+decoding(Bin)-> % 1:32 ,echo
+    io:format("protocol decode error ,content:~p~n",[Bin]),
+    throw({error,decode_unsupport_c2s_protocol})
+.
