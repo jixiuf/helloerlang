@@ -1,0 +1,5 @@
+server_tcp:start_server(8888).
+
+
+{ok,P}=client:connect("localhost",8888).
+client:echo(P,"hello").
