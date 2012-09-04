@@ -1,0 +1,6 @@
+#!/bin/sh
+# NOTE: mustache templates need \ because they are not awesome.
+exec erl -pa ebin deps/*/ebin \
+	-s game_demo
+    
+#-name emacs@127.0.0.1 \

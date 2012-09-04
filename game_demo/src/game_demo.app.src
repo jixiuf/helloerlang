@@ -5,4 +5,5 @@
               {mod,{game_demo,[]}},
               {registered,[]},
               {applications,[kernel,stdlib]},
-              {env,[]}]}.
+              {env,[{listen_port,8888}
+                   ]}]}.
