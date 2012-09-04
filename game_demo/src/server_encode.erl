@@ -21,7 +21,8 @@ encoding(S2CProtocol=#s2c_protocol{error_id=_ErrorId}) ->
         .
 
 encoding_normal(#s2c_protocol{header=?S2C_PROTOCOL_ECHO,body=#s2c_echo{msg=Msg}})-> % 1:32 ,echo
-    Bin = <<?S2C_PROTOCOL_ECHO:?S2C_PROTOCOL_LENGTH,?S2C_ERROR_SUCCESS:?S2C_ERROR_ID_LENGTH,Msg/binary>>,
+    MsgBin=server_util:encode_str(Msg),
+    Bin = <<?S2C_PROTOCOL_ECHO:?S2C_PROTOCOL_LENGTH,?S2C_ERROR_SUCCESS:?S2C_ERROR_ID_LENGTH,MsgBin/binary>>,
     Bin;
 encoding_normal(_S2CProtocol) ->
     throw({error,encode_unknow_protocol}).

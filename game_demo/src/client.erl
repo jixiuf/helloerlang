@@ -64,7 +64,7 @@ handle_command(<<1:32,EchoMsg/binary>>,_ServerSocket)-> %1:32 表示echo
 .
 
 echo(Socket,Msg) when is_list(Msg)->            %Msg is string
-    whereis(?MODULE) ! {send ,util:binary_concat([<<1:32>>,Msg]),Socket},
+    whereis(?MODULE) ! {send ,util:binary_concat([<<1:16>>,Msg]),Socket},
     ok .
 
 close(Socket)->
