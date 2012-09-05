@@ -83,8 +83,8 @@ inc_value(Key,OffSet) when is_integer(OffSet)->
 dec_value(Key,OffSet) when is_integer(OffSet)->
     gen_server:call(?MODULE,{dec,to_list(Key),OffSet}).
 
-touch_value(Key,OffSet) when is_integer(OffSet)->
-    gen_server:call(?MODULE,{touch,to_list(Key),OffSet}).
+touch_value(Key,Exptime) when is_integer(Exptime)->
+    gen_server:call(?MODULE,{touch,to_list(Key),Exptime}).
 
 stats()->
     gen_server:call(?MODULE,{stats}).
