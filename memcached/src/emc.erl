@@ -144,9 +144,9 @@ handle_call({gets,KeyList},_From,Socket)->
 handle_call({delete,Key},_From,Socket)->
     process_common_cmd(Socket,iolist_to_binary(["delete ",Key]));
 handle_call({inc,Key,OffSet},_From,Socket)->
-    process_common_cmd(Socket,iolist_to_binary(["inc ",Key,<<" ">>,to_list(OffSet)]));
+    process_common_cmd(Socket,iolist_to_binary(["incr ",Key,<<" ">>,to_list(OffSet)]));
 handle_call({dec,Key,OffSet},_From,Socket)->
-    process_common_cmd(Socket,iolist_to_binary(["dec ",Key,<<" ">>,to_list(OffSet)]));
+    process_common_cmd(Socket,iolist_to_binary(["decr ",Key,<<" ">>,to_list(OffSet)]));
 handle_call({touch,Key,Exptime},_From,Socket)->
     process_common_cmd(Socket,iolist_to_binary(["touch ",Key,<<" ">>,Exptime]));
 handle_call({stats},_From,Socket)->
