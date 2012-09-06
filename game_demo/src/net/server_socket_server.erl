@@ -6,14 +6,18 @@
 -include("../include/base_header.hrl").
 -include("../include/debug.hrl").
 
+-define(DEFUALT_LISTEN_PORT,8888).
+
 -define(RECBUF_SIZE, 8192).
 %%  The backlog value defines the maximum length that the queue of pending connections may grow to.
--define(DEFUALT_LISTEN_PORT,8888).
 -define(BACKLOG,5).                             %
 -define(NODELAY,true).
 -define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET},
                    {recbuf, ?RECBUF_SIZE},{backlog,?BACKLOG},{nodelay,?NODELAY}]).
--record(state,{listener,port,tcp_opts}).
+-record(state,{listener,port,tcp_opts,max=2048,
+               active_sockets=0,                %已连接客户端数
+               acceptor_pool_size=16,           %连接池大小
+               acceptor_pool=sets:new()}).      %已经放入连接池等待客户端连接的 acceptor
 
 start_link() ->
     Port=?APP_NAME:get_current_app_env(listen_port,?DEFUALT_LISTEN_PORT),
@@ -36,20 +40,20 @@ init(S=#state{port=Port,tcp_opts=TcpOpts})->
     %% {ok, Listen} = gen_tcp:listen(Port, [binary, {active, false},{packet ,4},{header,4}]),
     %% {ok, Listen} = gen_tcp:listen(Port, [binary, {active, false}]),
     process_flag(trap_exit,true),
-    gen_server:cast(self(),accepted),
-    {ok, S#state{listener=Listen}}
-        .
+    {ok,new_acceptor_pool(Listen,self(),S)}.
 
 handle_call(Request,_From,State)->
     ?DEBUG2("random handle_call msg~p~n",[Request]) ,
     {noreply, State}
         .
 
-handle_cast(accepted,State=#state{listener=ListenSocket})->
+handle_cast(accepted,State=#state{listener=ListenSocket,active_sockets=ActiveSockets})->
     From =self(),
-    %每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
-    server_socket:start_link(ListenSocket,From),
-    {noreply, State};
+    %%每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
+    {ok,AcceptedPid}=server_socket:start_link(ListenSocket,From),
+    State1 = State#state{active_sockets=1 + ActiveSockets},
+    NewState=recycle_acceptor(AcceptedPid,From,State1),
+    {noreply, NewState};
 handle_cast(Request,State)->
     ?DEBUG2("random handle_cast msg~p~n",[Request]) ,
     {noreply, State} .
@@ -70,3 +74,25 @@ terminate(Reason,_State)->
 
 code_change(_Previous_Version,State,_Extra)->
     {ok,State} .
+
+
+new_acceptor_pool(Listen,From,State=#state{acceptor_pool=Pool,acceptor_pool_size=Size}) ->
+    F = fun (_, S) ->
+                {ok,Pid}=server_socket:start_link(Listen,From),
+                sets:add_element(Pid, S)
+        end,
+    Pool1 = lists:foldl(F, Pool, lists:seq(1, Size)),
+    State#state{acceptor_pool=Pool1,listener=Listen}.
+
+recycle_acceptor(Pid,From, State=#state{
+                             acceptor_pool=Pool,
+                             listener=Listen,
+                             active_sockets=ActiveSockets}) ->
+    case sets:is_element(Pid, Pool) of
+        true ->
+            {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
+            Pool1 = sets:add_element(NewAcceptorPid, sets:del_element(Pid, Pool)),
+            State#state{acceptor_pool=Pool1};
+        false ->
+            State#state{active_sockets=ActiveSockets - 1}
+    end.
