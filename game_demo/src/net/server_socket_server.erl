@@ -59,7 +59,7 @@ handle_call(Request,_From,State)->
     ?DEBUG2("random handle_call msg~p~n",[Request]) ,
     {reply,ok, State}.
 
-handle_cast({accepted,ClientPid},State=#state{listener=ListenSocket,active_sockets=ActiveSockets})->
+handle_cast({accepted,ClientPid},State=#state{active_sockets=ActiveSockets})->
     From =self(),
     %%每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
     %% {ok,AcceptedPid}=server_socket:start_link(ListenSocket,From), %%
