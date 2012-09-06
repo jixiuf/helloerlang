@@ -1,13 +1,12 @@
 -module(game_demo).
 -export([start/0,stop/1,start/2]).
 -export([get_current_app_env/1,get_current_app_env/2]).
--define(DEFUALT_LISTEN_PORT,8888).
 
+-include("include/base_header.hrl").
 -include("include/debug.hrl").
 
 start(normal,_Args)->
-    Port=get_current_app_env(listen_port,?DEFUALT_LISTEN_PORT),
-    server_tcp:start_server(Port).
+    server_sup:start_link().
 
 stop(_State)->
     ?INFO2("~p:stop/1 is called~n",[?MODULE]),
@@ -37,5 +36,4 @@ get_current_app_env(Var,DefaultVal)->
     end.
 
 start()->
-    application:start(?MODULE)
-    .
+    application:start(?APP_NAME).

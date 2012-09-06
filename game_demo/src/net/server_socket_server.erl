@@ -1,5 +1,6 @@
--module(server_tcp).
--export([start_server/2,start_server/1]).
+-module(server_socket_server).
+
+-export([start_link/0,start_link/2]).
 -export([code_change/3,handle_call/3,handle_cast/2,handle_info/2,init/1,terminate/2]).
 
 -include("../include/base_header.hrl").
@@ -7,17 +8,16 @@
 
 -define(RECBUF_SIZE, 8192).
 %%  The backlog value defines the maximum length that the queue of pending connections may grow to.
+-define(DEFUALT_LISTEN_PORT,8888).
 -define(BACKLOG,5).                             %
 -define(NODELAY,true).
 -define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET},
                    {recbuf, ?RECBUF_SIZE},{backlog,?BACKLOG},{nodelay,?NODELAY}]).
 -record(state,{listener,port,tcp_opts}).
 
-start_server(Port) ->
-    start_server(Port,?TCP_OPTS).
-
-start_server(Port,TcpOpts) ->
-    start_link(Port,TcpOpts).
+start_link() ->
+    Port=?APP_NAME:get_current_app_env(listen_port,?DEFUALT_LISTEN_PORT),
+    start_link(Port,?TCP_OPTS).
 
 start_link(Port,TcpOpts)->
     gen_server:start_link(?MODULE,#state{port=Port,tcp_opts=TcpOpts},[]).
