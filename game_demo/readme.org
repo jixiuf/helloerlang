@@ -1,5 +1,4 @@
-server_tcp:start_server(8888).
-
+game_demo:start().
 
 {ok,P}=client:connect("localhost",8888).
 client:echo(P,"hello").
