@@ -15,9 +15,8 @@ connect(Host,Port) ->
     case gen_tcp:connect(Host, Port,?TCP_OPTS ) of
         {ok,ServerSocket}->
             Pid= spawn(?MODULE,do_recv,[ServerSocket]),
-            register(?MODULE,Pid),              %pid of sending msg to server
             gen_tcp:controlling_process(ServerSocket, Pid),
-            {ok,ServerSocket}
+            {ok,Pid}
             %% timer:sleep(infinity)
                 ;
         {error,Reason} ->
@@ -28,9 +27,9 @@ do_recv(ServerSocket)->
     ?DEBUG2("client do recving...~n",[]),
     inet:setopts(ServerSocket, [{active, once}]),
     receive
-        {send,Bin,Socket}->
+        {send,Bin}->
             ?DEBUG2("client sending data to server ...~n",[]) ,
-            gen_tcp:send(Socket,Bin),          %send Bin to ServerSocket
+            gen_tcp:send(ServerSocket,Bin),          %send Bin to ServerSocket
             do_recv(ServerSocket);
         {tcp, ServerSocket, Bin}->
             ?DEBUG2("client handle command ~n",[]),
@@ -68,10 +67,10 @@ handle_command(<<?S2C_PROTOCOL_ECHO:?S2C_PROTOCOL_LENGTH,ErrorId:?S2C_ERROR_ID_L
     ?INFO2("client get msg from server and server said :~p~n",[MsgBody])
 .
 
-echo(Socket,Msg) when is_list(Msg)->            %Msg is string
+echo(Pid,Msg) when is_list(Msg)->            %Msg is string
     MsgBin=server_util:encode_str(Msg),
     Bin= <<?C2S_PROTOCOL_ECHO:?C2S_PROTOCOL_LENGTH,MsgBin/binary>>,
-    whereis(?MODULE) ! {send ,Bin,Socket},
+    Pid ! {send ,Bin},
     ok .
 
 close(Socket)->
