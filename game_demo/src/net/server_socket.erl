@@ -27,7 +27,7 @@ handle_call(Request,_From,State)->
 handle_cast(accept,State=#state{listener=ListenSocket,monitor_pid=From})->
     {ok, Socket} = gen_tcp:accept(ListenSocket), %
     ?DEBUG2("a new client is coming...~n",[]),
-    gen_server:cast(From,accepted),
+    gen_server:cast(From,{accepted,self()}),
     inet:setopts(Socket, [{active, once}]),
     {noreply,State#state{socket=Socket}};
 handle_cast(Request,State)->
