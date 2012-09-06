@@ -1,4 +1,5 @@
--module(server_decode).
+-module(protocol_decode).
+
 -export([decode/1]).
 
 -include("../include/base_header.hrl").

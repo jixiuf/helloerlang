@@ -74,15 +74,15 @@ handle_tcp_closed(ClientSocket)->
 handle_data(Bin,ClientSocket) ->
     EncodeData=
         try
-            {ok,C2SProtocol}=server_decode:decode(Bin) ,
-            S2CProtocols=server_handle:handle(C2SProtocol),
-            [server_encode:encode(S2CProtocol)||S2CProtocol<-S2CProtocols]
+            {ok,C2SProtocol}=protocol_decode:decode(Bin) ,
+            S2CProtocols=protocol_handle:handle(C2SProtocol),
+            [protocol_encode:encode(S2CProtocol)||S2CProtocol<-S2CProtocols]
         catch
             throw:Msg->
                 ?DEBUG2("~p:handle_data/2 error with reason:~p~n",[?MODULE,Msg]) ,
-                server_encode:encode_server_error();
+                protocol_encode:encode_server_error();
             error:ErrorId ->
                 ?DEBUG2("~p:handle_data/2 error with reason:~p~n",[?MODULE,ErrorId]) ,
-                server_encode:encode_server_error()
+                protocol_encode:encode_server_error()
         end,
     gen_tcp:send(ClientSocket,EncodeData).

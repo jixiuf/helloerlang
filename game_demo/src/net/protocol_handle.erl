@@ -1,4 +1,5 @@
--module(server_handle).
+-module(protocol_handle).
+
 -export([handle/1]).
 %% 此模块中处理具体的业务逻辑
 -include("../include/base_header.hrl").

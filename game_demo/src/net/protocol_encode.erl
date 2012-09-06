@@ -1,4 +1,4 @@
--module(server_encode).
+-module(protocol_encode).
 -export([encode_server_error/0,encode/1]).
 
 -compile([inline,[encode_server_error/0]]).
