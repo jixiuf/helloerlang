@@ -1,6 +1,6 @@
 -module(server_socket).
+-export([get_socket/1,start_link/2]).
 -export([code_change/3,handle_call/3,handle_cast/2,handle_info/2,init/1,terminate/2]).
--export([start_link/2]).
 -record(state,{listener,monitor_pid,socket}).
 -include("../include/base_header.hrl").
 -include("../include/debug.hrl").
@@ -9,11 +9,17 @@ start_link(ListenSocket,From)->
     gen_server:start_link(?MODULE,#state{listener=ListenSocket,monitor_pid=From},[])
         .
 
+%%根据当前pid 获得关与关联的socket
+get_socket(Pid)->
+    {ok,Socket}=gen_server:call(Pid,get_socket),
+    Socket.
 
 init(S=#state{})->
     gen_server:cast(self(),accept),
     {ok, S}.
 
+handle_call(get_socket,_From,State=#state{socket=Socket})->
+    {reply,{ok,Socket},State};
 handle_call(Request,_From,State)->
     ?DEBUG2("random handle_call msg: ~p~n",[Request]),
     {reply,ok, State}.
