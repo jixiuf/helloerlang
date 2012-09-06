@@ -1,6 +1,6 @@
 -module(server_socket_server).
 
--export([start_link/0,start_link/2]).
+-export([status/0,start_link/0,start_link/2]).
 -export([code_change/3,handle_call/3,handle_cast/2,handle_info/2,init/1,terminate/2]).
 
 -include("../include/base_header.hrl").
@@ -14,9 +14,10 @@
 -define(NODELAY,true).
 -define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET},
                    {recbuf, ?RECBUF_SIZE},{backlog,?BACKLOG},{nodelay,?NODELAY}]).
--record(state,{listener,port,tcp_opts,max=2048,
+-record(state,{listener,port,tcp_opts,
+               max=5,                   %最大允许连接数
+               acceptor_pool_size=2,           %连接池大小
                active_sockets=0,                %已连接客户端数
-               acceptor_pool_size=16,           %连接池大小
                acceptor_pool=sets:new()}).      %已经放入连接池等待客户端连接的 acceptor
 
 start_link() ->
@@ -24,8 +25,18 @@ start_link() ->
     start_link(Port,?TCP_OPTS).
 
 start_link(Port,TcpOpts)->
-    gen_server:start_link(?MODULE,#state{port=Port,tcp_opts=TcpOpts},[]).
-
+    gen_server:start_link({local,?MODULE},?MODULE,#state{port=Port,tcp_opts=TcpOpts},[]).
+status()->
+    State= gen_server:call(?MODULE,status),
+    #state{port=Port,
+           tcp_opts=TcpOpts,
+           max=Max,
+           acceptor_pool_size=AcceptorPoolSize,
+           active_sockets=ActiveSockets,
+           acceptor_pool=AcceptorPool}=State,
+    ?DEBUG2("~nport=~p,~n tcp_opts=~p,~n max_connection=~p,~n acceptor_pool_size=~p~n active_sockets=~p~n acceptor_pool=~p~n",
+            [Port,TcpOpts,Max,AcceptorPoolSize,ActiveSockets,sets:to_list(AcceptorPool)])
+        .
 init(S=#state{port=Port,tcp_opts=TcpOpts})->
     %%参照 http://erlangdisplay.iteye.com/blog/1012785
     %% 假如，我定义 的消息格式为
@@ -42,10 +53,11 @@ init(S=#state{port=Port,tcp_opts=TcpOpts})->
     process_flag(trap_exit,true),
     {ok,new_acceptor_pool(Listen,self(),S)}.
 
+handle_call(status,_From,State)->
+    {reply,State,State};
 handle_call(Request,_From,State)->
     ?DEBUG2("random handle_call msg~p~n",[Request]) ,
-    {noreply, State}
-        .
+    {reply,ok, State}.
 
 handle_cast(accepted,State=#state{listener=ListenSocket,active_sockets=ActiveSockets})->
     From =self(),
@@ -98,17 +110,35 @@ new_acceptor_pool(Listen,From,State=#state{acceptor_pool=Pool,acceptor_pool_size
     State#state{acceptor_pool=Pool1,listener=Listen}.
 
 recycle_acceptor(Pid,From, State=#state{
+                             max=Max,
+                             acceptor_pool_size=AcceptorPoolSize,
                              acceptor_pool=Pool,
                              listener=Listen,
                              active_sockets=ActiveSockets}) ->
     ?DEBUG("recycle_acceptor~n"),
     case sets:is_element(Pid, Pool) of
-        true ->
-            {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
-            Pool1 = sets:add_element(NewAcceptorPid, sets:del_element(Pid, Pool)),
-            State#state{acceptor_pool=Pool1};
-        false ->
-            State#state{active_sockets=ActiveSockets - 1}
+        true ->                                 %一个新的连接建立，从pool中用一新的acceptor替换之
+            case AcceptorPoolSize+ActiveSockets>Max  of
+                true->
+                    %%如果大于最大连接上限，则不向pool
+                    %% 中再加新连接，此时将会使pool的实际大小变小，故当有连接断开时,
+                    %% 需要判断需不需要补回短少的部分
+                    State;
+                false ->
+                    {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
+                    Pool1 = sets:add_element(NewAcceptorPid, sets:del_element(Pid, Pool)),
+                    State#state{acceptor_pool=Pool1}
+                end;
+        false ->                                %一个连接断开，
+            case AcceptorPoolSize+ActiveSockets>Max  of
+                true->  %如果大于最大连接上限，则向不pool中再加新连接
+                    {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
+                    Pool1 = sets:add_element(NewAcceptorPid, Pool),
+                    State#state{acceptor_pool=Pool1,active_sockets=ActiveSockets - 1};
+                false ->
+                    State#state{active_sockets=ActiveSockets - 1}
+            end
+
     end.
 
 handle_process_exit(ClientPid)->
