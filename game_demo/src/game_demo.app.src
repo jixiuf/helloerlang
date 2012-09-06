@@ -5,5 +5,7 @@
               {mod,{game_demo,[]}},
               {registered,[]},
               {applications,[kernel,stdlib]},
-              {env,[{listen_port,8888}
+              {env,[{listen_port,8888},
+                    {acceptor_pool_size,100},   %用于等待客户端连接的pool,
+                    {max_conn_num,2048}         %最大允许连接数
                    ]}]}.
