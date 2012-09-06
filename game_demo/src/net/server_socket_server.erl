@@ -123,7 +123,8 @@ recycle_acceptor(Pid,From, State=#state{
                     %%如果大于最大连接上限，则不向pool
                     %% 中再加新连接，此时将会使pool的实际大小变小，故当有连接断开时,
                     %% 需要判断需不需要补回短少的部分
-                    State;
+                    Pool1 =sets:del_element(Pid, Pool),
+                    State#state{acceptor_pool=Pool1};
                 false ->
                     io:format("bbbbbbbbb~n",[]) ,
                     {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
@@ -131,7 +132,7 @@ recycle_acceptor(Pid,From, State=#state{
                     State#state{acceptor_pool=Pool1}
                 end;
         false ->                                %一个连接断开，
-            case sets:size(Pool)+ActiveSockets>Max  of
+            case sets:size(Pool)+ActiveSockets==Max  of
                 true->  %如果大于最大连接上限，则向不pool中再加新连接
                     io:format("cccccccc~n",[]) ,
                     {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
