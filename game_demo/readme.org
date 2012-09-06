@@ -1,5 +1,8 @@
+* demo test
 game_demo:start().
 
 {ok,P}=client:connect("localhost",8888).
 client:echo(P,"hello").
 exit(P,test).
+
+* 协议 见 net_protocol.xlsx
