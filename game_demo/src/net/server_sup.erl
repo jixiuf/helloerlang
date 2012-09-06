@@ -14,7 +14,7 @@ init([])->
     MaxTime=5000,
     {ok,{{one_for_one,MaxRestart,MaxTime},
          [ %using spec snippet for childspec
-           {server_socket_server,                           %id
-            {server_socket_server,start_link,[]},
-            permanent, infinity, worker, [server_socket_server]
+           {server_socket_monitor,                           %id
+            {server_socket_monitor,start_link,[]},
+            permanent, infinity, worker, [server_socket_monitor]
            }]}}.

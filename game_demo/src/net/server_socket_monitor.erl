@@ -1,4 +1,4 @@
--module(server_socket_server).
+-module(server_socket_monitor).
 
 -export([status/0,start_link/0,start_link/2]).
 -export([code_change/3,handle_call/3,handle_cast/2,handle_info/2,init/1,terminate/2]).
