@@ -59,12 +59,12 @@ handle_call(Request,_From,State)->
     ?DEBUG2("random handle_call msg~p~n",[Request]) ,
     {reply,ok, State}.
 
-handle_cast(accepted,State=#state{listener=ListenSocket,active_sockets=ActiveSockets})->
+handle_cast({accepted,ClientPid},State=#state{listener=ListenSocket,active_sockets=ActiveSockets})->
     From =self(),
     %%每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
-    {ok,AcceptedPid}=server_socket:start_link(ListenSocket,From),
+    %% {ok,AcceptedPid}=server_socket:start_link(ListenSocket,From), %%
     State1 = State#state{active_sockets=1 + ActiveSockets},
-    NewState=recycle_acceptor(AcceptedPid,From,State1),
+    NewState=recycle_acceptor(ClientPid,From,State1),
     {noreply, NewState};
 handle_cast(Request,State)->
     ?DEBUG2("random handle_cast msg~p~n",[Request]) ,
@@ -115,16 +115,18 @@ recycle_acceptor(Pid,From, State=#state{
                              acceptor_pool=Pool,
                              listener=Listen,
                              active_sockets=ActiveSockets}) ->
-    ?DEBUG("recycle_acceptor~n"),
+    ?DEBUG2("recycle_acceptor,pid=~p~n",[Pid]),
     case sets:is_element(Pid, Pool) of
         true ->                                 %一个新的连接建立，从pool中用一新的acceptor替换之
             case AcceptorPoolSize+ActiveSockets>Max  of
                 true->
+                    io:format("aaaaaaa~n",[]) ,
                     %%如果大于最大连接上限，则不向pool
                     %% 中再加新连接，此时将会使pool的实际大小变小，故当有连接断开时,
                     %% 需要判断需不需要补回短少的部分
                     State;
                 false ->
+                    io:format("bbbbbbbbb~n",[]) ,
                     {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
                     Pool1 = sets:add_element(NewAcceptorPid, sets:del_element(Pid, Pool)),
                     State#state{acceptor_pool=Pool1}
@@ -132,10 +134,12 @@ recycle_acceptor(Pid,From, State=#state{
         false ->                                %一个连接断开，
             case AcceptorPoolSize+ActiveSockets>Max  of
                 true->  %如果大于最大连接上限，则向不pool中再加新连接
+                    io:format("cccccccc~n",[]) ,
                     {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
                     Pool1 = sets:add_element(NewAcceptorPid, Pool),
                     State#state{acceptor_pool=Pool1,active_sockets=ActiveSockets - 1};
                 false ->
+                    io:format("dddddddd~n",[]) ,
                     State#state{active_sockets=ActiveSockets - 1}
             end
 
