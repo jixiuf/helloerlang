@@ -9,7 +9,8 @@
 %%  The backlog value defines the maximum length that the queue of pending connections may grow to.
 -define(BACKLOG,5).                             %
 -define(NODELAY,true).
--define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET},{recbuf, ?RECBUF_SIZE},{backlog,?BACKLOG},{nodelay,?NODELAY}]).
+-define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET},
+                   {recbuf, ?RECBUF_SIZE},{backlog,?BACKLOG},{nodelay,?NODELAY}]).
 -record(state,{listener,port,tcp_opts}).
 
 start_server(Port) ->
@@ -35,9 +36,7 @@ init(S=#state{port=Port,tcp_opts=TcpOpts})->
     %% {ok, Listen} = gen_tcp:listen(Port, [binary, {active, false},{packet ,4},{header,4}]),
     %% {ok, Listen} = gen_tcp:listen(Port, [binary, {active, false}]),
     process_flag(trap_exit,true),
-    From=self(),
-    spawn_link(fun() -> acceptor(Listen,From) end),
-    %% timer:sleep(infinity), %sleep ,避免前当进程退出 ，因为tcp socket 是与启动它的进程绑定的，如果进程死，socket关。 %%
+    gen_server:cast(self(),accepted),
     {ok, S#state{listener=Listen}}
         .
 
@@ -48,7 +47,8 @@ handle_call(Request,_From,State)->
 
 handle_cast(accepted,State=#state{listener=ListenSocket})->
     From =self(),
-    spawn_link(fun() -> acceptor(ListenSocket,From) end),  %每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
+    %每次一个客户端连接上来，启用另一个进程继续兼听，而当前进程则用来处理刚连接进来的client
+    server_socket:start_link(ListenSocket,From),
     {noreply, State};
 handle_cast(Request,State)->
     ?DEBUG2("random handle_cast msg~p~n",[Request]) ,
@@ -70,56 +70,3 @@ terminate(Reason,_State)->
 
 code_change(_Previous_Version,State,_Extra)->
     {ok,State} .
-
-acceptor(ListenSocket,From) ->
-    {ok, Socket} = gen_tcp:accept(ListenSocket), %
-    ?DEBUG2("a new client is coming...~n",[]),
-    gen_server:cast(From,accepted),
-    handle(Socket,From).
-
-handle(ClientSocket,From) ->
-    inet:setopts(ClientSocket, [{active, once}]),
-    receive
-        {tcp, ClientSocket,Bin}  when is_binary(Bin) ->
-            ?DEBUG2("server handle data...~n",[]),
-            case handle_data(Bin,ClientSocket)  of
-                ok->ok;
-                {error, Reason}-> self()!{exit,self(),Reason}
-            end,
-            handle(ClientSocket,From);
-        {tcp_closed,Socket}->
-            handle_tcp_closed(Socket);
-        {tcp_error, Socket, Reason}->
-            ?DEBUG2("tcp_error with reason ~p~n:",[Reason]),
-            handle_tcp_closed(Socket);
-        {exit,_FromPid,Reason}->                                %服务器端强迫客户端下线，正常用户的登录强迫同名匿名用户下线
-            ?DEBUG2("exit with reason~p~n",[Reason]) ,
-            handle_tcp_closed(ClientSocket),
-            exit(normal) ;
-        Other ->
-            ?DEBUG2("handle random msg ~p~n",[Other]),
-            handle(ClientSocket,From)
-    end.
-
-handle_tcp_closed(ClientSocket)->
-    ?DEBUG2(" tcp_closed:~p!~n",[ClientSocket]),
-    %% do some clean job here  ,when client socket lost
-    gen_tcp:close(ClientSocket),                 %try to close client socket,
-    %% exit(),退出， 督程收到信号，在那里进行业务逻辑相关清理工作
-    exit(tcp_closed).
-
-handle_data(Bin,ClientSocket) ->
-    EncodeData=
-        try
-            {ok,C2SProtocol}=server_decode:decode(Bin) ,
-            S2CProtocols=server_handle:handle(C2SProtocol),
-            [server_encode:encode(S2CProtocol)||S2CProtocol<-S2CProtocols]
-        catch
-            throw:Msg->
-                ?DEBUG2("~p:handle_data/2 error with reason:~p~n",[?MODULE,Msg]) ,
-                server_encode:encode_server_error();
-            error:ErrorId ->
-                ?DEBUG2("~p:handle_data/2 error with reason:~p~n",[?MODULE,ErrorId]) ,
-                server_encode:encode_server_error()
-        end,
-    gen_tcp:send(ClientSocket,EncodeData).
