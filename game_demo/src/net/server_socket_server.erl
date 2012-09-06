@@ -10,13 +10,13 @@
 
 -define(RECBUF_SIZE, 8192).
 %%  The backlog value defines the maximum length that the queue of pending connections may grow to.
--define(BACKLOG,5).                             %
+-define(BACKLOG,128).                             %
 -define(NODELAY,true).
 -define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET},
                    {recbuf, ?RECBUF_SIZE},{backlog,?BACKLOG},{nodelay,?NODELAY}]).
 -record(state,{listener,port,tcp_opts,
-               max=5,                   %最大允许连接数
-               acceptor_pool_size=2,           %连接池大小
+               max=2048,                   %最大允许连接数
+               acceptor_pool_size=100,           %连接池大小
                active_sockets=0,                %已连接客户端数
                acceptor_pool=sets:new()}).      %已经放入连接池等待客户端连接的 acceptor
 
@@ -25,7 +25,13 @@ start_link() ->
     start_link(Port,?TCP_OPTS).
 
 start_link(Port,TcpOpts)->
-    gen_server:start_link({local,?MODULE},?MODULE,#state{port=Port,tcp_opts=TcpOpts},[]).
+    MaxConn=?APP_NAME:get_current_app_env(max_conn_num,2048),
+    AcceptorPoolSize=?APP_NAME:get_current_app_env(acceptor_pool_size,100),
+    gen_server:start_link({local,?MODULE},?MODULE,
+                          #state{port=Port,
+                                 acceptor_pool_size=AcceptorPoolSize,
+                                 max=MaxConn,
+                                 tcp_opts=TcpOpts},[]).
 status()->
     State= gen_server:call(?MODULE,status),
     #state{port=Port,
@@ -119,14 +125,12 @@ recycle_acceptor(Pid,From, State=#state{
         true ->                                 %一个新的连接建立，从pool中用一新的acceptor替换之
             case sets:size(Pool)+ActiveSockets>Max  of
                 true->
-                    io:format("aaaaaaa~n",[]) ,
                     %%如果大于最大连接上限，则不向pool
                     %% 中再加新连接，此时将会使pool的实际大小变小，故当有连接断开时,
                     %% 需要判断需不需要补回短少的部分
                     Pool1 =sets:del_element(Pid, Pool),
                     State#state{acceptor_pool=Pool1};
                 false ->
-                    io:format("bbbbbbbbb~n",[]) ,
                     {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
                     Pool1 = sets:add_element(NewAcceptorPid, sets:del_element(Pid, Pool)),
                     State#state{acceptor_pool=Pool1}
@@ -134,12 +138,10 @@ recycle_acceptor(Pid,From, State=#state{
         false ->                                %一个连接断开，
             case sets:size(Pool)+ActiveSockets==Max  of
                 true->  %如果大于最大连接上限，则向不pool中再加新连接
-                    io:format("cccccccc~n",[]) ,
                     {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
                     Pool1 = sets:add_element(NewAcceptorPid, Pool),
                     State#state{acceptor_pool=Pool1,active_sockets=ActiveSockets - 1};
                 false ->
-                    io:format("dddddddd~n",[]) ,
                     State#state{active_sockets=ActiveSockets - 1}
             end
 
