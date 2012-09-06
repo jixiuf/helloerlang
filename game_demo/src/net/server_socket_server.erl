@@ -111,14 +111,13 @@ new_acceptor_pool(Listen,From,State=#state{acceptor_pool=Pool,acceptor_pool_size
 
 recycle_acceptor(Pid,From, State=#state{
                              max=Max,
-                             acceptor_pool_size=AcceptorPoolSize,
                              acceptor_pool=Pool,
                              listener=Listen,
                              active_sockets=ActiveSockets}) ->
     ?DEBUG2("recycle_acceptor,pid=~p~n",[Pid]),
     case sets:is_element(Pid, Pool) of
         true ->                                 %一个新的连接建立，从pool中用一新的acceptor替换之
-            case AcceptorPoolSize+ActiveSockets>Max  of
+            case sets:size(Pool)+ActiveSockets>Max  of
                 true->
                     io:format("aaaaaaa~n",[]) ,
                     %%如果大于最大连接上限，则不向pool
@@ -132,7 +131,7 @@ recycle_acceptor(Pid,From, State=#state{
                     State#state{acceptor_pool=Pool1}
                 end;
         false ->                                %一个连接断开，
-            case AcceptorPoolSize+ActiveSockets>Max  of
+            case sets:size(Pool)+ActiveSockets>Max  of
                 true->  %如果大于最大连接上限，则向不pool中再加新连接
                     io:format("cccccccc~n",[]) ,
                     {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
