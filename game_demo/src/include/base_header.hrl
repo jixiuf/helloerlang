@@ -1,5 +1,5 @@
 -define(APP_NAME,game_demo).
--define(VERYFY(Value,ErrorId),case Value of false -> throw(ErrorId);Value-> Value end) .
+-define(VERYFY(Value,ErrorId),case Value of false -> throw(ErrorId);V-> V end) .
 
 
 -define(C2S_TCP_PACKET,2).

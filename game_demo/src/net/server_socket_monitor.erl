@@ -27,6 +27,7 @@ start_link() ->
 start_link(Port,TcpOpts)->
     MaxConn=?APP_NAME:get_current_app_env(max_conn_num,2048),
     AcceptorPoolSize=?APP_NAME:get_current_app_env(acceptor_pool_size,100),
+    ?VERYFY(MaxConn>AcceptorPoolSize,?DEBUG("max_conn_num_must_bigger_than_acceptor_pool_size")),
     gen_server:start_link({local,?MODULE},?MODULE,
                           #state{port=Port,
                                  acceptor_pool_size=AcceptorPoolSize,
