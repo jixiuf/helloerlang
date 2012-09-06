@@ -59,11 +59,24 @@ handle_cast(Request,State)->
     {noreply, State} .
 
 
-handle_info({'EXIT',_FromPid,Reason},State)->
-    ?DEBUG2("clien pid exit with reason:~p~n",[Reason]),
-    %% 客户端所在进程当掉，
-    %% 在那里进行业务逻辑相关清理工作 %%
-    {noreply, State};
+handle_info({'EXIT', Pid, normal}, State) ->
+    ?DEBUG("clien pid exit with reason:normal~n"),
+    spawn(fun()->handle_process_exit(Pid)end),
+    From=self(),
+    {noreply, recycle_acceptor(Pid, From,State)};
+handle_info({'EXIT', Pid, Reason},
+            State=#state{acceptor_pool=Pool}) ->
+    case sets:is_element(Pid, Pool) of
+        true ->
+            %% If there was an unexpected error accepting, log and sleep.
+            error_logger:error_report({?MODULE, ?LINE,
+                                       {acceptor_error, Reason}}),
+            timer:sleep(100);
+        false ->
+            ok
+    end,
+    spawn(fun()->handle_process_exit(Pid)end),
+    {noreply, recycle_acceptor(Pid,self(), State)};
 handle_info(Info,State)->
     ?DEBUG2("random handle_info msg~p~n",[Info]) ,
     {noreply, State}.
@@ -88,6 +101,7 @@ recycle_acceptor(Pid,From, State=#state{
                              acceptor_pool=Pool,
                              listener=Listen,
                              active_sockets=ActiveSockets}) ->
+    ?DEBUG("recycle_acceptor~n"),
     case sets:is_element(Pid, Pool) of
         true ->
             {ok,NewAcceptorPid}=server_socket:start_link(Listen,From),
@@ -96,3 +110,11 @@ recycle_acceptor(Pid,From, State=#state{
         false ->
             State#state{active_sockets=ActiveSockets - 1}
     end.
+
+handle_process_exit(ClientPid)->
+    %% 客户端连接 process exit ,此处进行业务逻辑数据的清理,
+    %% 主要是清除一些内存中的在线玩家数据，
+    %% TODO:
+    _ClientSocket =server_socket:get_socket(ClientPid)
+    %% do some clean job
+    .
