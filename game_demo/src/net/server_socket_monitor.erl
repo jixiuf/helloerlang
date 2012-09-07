@@ -10,12 +10,16 @@
 
 -define(RECBUF_SIZE, 8192).
 %%  The backlog value defines the maximum length that the queue of pending connections may grow to.
--define(BACKLOG,128).                             %
+-define(BACKLOG,128).                             %gen_tcp默认值为5
 -define(NODELAY,true).
 -define(TCP_OPTS, [binary, {active, false},{reuseaddr,true},{packet ,?C2S_TCP_PACKET},
                    {recbuf, ?RECBUF_SIZE},{backlog,?BACKLOG},{nodelay,?NODELAY}]).
 -record(state,{listener,port,tcp_opts,
-               max=2048,                   %最大允许连接数
+               %%最大允许连接数,达到这个连接数server不再进行accept,但是因为操作系统在实现tcp时有个BACKLOG队列
+               %% 所以客户端依然可以连服务器，直到backlog队列已满，
+               %% 因为此时已经不再进行accept了，所以放到队列里的连接不会被处理
+               %% 除非有旧连接断开，等到下次accept时，才会从中取连接处理
+               max=2048,
                acceptor_pool_size=100,           %连接池大小
                active_sockets=0,                %已连接客户端数
                acceptor_pool=sets:new()}).      %已经放入连接池等待客户端连接的 acceptor
