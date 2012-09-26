@@ -1,5 +1,5 @@
 -module(monitor).
--export([test_exit_kill3/0,test_exit_kill2/0,test_exit_kill2/0,test_exit_kill/0,test1/0,test2/0]).
+-export([test_exit_kill4/0,test_exit_kill3/0,test_exit_kill2/0,test_exit_kill/0,test1/0,test2/0]).
 -export([test_exit_normal/0,test_exit_unnormal/0]).
 
 %% erlang:monitor(process,Pid),与 link 的不同是
@@ -69,40 +69,76 @@ test_exit_unnormal()->
     end
         .
 
-%% 有人说:对于关联进程{'EXIT', Pid, Reason} Reason如果是kill,关联进程无论是否trap_exit都会死掉
-%% 收到{'EXIT', Pid, Reason}消息
+%% exit(Pid, Reason) -> true
+%% Types:
+%% Pid = pid()
+%% Reason = term()
+%% Sends an exit signal with exit reason Reason to the process Pid.
+%% The following behavior apply if Reason is any term except normal or kill:
+%% If Pid is not trapping exits, Pid itself will exit with exit reason Reason. If Pid is trapping exits, the exit signal is transformed into a message
+%% {'EXIT', From, Reason} and delivered to the message queue of Pid. From is the pid of the process which sent the exit signal. See also process_flag/2.
+%% If Reason is the atom normal, Pid will not exit. If it is trapping exits, the exit signal is transformed into a message {'EXIT', From, normal} and
+%% delivered to its message queue.
+%% If Reason is the atom kill, that is if exit(Pid, kill) is called, an untrappable exit signal is sent to Pid which will unconditionally exit with exit
+%% reason killed.
+%% 这句话是说exit(Pid,kill) 让Pid无条件退出，而Pid退出的Reason是会被设为killed ,如果有进程与它关联，将会收到{'EXIT', Pid, killed} (注意是killed,不是kill)
+%% 这句话容易被误解
+%% http://blog.programfan.info/tag/erlang/
+
 test_exit_kill()->
     process_flag(trap_exit,true),
-    Pid = Pid = spawn_link(fun()-> timer:sleep(1000) ,exit(kill)end),
+    %% 注意 exit(Reason) 与exit(Pid,Reason) 是有区别的
+    %% erlang:exit
+    Pid = Pid = spawn_link(fun()-> timer:sleep(1000) end),
+    exit(Pid,kill),
     receive
         {'EXIT',Pid,Reason}->
             io:format("process :~p exit with reason:~p~n",[Pid,Reason])
 
-    end
-        .
+    end.
+
+%% test_exit_kill2与 test_exit_kill对比
+%%证明对于link的进程erlang:exit/2 中Reason为kill
+%% 都会收到{'EXIT',Pid,killed}不论有否trap_exit
+%% test_exit_kill3辅证不进行link,则不会收到 消息
 
 test_exit_kill2()->
-    %% process_flag(trap_exit,true),
     %% 就算没有process_flag(trap_exit,true),
-    %% 这里也能收到{'EXIT',Pid,Reason}消息
-    Pid = Pid = spawn_link(fun()-> timer:sleep(1000) ,exit(kill)end),
+    %% 似乎也收到了killed信号
+    Pid = Pid = spawn_link(fun()-> timer:sleep(1000) end),
+    exit(Pid,kill),
     receive
         {'EXIT',Pid,Reason}->
             io:format("process :~p exit with reason:~p~n",[Pid,Reason])
 
-    end
-        .
+    end.
 
 test_exit_kill3()->
-    %% process_flag(trap_exit,true),
-    %% 这里不会收到任何消息，一直等待
-    Pid = Pid = spawn(fun()-> timer:sleep(1000) ,exit(kill)end),
+    %% 就算没有process_flag(trap_exit,true),
+    %% 不进行link就收不到了
+    Pid = Pid = spawn(fun()-> timer:sleep(1000) end),
+    exit(Pid,kill),
     receive
         {'EXIT',Pid,Reason}->
             io:format("process :~p exit with reason:~p~n",[Pid,Reason])
 
-    end
-        .
+    end.
+
+%% test_exit_kill4与test_exit_kill证明exit/2 与exit/1的区别
+test_exit_kill4()->
+    process_flag(trap_exit,true),
+    Pid = Pid = spawn_link(fun()-> timer:sleep(1000) ,
+                                   %% 注意这里是 进程自身退出，退出的原因是kill
+                                   %% 文档中说的Reason为kill是指的erlang:exit/2中的reaon
+                                   %% 而不是erlang:exit/1
+                                   exit(kill)end),
+    receive
+        {'EXIT',Pid,Reason}->
+            %% 你会看到这里收到的Reason是kill而不是killed
+            io:format("process :~p exit with reason:~p~n",[Pid,Reason])
+
+    end.
+
 
 
 test_exit_normal()->
