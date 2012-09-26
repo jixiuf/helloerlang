@@ -44,7 +44,7 @@
                 %%do some thing waste time,
                 gen_server:reply(From,Resp)
                 end ),
-    {ok, State}.
+    {noreply, State}.
 ** 另外一种思路，是以上几种的结合，
    当消息量堆积到一定数量后才创建新的进程来处理，避免 创建进程的开销
    process_info(self(),message_queue_len).
