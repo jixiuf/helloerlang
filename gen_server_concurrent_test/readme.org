@@ -9,7 +9,7 @@
 #+FILETAGS:@Erlang  
 
 在gen_server主循环gen_server:loop中从消息队列中依次取出消息并处理，注意这是串行的，在
-一条消息处理完毕之前，不会处理下一条消息。
+一条消息处理完毕之前，不会处理下一条消息(不论你是call过来，还是cast过来)。
 这几个例子用来测试当并发很高时，gen_server 的瓶颈问题.
 * gen_server 的瓶颈
   test1_client.erl
