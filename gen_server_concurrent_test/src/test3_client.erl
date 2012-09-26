@@ -7,6 +7,7 @@
 %% 所以预期的效果是gen_server_pid 的消息队列不会激增，而
 %% worker_pid的则会激增
 %% 此例，仅仅减轻了gen_server的瓶颈，但实际的压力，则推向了worker_pid
+%% 不过 因为 worker有多个，worker的压力相对不会太大
 
 
 start()->
