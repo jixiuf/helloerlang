@@ -19,41 +19,29 @@
   test2_server.erl
   这种方法，其实是埋天过海、自欺欺人，gen_server 的瓶颈虽然解决了，但是瓶颈转移动
   具体的业务逻辑进程.
-  具体做法是，在handle_call 中注册一个进程用来处理具体费时的业务逻辑(处理完后
+  具体做法是，在handle_call 中注册一个进程(只注册一个，并不是每次请求来都创建
+  一个进程)用来处理具体费时的业务逻辑(处理完后
   用gen_server:reply 将结果返回给gen_server:call的调用者) ，
   而handle_call 本身则以{noreply,State}返回。
 
   惟一一点好处是，由于瓶颈的转移，gen_server在处理其他的
   handle_call,handle_cast 子句时，不会因某一handle_call子句的消息堆积过多而得不
   到及时的处理。
-* 解法2
+* 解法2 进程池
   灵感来源于解法1 ，解法1的缺点是 瓶颈转移到具体的业务逻辑处理进程（只有一个），
   而此法与之的惟一不同点是，起用多个业务逻辑处理进程 ，当收到消息时，平分到这
   几个进程里去处理。
-  
+
   http://erlangdisplay.iteye.com/blog/397422
   这个帖子里面提到
   具体worker 的数量与scheduler数目一致（8核则数目为8)
   根据caller，获取当前执行scheduler的X，直接将request跳转到name_X的进程去处理
   根据scheduler数目创建进程组，减少单个进程处理瓶颈
   根据scheduler id直接跳转到进程组中某个进程，减少了中间查询，实现直接映射，效率更高.
-** pg2
-   本来想用pg2模块来处理的
-   可以借助于pg2模块，进程组的概念
-   http://blog.csdn.net/southflow/article/details/6868731
-   pg2:create(group1).
-   
-   %%查看所有可见的组
-   pg2:which_groups().
-   
-   %%同一个进程可以多次加入到组中，如果需要将一个进程加入到一个组中，如
-   pg2:join(group1,self()).
-   pg2:get_members(group1).
-   pg2:leave(group1,self()).
-   
-   %%获取本节点内位于组内的进程
-   pg2:get_local_members(group1).
-
-   %%从进程组中，首先尝试获取位于进程组内、属于本地节点的pid ,如果没有才随机获
-   取，但是测试时，所有节点都位于本地节点 ，并不随机 。所以最终放弃使用pg2
-   pg2:get_closest_pid(group1).
+** 每次请求都创建一个请的进程(未附测试代码)
+    handle_call(Request,From,State)->
+                spawn(fun() ->
+                %%do some thing waste time,
+                gen_server:reply(From,Resp)
+                end ),
+    {ok, State}.
