@@ -18,7 +18,7 @@ init(S)->
     put(workers,Workers),
     put(index,0),
 
-    %% 每隔1s打印一次各进程状态
+    %% 每隔1s打印一次各进程状态(测试用代码)
     lists:foreach(fun(Pid)->
                           timer:apply_interval(timer:seconds(1), util, pid_msg_info, [Pid])
                   end
@@ -62,6 +62,25 @@ worker_loop()->
 get_random_worker()->
     Index= get(index),
     Workers= get(workers),
-    put(index,(Index+1) rem 10),
+    put(index,(Index+1) rem ?MAX_WORKER),
     lists:nth(Index+1,Workers)
         .
+%% 本来想用pg2模块来处理的
+%% 可以借助于pg2模块，进程组的概念
+%% http://blog.csdn.net/southflow/article/details/6868731
+%% pg2:create(group1).
+
+%% %%查看所有可见的组
+%% pg2:which_groups().
+
+%% %%同一个进程可以多次加入到组中，如果需要将一个进程加入到一个组中，如
+%% pg2:join(group1,self()).
+%% pg2:get_members(group1).
+%% pg2:leave(group1,self()).
+
+%% %%获取本节点内位于组内的进程
+%% pg2:get_local_members(group1).
+
+%% %%从进程组中，首先尝试获取位于进程组内、属于本地节点的pid ,如果没有才随机获
+%% 取，但是测试时，所有节点都位于本地节点 ，并不随机 。所以最终放弃使用pg2
+%% pg2:get_closest_pid(group1).
