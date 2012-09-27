@@ -1,4 +1,4 @@
--module(test_list).
+-module(test_list_dict_orddict).
 -export([test/1]).
 -define(CONFIG_75_ELEMENT,"../75.json").
 -define(CONFIG_100_ELEMENT,"../100.json").
@@ -7,6 +7,10 @@
 -define(CONFIG_500_ELEMENT,"../500.json").
 -define(CONFIG_1000_ELEMENT,"../1000.json").
 
+%% 测试方法分别构建含 75 100 200 300 500 1000元素的 list ,dict ,orddict
+%% 测试其 查询的速度
+%% 查询过程会对列表中的首元素、尾元素、及中间位置的元素进行查询，
+%% 所以当参数Count ==100,时实际查询的300次
 test(Count)->
     io:format("75 elements in list,query count=~p,list,    time=~p ~n",
               [3*Count,test_list(Count,?CONFIG_75_ELEMENT,[<<"1">>,<<"30">>,<<"75">>])]),
