@@ -1,5 +1,7 @@
 -module(test_list_dict_orddict).
 -export([test/1]).
+-define(CONFIG_25_ELEMENT,"../25.json").
+-define(CONFIG_50_ELEMENT,"../50.json").
 -define(CONFIG_75_ELEMENT,"../75.json").
 -define(CONFIG_100_ELEMENT,"../100.json").
 -define(CONFIG_200_ELEMENT,"../200.json").
@@ -12,6 +14,10 @@
 %% 查询过程会对列表中的首元素、尾元素、及中间位置的元素进行查询，
 %% 所以当参数Count ==100,时实际查询的300次
 test(Count)->
+    io:format("25 elements in list,query count=~p,list,    time=~p ~n",
+              [3*Count,test_list(Count,?CONFIG_25_ELEMENT,[<<"1">>,<<"12">>,<<"25">>])]),
+    io:format("50 elements in list,query count=~p,list,    time=~p ~n",
+              [3*Count,test_list(Count,?CONFIG_50_ELEMENT,[<<"1">>,<<"25">>,<<"50">>])]),
     io:format("75 elements in list,query count=~p,list,    time=~p ~n",
               [3*Count,test_list(Count,?CONFIG_75_ELEMENT,[<<"1">>,<<"30">>,<<"75">>])]),
     io:format("100 elements in list,query count=~p,list,    time=~p ~n",
@@ -25,6 +31,10 @@ test(Count)->
     io:format("1000 elements in list,query count=~p,list,    time=~p ~n",
               [3*Count,test_list(Count,?CONFIG_1000_ELEMENT,[<<"1">>,<<"500">>,<<"1000">>])]),
     io:format("~n",[]) ,
+    io:format("25 elements in dict,query count=~p,dict,    time=~p ~n",
+              [3*Count,test_dict(Count,?CONFIG_25_ELEMENT,[<<"1">>,<<"12">>,<<"25">>])]),
+    io:format("50 elements in dict,query count=~p,dict,    time=~p ~n",
+              [3*Count,test_dict(Count,?CONFIG_50_ELEMENT,[<<"1">>,<<"25">>,<<"50">>])]),
     io:format("75 elements in dict,query count=~p,dict,    time=~p ~n",
               [3*Count,test_dict(Count,?CONFIG_75_ELEMENT,[<<"1">>,<<"30">>,<<"75">>])]),
     io:format("100 elements in dict,query count=~p,dict,    time=~p ~n",
@@ -39,6 +49,10 @@ test(Count)->
               [3*Count,test_dict(Count,?CONFIG_1000_ELEMENT,[<<"1">>,<<"500">>,<<"1000">>])]),
 
     io:format("~n",[]) ,
+    io:format("25 elements in orddict,query count=~p,orddict,    time=~p ~n",
+              [3*Count,test_orddict(Count,?CONFIG_25_ELEMENT,[<<"1">>,<<"12">>,<<"25">>])]),
+    io:format("50 elements in orddict,query count=~p,orddict,    time=~p ~n",
+              [3*Count,test_orddict(Count,?CONFIG_50_ELEMENT,[<<"1">>,<<"25">>,<<"50">>])]),
     io:format("75 elements in orddict,query count=~p,orddict,    time=~p ~n",
               [3*Count,test_orddict(Count,?CONFIG_75_ELEMENT,[<<"1">>,<<"30">>,<<"75">>])]),
     io:format("100 elements in orddict,query count=~p,orddict,    time=~p ~n",
