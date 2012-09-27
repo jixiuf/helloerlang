@@ -31,3 +31,10 @@ start_ping:start('pong@192.168.1.31',1000). %send 1000条
 %% 300 elements in orddict,query count=300,orddict,    time={1724,ok}
 %% 500 elements in orddict,query count=300,orddict,    time={3777,ok}
 %% 1000 elements in orddict,query count=300,orddict,    time={2684,ok}
+
+%% 实践证明 ，dict在插入方面性能很差
+%% test list 10000,time:1035
+%% test dict 10000,time:19276
+%% test dict(by dict:from_list) 10000,time:18049
+%% test orddict 10000,time:867
+dict适合读多与写的情况,
