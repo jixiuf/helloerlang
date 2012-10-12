@@ -4,38 +4,30 @@
 %%%
 %%% @end
 %%% Created : 2012-10-10 15:47 by 纪秀峰 <jixiuf@gmail.com>
-%%  Last Updated: 纪秀峰 2012-10-12 19:36:46 星期五
+%%  Last Updated: 纪秀峰 2012-10-12 19:51:16 星期五
 %%%-------------------------------------------------------------------
 -module(macro).
 -export([test/0]).
 -define(VERYFY(Value,ErrorId),case Value of false -> throw(ErrorId);true-> ok end) .
 -define(CASE(TEST,TRUE,FALSE),case TEST of true->TRUE; false ->FALSE end ).
 
--define(FE(List__,E,Eval__),
+-define(FE(List,E,Eval),
         lists:foreach(
           fun(E)->
-                  Eval__
-          end,List__
+                  Eval
+          end,List
          )).
 
-%% -define(FOLD(List__,Init__,Eval__),
-%%         lists:foldl(
-%%           fun(E,Acc)->
-%%                   Eval__
-%%           end,Init__,List__
-%%          )).
-
-
--define(FOLD(List__,Init__,E,Acc,Eval__),
+-define(FOLD(List,E,Init,Acc,Eval),
         lists:foldl(
           fun(E,Acc)->
-                  Eval__
-          end,Init__,List__
+                  Eval
+          end,Init,List
          )).
 
--define(TRY(Eval__),
+-define(TRY(Eval),
         try
-            Eval__
+            Eval
         catch
             throw:{errorid ,ErrorId}->
                 io:format("handle errorid:~ts~n",[ErrorId]);
@@ -59,7 +51,7 @@ test()->
             io:format("~n",[])
 
         end),
-    Sum=?FOLD([1,2,3],0,E,Acc,
+    Sum=?FOLD([1,2,3],E,0,Acc,
               begin
                   E+Acc
               end),
