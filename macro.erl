@@ -4,7 +4,7 @@
 %%%
 %%% @end
 %%% Created : 2012-10-10 15:47 by 纪秀峰 <jixiuf@gmail.com>
-%%  Last Updated: 纪秀峰 2012-10-12 19:51:16 星期五
+%%  Last Updated: 纪秀峰 2012-10-12 20:20:59 星期五
 %%%-------------------------------------------------------------------
 -module(macro).
 -export([test/0]).
@@ -24,6 +24,7 @@
                   Eval
           end,Init,List
          )).
+-define(FILTER(List,E,Eval),lists:filter(fun(E)-> Eval end,List)).
 
 -define(TRY(Eval),
         try
@@ -56,6 +57,14 @@ test()->
                   E+Acc
               end),
     io:format("sum=~p~n",[Sum]),
+    Num=?FILTER([1,2,3,4],E,
+            begin
+                E rem 2 ==1
+            end),
+    io:format("filter:~p~n",[Num]) ,
+
+    ?FILTER([1,2],_E,1==2),
+
     ?TRY(begin
              ?VERYFY(1==2,{errorid,"1!=2"})
          end)
