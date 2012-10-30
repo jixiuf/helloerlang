@@ -1,0 +1,5 @@
+* cd src
+  dialyzer --build_plt --apps erts kernel stdlib mnesia
+  dialyzer --src -c ../src/nodes/*/*.erl ../src/modules/*/*.erl ../src/modules/*/*/*.erl -I ../include/ -o result.txt  -Wno_return -Wno_unused -Wno_undefined_callbacks
+
+  生成的结果　在result.txt文件　中
