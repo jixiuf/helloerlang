@@ -36,3 +36,6 @@
   使用了mochiweb
   是一个网页版即时聊天系统的原理代码(Comet ,long pull技术),据说faceboot 的网上
   聊天系统使用的是mochiweb 
+erlang 中文 gbk utf8 等 编码
+http://code.google.com/p/erlang-mbcs/
+
