@@ -1,0 +1,2 @@
+{ 'src/*', [debug_info, {i ,"include/"} , {i ,"deps/"} ,{outdir,"ebin/"}] }.
+{ 'test/*', [debug_info, {i ,"src/"}, {i ,"deps/"},{i ,"include/"}, {outdir,"ebin"} ] }.
