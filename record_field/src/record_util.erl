@@ -48,7 +48,7 @@ make_index([],Acc1)    ->
     Head="%% get the filed index (1 based ) of a record\n",
     Head++
     lists:flatten(Acc1)++
-        "get_index(_Field) -> exit({error,\""++
+        "get_index(_Record,_Field) -> exit({error,\""++
         "get_index/2 Invalid Record Name \"}).\n";
 make_index([{RecName,Def}|T],Acc1) ->
     NewAcc1=expand_index(RecName,Def,1,[]),
