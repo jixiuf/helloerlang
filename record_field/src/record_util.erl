@@ -48,7 +48,7 @@ make_index([],Acc1)    ->
     Head="%% get the filed index (1 based ) of a record\n",
     Head++
     lists:flatten(Acc1)++
-        "get_index(_Record,_Field) -> exit({error,\""++
+        "get_index(_Field) -> exit({error,\""++
         "get_index/2 Invalid Record Name \"}).\n";
 make_index([{RecName,Def}|T],Acc1) ->
     NewAcc1=expand_index(RecName,Def,1,[]),
@@ -122,7 +122,11 @@ make_info([],Acc1)->
     Tail1="fields_info(_Other) -> exit({error,\"Invalid Record Name\"}).\n",
     [Head|lists:reverse([Tail1|Acc1])];
 make_info([{RecName,Def}|T],Acc1)->
-    Fields=[F|| {record_field,_Num,{atom,_Num2,F}} <- Def ],
+    Fields=lists:map(fun(RecordField)->                   %{record_field,3,{atom,3,name}},or {record_field,2,{atom,2,classe},{string,2,"asdf"}}
+                             {atom,_Index,Field}=element(3,RecordField),
+                             Field
+                     end ,Def),
+        %% [F|| {record_field,_Num,{atom,_Num2,F}} <- Def ],
     Cause= "fields_info("++atom_to_list(RecName)++") -> "++
            io_lib:format("~p",[Fields])++";\n"++
         "fields_info(Record ) when is_record(Record,"++atom_to_list(RecName)++")->"++
