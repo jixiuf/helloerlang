@@ -436,3 +436,4 @@ erl_crash.dump
 /robust_server/start_one
 /robust_server/start_two
 /robust_server/tcp_server.erl
+/mochiweb_test/ebin/mochiweb_test.app

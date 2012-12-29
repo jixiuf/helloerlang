@@ -1,0 +1,5 @@
+make
+erl -pa ebin
+hello_test:hello().
+hello_test:init().
+hello_test:hello().
