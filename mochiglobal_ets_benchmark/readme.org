@@ -4,4 +4,12 @@
 (emacs@jf.org)4> test:test(10000).
 ets use time:1475
 mochiglobal use time:3833
+
+(emacs@jf.org)9> test_big:test(10000).
+ets use time:85151
+mochiglobal use time:4042
+
 似乎用mochiglobal 没有ets快
+
+* mochiglobal的适用场合,存储的只读数据较大时,速度比ets快,
+  原理是,ets需要进行进程间数据的copy,数据量越大,效率越低

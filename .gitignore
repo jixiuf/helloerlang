@@ -437,3 +437,4 @@ erl_crash.dump
 /robust_server/start_two
 /robust_server/tcp_server.erl
 /mochiweb_test/ebin/mochiweb_test.app
+/mochiglobal_ets_benchmark/ebin/mochiglobal_ets_benchmark.app
