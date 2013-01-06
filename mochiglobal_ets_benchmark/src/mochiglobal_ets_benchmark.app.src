@@ -1,0 +1,10 @@
+%% -*- erlang -*-
+{application, mochiglobal_ets_benchmark, 
+ [{description, "desc"},
+  {vsn, "0.1"},
+  {modules, []},
+  {registered, []},
+  {mod, {mochiglobal_ets_benchmark, []}},
+  {applications, [kernel, stdlib]},
+  {env,[]}
+ ]}.

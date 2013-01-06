@@ -1,0 +1,7 @@
+* 对于只读数据是从ets中取快,还是用mochiglobal 快
+这里没用对 进程字典 的访问速度进行比较, 是想避免半进程消息堆积过多造成的瓶颈
+
+(emacs@jf.org)4> test:test(10000).
+ets use time:1475
+mochiglobal use time:3833
+似乎用mochiglobal 没有ets快
