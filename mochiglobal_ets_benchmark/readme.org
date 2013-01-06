@@ -13,3 +13,6 @@ mochiglobal use time:4042
 
 * mochiglobal的适用场合,存储的只读数据较大时,速度比ets快,
   原理是,ets需要进行进程间数据的copy,数据量越大,效率越低
+
+http://www.cnblogs.com/me-sa/archive/2012/04/19/Erlang_Shared_Data_using_mochiglobal.html
+http://stackoverflow.com/questions/6181463/speed-up-and-best-practices-using-ets-for-per-module-pre-computed-data
