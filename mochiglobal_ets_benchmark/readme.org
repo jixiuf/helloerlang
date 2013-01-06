@@ -10,6 +10,7 @@ ets use time:85151
 mochiglobal use time:4042
 
 似乎用mochiglobal 没有ets快
+PS. mochiglobal 慢就慢在 key_to_module(K).函数上进行的各种转化
 
 * mochiglobal的适用场合,存储的只读数据较大时,速度比ets快,
   原理是,ets需要进行进程间数据的copy,数据量越大,效率越低
