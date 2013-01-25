@@ -43,8 +43,8 @@ delete(_K, Mod) ->
     code:delete(Mod).
 
 -spec key_to_module(atom()) -> atom().
-key_to_module(K) ->
-    list_to_atom("mochiglobal:" ++ atom_to_list(K)).
+key_to_module(K) ->K.
+    %% list_to_atom("mochiglobal:" ++ atom_to_list(K)).
 
 -spec compile(atom(), any()) -> binary().
 compile(Module, T) ->

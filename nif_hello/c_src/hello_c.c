@@ -9,6 +9,7 @@ static ERL_NIF_TERM hello_in_c(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv
 
 static ErlNifFunc nif_funcs[] =
 {
+  /* hello/0  对应c 里的hello_in_c */
     {"hello", 0, hello_in_c}
 };
 /* hello_test 跟 hello_test.erl模块名要同 */
